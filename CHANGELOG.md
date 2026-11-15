@@ -15,6 +15,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Allocate display order from current MySQL state inside a Host transaction
   for Category, Image Assignment, and Content Field creation.
 
+### Fixed
+
+- Keep same-value updates successful for existing Category, Content, and Content
+  Field rows when MySQL reports zero changed rows. Missing or deleted rows still
+  follow the existing error contract. [#62](https://github.com/Maatify-ltd/php-category/issues/62)
+
 ## [1.0.0-rc.1] - 2026-09-15
 
 ### Added
@@ -92,5 +98,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `PdoTransactionRunner` with the same PDO used by Category persistence;
   caller-owned outer transactions remain Host-owned.
 
-[Unreleased]: https://github.com/Maatify/php-category/compare/v1.0.0-rc.1...HEAD
-[1.0.0-rc.1]: https://github.com/Maatify/php-category/releases/tag/v1.0.0-rc.1
+[Unreleased]: https://github.com/Maatify-ltd/php-category/compare/v1.0.0-rc.1...HEAD
+[1.0.0-rc.1]: https://github.com/Maatify-ltd/php-category/releases/tag/v1.0.0-rc.1

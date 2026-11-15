@@ -16,7 +16,7 @@
 [![Packagist](https://img.shields.io/badge/Packagist-maatify%2Fphp--category-F28D1A)](https://packagist.org/packages/maatify/php-category)
 [![Monthly Downloads](https://img.shields.io/packagist/dm/maatify/php-category)](https://packagist.org/packages/maatify/php-category)
 [![Total Downloads](https://img.shields.io/packagist/dt/maatify/php-category)](https://packagist.org/packages/maatify/php-category)
-[![Maatify Ecosystem](https://img.shields.io/badge/Maatify-Ecosystem-blueviolet)](https://github.com/Maatify)
+[![Maatify Ecosystem](https://img.shields.io/badge/Maatify-Ecosystem-blueviolet)](https://github.com/Maatify-ltd)
 [![Install](https://img.shields.io/badge/Install-composer%20require%20maatify%2Fphp--category-blue)](https://packagist.org/packages/maatify/php-category)
 
 **Documentation**

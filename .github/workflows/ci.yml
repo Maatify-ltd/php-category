@@ -59,6 +59,12 @@ jobs:
           tools: composer
           coverage: none
 
+      - name: Verify actual PHP security patch floor
+        run: php scripts/ci/check-php-patch-floor.php "${{ matrix.php }}"
+
+      - name: Verify published Composer PHP contract boundaries
+        run: bash scripts/ci/check-composer-php-boundaries.sh
+
       - name: Enable MySQL trigger creation
         run: |
           set -euo pipefail
@@ -70,7 +76,9 @@ jobs:
         run: composer validate --strict
 
       - name: PHP syntax
-        run: find src tests -type f -name '*.php' -print0 | xargs -0 -r -n1 php -l
+        run: |
+          php -l .php-cs-fixer.dist.php
+          find src tests scripts/ci -type f -name '*.php' -print0 | xargs -0 -r -n1 php -l
 
       - name: Resolve latest compatible dependencies
         run: composer update --no-interaction --prefer-dist --no-progress --prefer-stable
@@ -132,6 +140,9 @@ jobs:
           tools: composer
           coverage: none
 
+      - name: Verify actual PHP security patch floor
+        run: php scripts/ci/check-php-patch-floor.php "8.4"
+
       - name: Enable MySQL trigger creation
         run: |
           set -euo pipefail
@@ -143,7 +154,9 @@ jobs:
         run: composer validate --strict
 
       - name: PHP syntax
-        run: find src tests -type f -name '*.php' -print0 | xargs -0 -r -n1 php -l
+        run: |
+          php -l .php-cs-fixer.dist.php
+          find src tests scripts/ci -type f -name '*.php' -print0 | xargs -0 -r -n1 php -l
 
       - name: Resolve lowest supported dependencies
         run: composer update --prefer-lowest --prefer-stable --no-interaction --prefer-dist --no-progress
@@ -209,6 +222,9 @@ jobs:
           extensions: mbstring, pdo, pdo_mysql
           tools: composer
           coverage: none
+
+      - name: Verify actual PHP security patch floor
+        run: php scripts/ci/check-php-patch-floor.php "8.4"
 
       - name: Enable MySQL trigger creation
         run: |

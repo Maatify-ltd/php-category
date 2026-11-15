@@ -11,7 +11,7 @@
     "php",
     "maatify"
   ],
-  "homepage": "https://github.com/Maatify/php-category",
+  "homepage": "https://github.com/Maatify-ltd/php-category",
   "type": "library",
   "license": "MIT",
   "authors": [
@@ -22,9 +22,9 @@
     }
   ],
   "support": {
-    "issues": "https://github.com/Maatify/php-category/issues",
-    "source": "https://github.com/Maatify/php-category",
-    "security": "https://github.com/Maatify/php-category/security/policy"
+    "issues": "https://github.com/Maatify-ltd/php-category/issues",
+    "source": "https://github.com/Maatify-ltd/php-category",
+    "security": "https://github.com/Maatify-ltd/php-category/security/policy"
   },
   "autoload": {
     "psr-4": {

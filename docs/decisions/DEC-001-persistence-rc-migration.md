@@ -28,9 +28,19 @@ identify the same revision. Keep the root Composer stability policy at
 repositories continue to share the Host PDO connection.
 
 Category, Image Assignment, and Content Field creation retain their scope
-locks and use the shared current read in an active transaction. The plain
-allocator reads the caller snapshot, which can reuse a position that has
-already been committed by another transaction.
+locks and use the shared current read in an active transaction.
+
+## Rationale
+
+Pinning the exact published RC gives the candidate and the standalone consumer
+the same reviewed dependency and distribution reference. The replacement has
+a published RC, so migration can be verified now while Stable qualification
+remains a separate release decision.
+
+A scope lock serializes allocation but does not refresh an existing Host
+transaction snapshot. The transaction-aware current read observes the latest
+committed positions after the lock is acquired, preventing an allocation based
+on stale ordering data while leaving commit and rollback under Host control.
 
 ## Consequences
 

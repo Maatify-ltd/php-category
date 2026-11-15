@@ -25,6 +25,8 @@ reference.
 From the repository root:
 
 ```bash
+php scripts/ci/check-php-patch-floor.php 8.4 # use 8.5 when running that minor
+bash scripts/ci/check-composer-php-boundaries.sh
 composer validate --strict
 composer dump-autoload --optimize --strict-psr
 composer check-platform-reqs
@@ -34,6 +36,10 @@ composer analyse
 composer test:unit
 composer test
 ```
+
+The patch-floor check logs and verifies the actual interpreter. The Composer
+boundary probe simulates PHP versions to report what the existing published
+`require.php` constraint admits, including versions outside CI qualification.
 
 `composer check:style` checks package-owned PHP against PHP-FIG PER-CS 3.1
 using the PHP CS Fixer 3.0 rule set and a verifier for the 3.1 changes.
