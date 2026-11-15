@@ -471,19 +471,31 @@ final class PerCs31DeltaVerifier
                 continue;
             }
 
-            if (preg_match(
-                '/\A(?:no\s+break|(?:deliberate|intentional)\s+fall[- ]?through|'
-                . '(?:(?:deliberately|intentionally)\s+)?falls?[- ]?through'
-                . '(?:\s+(?:intentionally|deliberately))?(?:\s+(?:into\s+(?:the\s+)?next\s+case|to\s+[^.!?]+))?'
-                . '|(?:intentionally|deliberately)\s+continue\s+(?:into|to)\s+(?:the\s+)?next\s+case)'
-                . '(?:[.!]|\s*[:;—-]\s+.+)?\z/iu',
-                $normalized,
-            ) === 1) {
+            if (self::declaresFallthrough($normalized)) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    private static function declaresFallthrough(string $comment): bool
+    {
+        $intent = '(?:intentionally|deliberately|purposely)';
+        $terminator = '(?:the\s+)?(?:break|return|termination)(?:\s+statement)?';
+        $purpose = '(?:\s+(?:so|to)\s+[^.!?]+)?';
+        $nextCase = '(?:into|to)\s+(?:the\s+)?next\s+case';
+
+        return preg_match(
+            '/\A(?:no\s+break|(?:deliberate|intentional)\s+fall[- ]?through'
+            . '|(?:' . $intent . '\s+)?falls?[- ]?through'
+            . '(?:\s+' . $intent . ')?(?:\s+(?:' . $nextCase . '|to\s+[^.!?]+))?'
+            . '|(?:execution\s+)?' . $intent . '\s+(?:continues?|proceeds?)\s+' . $nextCase
+            . '|(?:we\s+)?' . $intent . '\s+(?:omit|skip|leave\s+out)\s+' . $terminator . $purpose
+            . '|' . $terminator . '\s+(?:is\s+)?' . $intent . '\s+(?:omitted|skipped|left\s+out)' . $purpose
+            . ')(?:[.!]|\s*[:;—-]\s+.+)?\z/iu',
+            $comment,
+        ) === 1;
     }
 
     /**

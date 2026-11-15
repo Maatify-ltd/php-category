@@ -66,7 +66,7 @@ final class PerCs31DeltaVerifierTest extends TestCase
                         // Fall through to share the next case handler.
                     case 3:
                         record($value);
-                        // Intentionally continue into the next case.
+                        // Intentionally omit break so execution proceeds to the next case.
                     case 4:
                         echo "First: {$name}";
                         break;
@@ -142,6 +142,14 @@ final class PerCs31DeltaVerifierTest extends TestCase
             'Intentional fallthrough: share the next case.' => null,
             'Fall through to share the next case handler.' => null,
             'Intentionally continue into the next case.' => null,
+            'Intentionally omit break so execution proceeds to the next case.' => null,
+            'We deliberately skip the break statement to reuse the next case.' => null,
+            'Break is purposely omitted so the next case runs.' => null,
+            'Execution deliberately proceeds into the next case.' => null,
+            'Should we intentionally omit break so execution proceeds to the next case?' => 'switch-case-termination',
+            'Do not intentionally omit break so execution proceeds to the next case.' => 'switch-case-termination',
+            'If we intentionally omit break, execution proceeds to the next case.' => 'switch-case-termination',
+            'We might deliberately skip the break statement.' => 'switch-case-termination',
             'Fall through to the next case?' => 'switch-case-termination',
             'This is not an intentional fall-through.' => 'switch-case-termination',
             'Check whether this should fall through.' => 'switch-case-termination',
