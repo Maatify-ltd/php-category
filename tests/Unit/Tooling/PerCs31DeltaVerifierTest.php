@@ -32,7 +32,7 @@ final class PerCs31DeltaVerifierTest extends TestCase
         }
     }
 
-    public function testCompositeStyleCommandChecksSwitchCases(): void
+    public function testCompositeStyleCommandChecksSwitchCasesInExamples(): void
     {
         $root = dirname(__DIR__, 3);
         $scratch = tempnam(sys_get_temp_dir(), 'category-style-composite-');
@@ -40,9 +40,9 @@ final class PerCs31DeltaVerifierTest extends TestCase
         self::assertTrue(unlink($scratch));
         self::assertTrue(mkdir($scratch));
 
-        $directories = ['src', 'tests', 'scripts', 'scripts/ci'];
+        $directories = ['src', 'tests', 'scripts', 'scripts/ci', 'examples'];
         $configuration = ['composer.json', '.php-cs-fixer.dist.php', 'scripts/ci/check-per-cs-31-delta.php'];
-        $fixture = 'src/Fallthrough.php';
+        $fixture = 'examples/Fallthrough.php';
         $approvalFile = 'scripts/ci/per-cs-31-fallthrough-approved.json';
         try {
             foreach ($directories as $directory) {
