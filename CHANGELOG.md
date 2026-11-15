@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Adopt the Maatify Proprietary License for the current source. Written
+  authorization is available free of charge. Published RC.1 retains its MIT
+  license.
 - Require PHP 8.4.27 or later in the 8.4 series, or PHP 8.5.12 or later in
   the 8.5 series. Composer rejects earlier patches and other PHP series.
 - Use `maatify/php-persistence 1.0.0-rc.1` for shared Ordering, Pagination, and

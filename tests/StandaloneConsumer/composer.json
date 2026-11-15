@@ -2,7 +2,7 @@
   "name": "maatify/php-category-standalone-consumer",
   "description": "CI-only external consumer for maatify/php-category.",
   "type": "project",
-  "license": "MIT",
+  "license": "proprietary",
   "require": {
     "ext-pdo": "*",
     "ext-pdo_mysql": "*",

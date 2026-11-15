@@ -13,7 +13,7 @@
 [![Status](https://img.shields.io/badge/Status-Release%20Candidate-blue)](CHANGELOG.md)
 [![Version](https://img.shields.io/badge/Version-v1.0.0--rc.1-blue)](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.1)
 [![PHP](https://img.shields.io/badge/PHP-8.4.27%E2%80%938.4.x%20%2F%208.5.12%E2%80%938.5.x-8892BF)](composer.json)
-[![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![Checkout License](https://img.shields.io/badge/License-Proprietary-green)](LICENSE)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%20max-2F9E44.svg)](CONTRIBUTING.md#local-verification)
 
 **Ecosystem / Adoption**
@@ -66,9 +66,9 @@ for the Composer and runtime checks.
 
 ## Installation
 
-The published Category RC.1 retains its original PHP constraint and Persistence
-dependency. Use
-the [published tag documentation](https://github.com/Maatify-ltd/php-category/tree/v1.0.0-rc.1)
+The published Category RC.1 retains its original PHP constraint, Persistence
+dependency, and [MIT license](https://github.com/Maatify-ltd/php-category/blob/v1.0.0-rc.1/LICENSE).
+Use the [published tag documentation](https://github.com/Maatify-ltd/php-category/tree/v1.0.0-rc.1)
 when installing that exact version.
 
 ```bash
@@ -139,7 +139,13 @@ for support status.
 
 ## License
 
-MIT. See [LICENSE](LICENSE).
+This checkout is proprietary to Maatify Ltd. Obtain written authorization
+before use by requesting a free license from
+[support@maatify.dev](mailto:support@maatify.dev). Include your organization
+name, if applicable, and an email address for the person who should receive
+security advisories and critical update notices. Maatify Ltd. uses those
+details to administer licenses and send those notices. See [LICENSE](LICENSE)
+for the terms.
 
 ## Author
 
