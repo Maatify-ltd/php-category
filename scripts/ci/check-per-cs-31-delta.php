@@ -10,6 +10,8 @@ declare(strict_types=1);
  */
 final class PerCs31DeltaVerifier
 {
+    private const string FALLTHROUGH_APPROVALS = 'scripts/ci/per-cs-31-fallthrough-approved.json';
+
     /**
      * @param list<string> $paths
      * @return int 0 when the delta is clean, 1 for violations, or 2 for execution errors.
@@ -22,6 +24,7 @@ final class PerCs31DeltaVerifier
                 throw new RuntimeException('No PHP files found in the configured verification scope.');
             }
 
+            $approvals = self::readFallthroughApprovals();
             $violations = [];
             $advisories = [];
             foreach ($files as $file) {
@@ -30,7 +33,7 @@ final class PerCs31DeltaVerifier
                     throw new RuntimeException('Unable to read ' . $file . '.');
                 }
 
-                self::scanFile($file, $source, $violations, $advisories);
+                self::scanFile($file, $source, $approvals[self::relativeFile($file)] ?? [], $violations, $advisories);
             }
 
             sort($violations);
@@ -65,6 +68,56 @@ final class PerCs31DeltaVerifier
 
             return 2;
         }
+    }
+
+    /** @return array<string, array<int, array{case: string, comment: string}>> */
+    private static function readFallthroughApprovals(): array
+    {
+        $path = dirname(__DIR__, 2) . '/' . self::FALLTHROUGH_APPROVALS;
+        if (!is_file($path)) {
+            return [];
+        }
+
+        $json = file_get_contents($path);
+        if ($json === false) {
+            throw new RuntimeException('Unable to read ' . self::FALLTHROUGH_APPROVALS . '.');
+        }
+
+        $entries = json_decode($json, true, flags: JSON_THROW_ON_ERROR);
+        if (!is_array($entries) || !array_is_list($entries)) {
+            throw new RuntimeException(self::FALLTHROUGH_APPROVALS . ' must contain a JSON list of exact approvals.');
+        }
+
+        $approvals = [];
+        foreach ($entries as $entry) {
+            if (!is_array($entry) || count($entry) !== 4
+                || !is_string($file = $entry['file'] ?? null) || !str_ends_with($file, '.php')
+                || !is_int($line = $entry['line'] ?? null) || $line < 1
+                || !is_string($case = $entry['case'] ?? null) || $case === ''
+                || !is_string($comment = $entry['comment'] ?? null) || $comment === ''
+                || isset($approvals[$file][$line])
+            ) {
+                throw new RuntimeException(self::FALLTHROUGH_APPROVALS . ' requires unique file, line, case and comment entries.');
+            }
+
+            $approvals[$file][$line] = ['case' => $case, 'comment' => $comment];
+        }
+
+        return $approvals;
+    }
+
+    private static function relativeFile(string $file): string
+    {
+        $root = self::normalizePath(dirname(__DIR__, 2)) . '/';
+        $absolute = realpath($file);
+        if ($absolute !== false) {
+            $absolute = self::normalizePath($absolute);
+            if (str_starts_with($absolute, $root)) {
+                return substr($absolute, strlen($root));
+            }
+        }
+
+        return $file;
     }
 
     /**
@@ -111,19 +164,21 @@ final class PerCs31DeltaVerifier
     }
 
     /**
+     * @param array<int, array{case: string, comment: string}> $approvals
      * @param list<string> $violations
      * @param list<string> $advisories
      */
     private static function scanFile(
         string $file,
         string $source,
+        array $approvals,
         array &$violations,
         array &$advisories,
     ): void {
         $tokens = self::lex($source);
 
         self::scanCloneCalls($file, $source, $tokens, $advisories);
-        self::scanSwitches($file, $source, $tokens, $violations);
+        self::scanSwitches($file, $source, $tokens, $approvals, $violations);
         self::scanPipes($file, $source, $tokens, $violations);
         self::scanEmptyClosures($file, $source, $tokens, $violations);
         self::scanAnonymousClassAttributes($file, $source, $tokens, $violations);
@@ -242,12 +297,14 @@ final class PerCs31DeltaVerifier
 
     /**
      * @param list<array{id: int|null, text: string, line: int, offset: int, end: int}> $tokens
+     * @param array<int, array{case: string, comment: string}> $approvals
      * @param list<string> $violations
      */
     private static function scanSwitches(
         string $file,
         string $source,
         array $tokens,
+        array $approvals,
         array &$violations,
     ): void {
         foreach ($tokens as $index => $token) {
@@ -299,18 +356,30 @@ final class PerCs31DeltaVerifier
                 if (self::caseIsEmpty($tokens, $colon + 1, $nextCase)) {
                     continue;
                 }
-                if ($nextCase < $close && self::hasFallthroughComment($tokens, $colon + 1, $nextCase)) {
+                if (self::caseTerminates($tokens, $colon + 1, $nextCase)) {
                     continue;
                 }
-                if (!self::caseTerminates($tokens, $colon + 1, $nextCase)) {
-                    self::addViolation(
-                        $violations,
-                        $file,
-                        $tokens[$caseIndex]['line'],
-                        'switch-case-termination',
-                        'Every non-empty case MUST end with a terminating statement or a clear fall-through comment.',
-                    );
+
+                $case = $tokens[$caseIndex];
+                $approval = $approvals[$case['line']] ?? null;
+                $label = substr($source, $case['offset'], $tokens[$colon]['end'] - $case['offset']);
+                $approvedComment = $approval !== null && $approval['case'] === $label ? $approval['comment'] : null;
+                if ($nextCase < $close && self::hasFallthroughComment($tokens, $colon + 1, $nextCase, $approvedComment)) {
+                    continue;
                 }
+
+                $message = 'Every non-empty case MUST end with a terminating statement';
+                if ($nextCase < $close) {
+                    $message .= ' or a clear fall-through comment. For clear wording the checker cannot classify, review an exact entry in '
+                        . self::FALLTHROUGH_APPROVALS;
+                }
+                self::addViolation(
+                    $violations,
+                    $file,
+                    $case['line'],
+                    'switch-case-termination',
+                    $message . '.',
+                );
             }
         }
     }
@@ -449,7 +518,7 @@ final class PerCs31DeltaVerifier
     /**
      * @param list<array{id: int|null, text: string, line: int, offset: int, end: int}> $tokens
      */
-    private static function hasFallthroughComment(array $tokens, int $start, int $end): bool
+    private static function hasFallthroughComment(array $tokens, int $start, int $end, ?string $approvedComment): bool
     {
         $depth = 0;
         for ($index = $start; $index < $end; $index++) {
@@ -471,12 +540,31 @@ final class PerCs31DeltaVerifier
                 continue;
             }
 
-            if (self::declaresFallthrough($normalized)) {
+            if (!self::isUncertainFallthrough($normalized)
+                && (self::declaresFallthrough($normalized) || $normalized === $approvedComment)
+            ) {
                 return true;
             }
         }
 
         return false;
+    }
+
+    private static function isUncertainFallthrough(string $comment): bool
+    {
+        $action = '(?:falls?[- ]?through|omit|skip|leave\s+out|continue|proceed)';
+        $hedge = '(?:maybe|perhaps|possibly|may|might|should)';
+        $intent = '(?:intentionally|deliberately|purposely)';
+
+        return preg_match(
+            '~\?|\A(?:if|unless|whether|' . $hedge . '|(?:check|consider|decide)\s+whether)\b'
+            . '|\b(?:we|execution|the\s+case)\s+' . $hedge . '\s+(?:' . $intent . '\s+)?' . $action . '\b'
+            . '|\bso\s+(?:maybe|perhaps|possibly)\b|\bif\s+(?:needed|required|necessary)\b'
+            . '|\b(?:never|cannot|(?:must|do|does|did|can|will|would|could)\s+not)'
+            . '\s+(?:' . $intent . '\s+)?' . $action . '\b'
+            . '|\bnot\s+(?:an?\s+)?(?:intentional|deliberate|intended)\b~iu',
+            $comment,
+        ) === 1;
     }
 
     private static function declaresFallthrough(string $comment): bool

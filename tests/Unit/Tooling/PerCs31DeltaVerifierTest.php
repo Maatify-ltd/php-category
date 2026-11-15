@@ -43,6 +43,7 @@ final class PerCs31DeltaVerifierTest extends TestCase
         $directories = ['src', 'tests', 'scripts', 'scripts/ci'];
         $configuration = ['composer.json', '.php-cs-fixer.dist.php', 'scripts/ci/check-per-cs-31-delta.php'];
         $fixture = 'src/Fallthrough.php';
+        $approvalFile = 'scripts/ci/per-cs-31-fallthrough-approved.json';
         try {
             foreach ($directories as $directory) {
                 self::assertTrue(mkdir($scratch . '/' . $directory));
@@ -80,14 +81,45 @@ final class PerCs31DeltaVerifierTest extends TestCase
             self::assertSame(0, $exitCode, $output);
             self::assertStringContainsString('PER-CS 3.1 delta verification passed', $output);
 
-            $invalid = str_replace('Falls through intentionally.', 'Check whether this should fall through.', $source);
+            $wording = 'The break is left out on purpose so execution continues into the next case.';
+            $rationale = $wording . ' The next case will run its recovery routine if the value is absent.';
+            $unusual = str_replace('Falls through intentionally.', $wording, $source);
+            self::assertNotFalse(file_put_contents($scratch . '/' . $fixture, $unusual . "\n"));
+            [$exitCode, $output] = self::runCommand(['composer', 'check:style'], $scratch);
+            self::assertSame(1, $exitCode, $output);
+            self::assertStringContainsString($approvalFile, $output);
+
+            $ambiguous = 'Perhaps we should omit the break.';
+            $unusual = str_replace(
+                'Intentionally omit break so execution proceeds to the next case.',
+                $rationale,
+                $unusual,
+            );
+            self::assertNotFalse(file_put_contents($scratch . '/' . $fixture, $unusual . "\n"));
+            self::assertNotFalse(file_put_contents($scratch . '/' . $approvalFile, json_encode([
+                ['file' => $fixture, 'line' => 6, 'case' => 'case 1:', 'comment' => $wording],
+                ['file' => $fixture, 'line' => 9, 'case' => 'case 2:', 'comment' => $ambiguous],
+                ['file' => $fixture, 'line' => 12, 'case' => 'case 3:', 'comment' => $rationale],
+                ['file' => $fixture, 'line' => 18, 'case' => 'default:', 'comment' => $rationale],
+            ], JSON_THROW_ON_ERROR)));
+            [$exitCode, $output] = self::runCommand(['composer', 'check:style'], $scratch);
+            self::assertSame(0, $exitCode, $output);
+            self::assertStringContainsString('PER-CS 3.1 delta verification passed', $output);
+            self::assertSame($unusual . "\n", file_get_contents($scratch . '/' . $fixture));
+
+            $invalid = str_replace('// ' . $wording . "\n", '// ' . str_replace('on purpose', 'by design', $wording) . "\n", $unusual);
+            $invalid = str_replace('Fall through to share the next case handler.', $ambiguous, $invalid);
+            $invalid = str_replace('case 3:', 'case 5:', $invalid);
+            $invalid = str_replace('echo "Following: {$name}";' . "\n        break;", 'echo "Following: {$name}";' . "\n        // " . $rationale, $invalid);
             self::assertNotFalse(file_put_contents($scratch . '/' . $fixture, $invalid . "\n"));
             [$exitCode, $output] = self::runCommand(['composer', 'check:style'], $scratch);
             self::assertSame(1, $exitCode, $output);
-            self::assertStringContainsString('[switch-case-termination]', $output);
+            foreach ([6, 9, 12, 18] as $line) {
+                self::assertStringContainsString($fixture . ':' . $line . ' [switch-case-termination]', $output);
+            }
             self::assertSame($invalid . "\n", file_get_contents($scratch . '/' . $fixture));
         } finally {
-            foreach ([$fixture, ...$configuration, 'vendor'] as $file) {
+            foreach ([$fixture, ...$configuration, $approvalFile, 'vendor'] as $file) {
                 if (file_exists($scratch . '/' . $file) || is_link($scratch . '/' . $file)) {
                     unlink($scratch . '/' . $file);
                 }
@@ -150,6 +182,8 @@ final class PerCs31DeltaVerifierTest extends TestCase
             'Do not intentionally omit break so execution proceeds to the next case.' => 'switch-case-termination',
             'If we intentionally omit break, execution proceeds to the next case.' => 'switch-case-termination',
             'We might deliberately skip the break statement.' => 'switch-case-termination',
+            'Fall through to share the next case handler if needed.' => 'switch-case-termination',
+            'Intentionally omit break so maybe execution proceeds to the next case.' => 'switch-case-termination',
             'Fall through to the next case?' => 'switch-case-termination',
             'This is not an intentional fall-through.' => 'switch-case-termination',
             'Check whether this should fall through.' => 'switch-case-termination',
