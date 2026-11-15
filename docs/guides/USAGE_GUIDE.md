@@ -1,7 +1,7 @@
 # Category Consumer Usage Guide
 
 This guide is for a Host application consuming `maatify/php-category` through its
-public PHP API. It complements the [Category Package Reference](../CATEGORY_PACKAGE_REFERENCE.md):
+public PHP API. It complements the [Category Package Reference](../../CATEGORY_PACKAGE_REFERENCE.md):
 the reference is the complete contract inventory, while this guide shows the
 normal Host workflow and the decisions that must remain explicit.
 
@@ -49,6 +49,22 @@ The Host supplies:
 The package validates IDs, required strings, lengths, formats, exact nullable
 scope values, and its own database invariants. It does not validate whether a
 language or platform is meaningful to the Host.
+
+## Capability map
+
+The [runnable Category workflow](../../examples/category-workflow.php) uses
+the production Composer autoloader and an already-installed Category schema.
+It exercises all five domain APIs in one Host-owned transaction.
+
+| Capability | Walkthrough | Example step |
+| --- | --- | --- |
+| Category hierarchy, lifecycle, and visibility | [Categories](#categories) | Create a parent and a child, change the child's status, and read the management view |
+| Localized Category Content | [Category Content](#category-content) | Write and read a localized name |
+| Exact-scope structured fields | [Content Fields](#content-fields) | Write JSON and read it in the same language and platform scope |
+| Image Roles | [Image Roles](#image-roles) | Create and look up a Host-defined role |
+| Image Assignments and default selection | [Image Assignments](#image-assignments-and-the-external-media-workflow) | Assign an existing Media Asset ID, set a default, and read the exact scope |
+| Management pagination | [Management pagination](#management-pagination) | Page through children using typed criteria and the shared page request |
+| Host transaction and clock | [Transactions and the Host clock](#transactions-and-the-host-clock) | Pass a Host clock and roll back the example writes |
 
 ## Factory and facade
 
@@ -849,4 +865,4 @@ The facade's five APIs are deliberately small and explicit:
 | `images()` | `ImageAssignmentApiInterface` | exact-scope `listVisibleForCategory` | assign/order/default/lifecycle, lookup, lists, pagination |
 
 For the exact Commands, DTO constructors, criteria fields, exception hierarchy,
-and complete method signatures, use the [Category Package Reference](../CATEGORY_PACKAGE_REFERENCE.md).
+and complete method signatures, use the [Category Package Reference](../../CATEGORY_PACKAGE_REFERENCE.md).

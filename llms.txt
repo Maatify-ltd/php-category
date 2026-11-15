@@ -1,0 +1,24 @@
+# maatify/php-category
+
+> Framework-neutral PHP contracts and MySQL storage for Category hierarchy,
+> localized content, extensible fields, image roles, and assignments to Host media.
+
+Use the Package Reference as the authority for the supported public runtime
+contract. Use the guide and examples for installation and integration decisions.
+Repository internals, tests, fixtures, contributor instructions, and engineering
+standards are outside the supported consumer surface. Match the documentation
+to the installed version. The README identifies the published RC and explains
+how its dependency contract differs from the current checkout.
+
+## Consumer documentation
+
+- [README](README.md): Package summary, exact installation target, and public API overview.
+- [Package Reference](CATEGORY_PACKAGE_REFERENCE.md): Authoritative behavior and complete public runtime inventory.
+- [Usage Guide](docs/guides/USAGE_GUIDE.md): Host setup, capability map, and worked integration flows.
+- [Examples](examples/): Executable Category workflow using the public API.
+- [Schema notes](schema/README.md): MySQL prerequisites and the package schema.
+
+## Release and support
+
+- [Changelog](CHANGELOG.md): Published changes and current checkout changes.
+- [Security Policy](SECURITY.md): Support state and private reporting.

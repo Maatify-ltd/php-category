@@ -30,7 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - MySQL schema, PDO repositories, shared Persistence transaction runner, and real-engine
   Integration tests for hierarchy, lifecycle, ordering, and visibility.
 - Root Package Reference and standards-aligned Composer/CI configuration.
-- Added the practical [Consumer Usage Guide](docs/USAGE_GUIDE.md) for factory
+- Added the practical [Consumer Usage Guide](docs/guides/USAGE_GUIDE.md) for factory
   setup, the five Domain APIs, exact scopes, lifecycle, pagination, and
   end-to-end Host workflows.
 - Expanded management query APIs with shared Persistence pagination,
