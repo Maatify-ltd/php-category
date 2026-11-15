@@ -78,14 +78,16 @@ schema أو Composer أو CI أو tests أو الوثائق الأخرى لمج�
 `git add .` أو `git add -A`.
 
 تُطبق دورة Phase Stack على العمل ذي التغيير: يبدأ من أحدث `main` موثق، ثم Phase
-Draft، ثم Work Units وComponent PRs إلى الـDraft. تُدار Component PRs وGitHub
-Squash Merge إلى الـPhase Draft وفق Standing Execution Authority المحددة في
-المعايير المحلية بعد اعتماد Scope واجتياز المراجعة والـGates، ولا تحتاج تأكيدًا
-جديدًا من المالك لكل Component. يظل دمج الـPhase Draft إلى `main` قرارًا مستقلًا
-ومحصورًا بمالك المشروع. تبقى عمليات Git المحلية، ومنها `git merge`، خاضعة
-لصلاحياتها الصريحة ولا يُستنتج تصريحها من Standing Execution Authority. ولا
-تعتبر Verification أو Final Review Component ما لم تنتج تغييرًا مستودعيًا
-مستقلًا.
+Draft، ثم Work Units وComponent PRs إلى الـDraft. بعد اعتماد Scope، يدير
+المساعد القائد التنفيذ والمراجعة والـGates ضمن Standing Execution Authority.
+وفق §8.4 من
+[`GITHUB_PHASE_STACK_WORKFLOW_AR.md`](docs/php-engineering-standards/standards/GITHUB_PHASE_STACK_WORKFLOW_AR.md)،
+كل GitHub Merge يحتاج تصريحًا صريحًا من المالك لذلك الدمج، بما فيه Squash Merge
+من Component PR إلى Phase Draft. لا توجد Standing Merge Authority للمساعد
+القائد. يظل دمج الـPhase Draft إلى `main` قرارًا مستقلًا ومحصورًا بمالك
+المشروع. تبقى عمليات Git المحلية، ومنها `git merge`، خاضعة لصلاحياتها الصريحة.
+تُعتبر Verification أو Final Review Component فقط إذا نتج عنها تغيير مستودعي
+مستقل.
 
 لغة التعاون والتقارير العربية افتراضيًا، مع إبقاء أسماء الملفات والأوامر وGit
 SHAs والمصطلحات التقنية بصيغتها الأصلية عند الحاجة للدقة.
@@ -95,14 +97,15 @@ SHAs والمصطلحات التقنية بصيغتها الأصلية عند ا
 في هذه المكتبة، يعمل المساعد القائد بصفته Technical Lead / Architect / Reviewer
 / Coordinator: يعيد بناء الحالة، ويحدد الفجوات والنطاق، ويوجه المنفذ، ويراجع
 التغييرات والأدلة، ويطلب الإصلاحات، ويدير بيانات PR، ويعتمد Child Work Unit
-ويدير Squash Merge إلى Phase Draft. لا ينفذ بنفسه محتوى المستودع بدل المنفذ.
+وينسّق Squash Merge إلى Phase Draft بعد تصريح المالك الصريح لذلك الدمج. تنفيذ
+تغييرات المستودع من مسؤولية المنفذ.
 
 أي Work Unit تنتج تغييرًا مستودعيًا في RC Hardening تتبع المسار:
 
 ```text
 Phase Draft → fresh child branch → Draft Child PR targeting Phase Draft
 → implementation → review/fixes → verification → acceptance
-→ Squash Merge to Phase Draft
+→ explicit Owner authorization for this merge → Squash Merge to Phase Draft
 ```
 
 تستهدف Child PRs الـPhase Draft النشطة التي اعتمدها المالك للمرحلة الحالية.
