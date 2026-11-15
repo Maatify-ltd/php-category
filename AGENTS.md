@@ -4,7 +4,7 @@
 
 هذا المستودع مكتبة PHP مستقلة قابلة لإعادة الاستخدام عبر Composer، ويمثل
 `Category` و`Category Content` و`Content Fields` و`Image Roles` و`Image Assignments`
-كـ **Base Module** قابل للاستخراج.
+ضمن حزمة تُوزَّع من جذر المستودع.
 
 القواعد العامة لا تُعاد كتابتها هنا. مصدر اعتماد المعايير المحلي وسجل تركيبها
 هو [`docs/php-engineering-standards/STANDARDS_MANIFEST.md`](docs/php-engineering-standards/STANDARDS_MANIFEST.md)،
@@ -36,9 +36,9 @@
 ## 3. Profile Activations الخاصة بالمشروع
 
 - `repository-governance` على Scope: `/`.
-- `base-module` على Scope: `/`.
-- `base-module` يرث `composer-package`.
-- لا تُفعّل Profiles الخاصة بـ Slim أو Project-Aware Slim.
+- `composer-package` على Scope: `/`.
+- التفعيلان مباشران دون inheritance. يبيّن الـManifest سبب انطباقهما
+  على الحزمة المستقلة.
 
 يجب أن يظل الـManifest هو المرجع القابل للتدقيق للنسخ والإصدارات والعلاقات؛ لا
 تكرر هذه البيانات أو قائمة المعايير كاملة داخل هذا الملف.
