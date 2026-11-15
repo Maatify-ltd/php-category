@@ -7,9 +7,8 @@ Use the Package Reference as the authority for the supported public runtime
 contract. Use the guide and examples for installation and integration decisions.
 Repository internals, tests, fixtures, contributor instructions, and engineering
 standards are outside the supported consumer surface. Match the documentation
-to the installed version. This artifact targets `v1.0.0-rc.2`. The README
-describes the exact installation command and the publication state recorded
-during preparation.
+to the installed version. The current published release candidate is
+`v1.0.0-rc.2` on Packagist. The README gives the exact installation command.
 
 ## Consumer documentation
 
