@@ -105,7 +105,7 @@ Phase Draft → fresh child branch → Draft Child PR targeting Phase Draft
 → Squash Merge to Phase Draft
 ```
 
+تستهدف Child PRs الـPhase Draft النشطة التي اعتمدها المالك للمرحلة الحالية.
 يُمنع commit مباشر على Phase Draft، أو Child PR إلى `main`، أو دمج Work Unit
-غير مكتملة، أو اعتبار Verification بديلًا عن Acceptance، أو إنشاء umbrella
-Draft جديدة بدل PR #48 القائمة. يظل دمج Phase Draft إلى `main` قرارًا مستقلًا
-للمالك.
+غير مكتملة، أو اعتبار Verification بديلًا عن Acceptance. يظل دمج Phase Draft
+إلى `main` قرارًا مستقلًا للمالك.
