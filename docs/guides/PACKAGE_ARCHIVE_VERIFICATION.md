@@ -53,9 +53,17 @@ The clean project used PHP 8.4.27 and resolved the artifact's legacy
 installed schema and public facade passed on MySQL 8.4.9 and rolled back the
 writes across all five package tables.
 
+**Published Consumer Verification Harness: PASS.** The unmodified harness
+from tag `v1.0.0-rc.1` passed in two separate clean Composer projects, each
+installing the exact release through `dist`. Both runs used PHP 8.4.27 and
+MySQL 8.4.9, verified 131 public types, and left no package tables or triggers
+after cleanup. [Published RC.1 consumer verification in PR #69](https://github.com/Maatify-ltd/php-category/pull/69#issue-6403318206).
+
+**Strict Composer audit: NOT PASS.** `composer audit --abandoned=fail` reported
+zero security advisories and exited with status 1 because the tagged dependency
+resolved to the abandoned `maatify/persistence` v1.4.0.
+
 **Published Artifact Verification: NOT PASS against the current pinned
 standard.** The RC.1 archive omits the required root `llms.txt` and
-`examples/`. Its usage guide is at the legacy `docs/USAGE_GUIDE.md` path.
-The smoke establishes installability and tested runtime behavior. Full
-published Consumer Verification Harness evidence remains unverified for this
-version.
+`examples/`. Its usage guide is at the legacy `docs/USAGE_GUIDE.md` path
+instead of `docs/guides/USAGE_GUIDE.md`.
