@@ -42,6 +42,60 @@ use Throwable;
 
 final class CategoryPdoIntegrationTest extends CategoryMySqlIntegrationTestCase
 {
+    public function testSameSecondNoOpCategoryStatusSucceeds(): void
+    {
+        $clock = new FixedCategoryClock();
+        $pdo = $this->connection();
+        $categories = $this->service($pdo, $clock);
+        $id = $categories->create(new CreateCategoryCommand('status-no-op'));
+        $command = new UpdateCategoryStatusCommand($id, CategoryStatusEnum::ACTIVE);
+
+        $categories->updateStatus($command);
+        $categories->updateStatus($command);
+
+        $stored = (new PdoCategoryQueryReader($pdo, $clock))->findById($id);
+        self::assertNotNull($stored);
+        self::assertSame(CategoryStatusEnum::ACTIVE, $stored->status);
+        self::assertSame($clock->now()->format('Y-m-d H:i:s'), $stored->updatedAt->format('Y-m-d H:i:s'));
+    }
+
+    public function testSameSecondNoOpCategoryMoveSucceeds(): void
+    {
+        $clock = new FixedCategoryClock();
+        $pdo = $this->connection();
+        $categories = $this->service($pdo, $clock);
+        $parentId = $categories->create(new CreateCategoryCommand('move-parent'));
+        $childId = $categories->create(new CreateCategoryCommand('move-child', $parentId));
+        $command = new MoveCategoryCommand($childId, $parentId);
+
+        $categories->move($command);
+        $categories->move($command);
+
+        $stored = (new PdoCategoryQueryReader($pdo, $clock))->findById($childId);
+        self::assertNotNull($stored);
+        self::assertSame($parentId, $stored->parentId);
+        self::assertSame(1, $stored->displayOrder);
+    }
+
+    public function testSameSecondNoOpContentUpdatesSucceed(): void
+    {
+        $clock = new FixedCategoryClock();
+        $pdo = $this->connection();
+        $categoryId = $this->service($pdo, $clock)->create(new CreateCategoryCommand('content-no-op'));
+        $contents = $this->contentService($pdo, $clock);
+        $id = $contents->create(new CreateCategoryContentCommand($categoryId, null, 'Same name', 'Same description'));
+
+        $contents->update(new UpdateCategoryContentCommand($id, 'Same name', 'Same description'));
+        $contents->updateName(new UpdateCategoryContentNameCommand($id, 'Same name'));
+        $contents->updateDescription(new UpdateCategoryContentDescriptionCommand($id, 'Same description'));
+
+        $stored = (new PdoCategoryContentQueryReader($pdo, $clock))->findContentById($id);
+        self::assertNotNull($stored);
+        self::assertSame('Same name', $stored->name);
+        self::assertSame('Same description', $stored->description);
+        self::assertSame($clock->now()->format('Y-m-d H:i:s'), $stored->updatedAt->format('Y-m-d H:i:s'));
+    }
+
     public function testHostClockTimezoneIsPreservedAcrossPersistenceAndAllHydrationAdapters(): void
     {
         $connection = $this->connection();
