@@ -75,7 +75,7 @@
     "analyse": "phpstan analyse src tests --level=max --memory-limit=256M",
     "check:style": [
       "php-cs-fixer check --config=.php-cs-fixer.dist.php",
-      "@php scripts/ci/check-per-cs-31-delta.php .php-cs-fixer.dist.php src tests scripts/ci"
+      "@php scripts/ci/check-per-cs-31-delta.php .php-cs-fixer.dist.php src tests scripts/ci examples"
     ],
     "format": "php-cs-fixer fix --config=.php-cs-fixer.dist.php",
     "test": "phpunit",
