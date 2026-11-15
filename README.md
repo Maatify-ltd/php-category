@@ -14,7 +14,7 @@
 [![Version](https://img.shields.io/badge/Version-v1.0.0--rc.1-blue)](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.1)
 [![PHP](https://img.shields.io/badge/PHP-%5E8.4-8892BF)](composer.json)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
-[![PHPStan](https://img.shields.io/badge/PHPStan-level%20max-2F9E44.svg)](phpstan.neon)
+[![PHPStan](https://img.shields.io/badge/PHPStan-level%20max-2F9E44.svg)](CONTRIBUTING.md#local-verification)
 
 **Ecosystem / Adoption**
 

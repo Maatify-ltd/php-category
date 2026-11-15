@@ -26,6 +26,20 @@
     "source": "https://github.com/Maatify-ltd/php-category",
     "security": "https://github.com/Maatify-ltd/php-category/security/policy"
   },
+  "archive": {
+    "exclude": [
+      "/.env",
+      "/.env.*",
+      "/.idea",
+      "/.phpunit.cache",
+      "/.phpunit.result.cache",
+      "/.php-cs-fixer.cache",
+      "/composer.lock",
+      "/env.testing",
+      "/vendor",
+      ".DS_Store"
+    ]
+  },
   "autoload": {
     "psr-4": {
       "Maatify\\Category\\": "src/Category/",
