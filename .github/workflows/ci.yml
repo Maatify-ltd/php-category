@@ -80,6 +80,13 @@ jobs:
       - name: Run public example on MySQL
         run: bash scripts/ci/with-category-mysql.sh --install-schema php examples/category-workflow.php
 
+      - name: Verify RC.1 scope migration on MySQL 8.0.16
+        if: matrix.php == '8.4'
+        env:
+          CATEGORY_MYSQL_VERSION: "8.0.16"
+          CATEGORY_MIGRATION_EXPECTED_MYSQL_VERSION: "8.0.16"
+        run: bash scripts/ci/with-category-mysql.sh bash scripts/ci/check-scope-equality-migration.sh
+
       - name: MySQL Integration tests
         run: bash scripts/ci/with-category-mysql.sh composer test:integration
 

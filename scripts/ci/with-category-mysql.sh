@@ -47,6 +47,7 @@ if [[ ! "$endpoint" =~ ^127\.0\.0\.1:([0-9]+)$ ]]; then
 fi
 
 export CATEGORY_TEST_DSN="mysql:host=127.0.0.1;port=${BASH_REMATCH[1]};dbname=category_verification;charset=utf8mb4"
+export CATEGORY_TEST_COMPOSE_PROJECT="$project"
 export CATEGORY_TEST_DB_USER=category_test
 export CATEGORY_TEST_DB_PASSWORD="$CATEGORY_MYSQL_PASSWORD"
 export CATEGORY_STANDALONE_DSN="$CATEGORY_TEST_DSN"

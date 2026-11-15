@@ -42,6 +42,8 @@ composer test:unit
 bash scripts/ci/check-package-archives.sh HEAD
 vendor/bin/phpstan analyse examples --level=max --memory-limit=256M
 bash scripts/ci/with-category-mysql.sh --install-schema php examples/category-workflow.php
+CATEGORY_MYSQL_VERSION=8.0.16 CATEGORY_MIGRATION_EXPECTED_MYSQL_VERSION=8.0.16 \
+    bash scripts/ci/with-category-mysql.sh bash scripts/ci/check-scope-equality-migration.sh
 bash scripts/ci/with-category-mysql.sh composer test:integration
 bash scripts/ci/with-category-mysql.sh composer test
 ```
@@ -70,6 +72,12 @@ default is MySQL 8.0.16. Use `CATEGORY_MYSQL_VERSION` and
 needed. Integration tests and the consumer install the schema from their own
 package boundaries. The public example receives the installed schema through
 `--install-schema`.
+
+The migration check uses the RC.1 schema at `57d160f` from
+[`tests/Fixtures/Migration/`](tests/Fixtures/Migration/). It verifies conflict
+refusal before any DDL, data retention, partial migration recovery and schema
+parity with a fresh install. CI requires the actual MySQL 8.0.16 server for this
+check.
 
 Run the external harness twice, as in CI. Each invocation installs the current
 checkout commit through Composer in a fresh consumer root. It checks production
