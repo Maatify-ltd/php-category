@@ -74,7 +74,7 @@ package boundaries. The public example receives the installed schema through
 `--install-schema`.
 
 The migration check uses the RC.1 schema at `57d160f` from
-[`tests/Fixtures/Migration/`](tests/Fixtures/Migration/). It verifies conflict
+`tests/Fixtures/Migration/` in the checkout. It verifies conflict
 refusal before any DDL, data retention, partial migration recovery and schema
 parity with a fresh install. CI requires the actual MySQL 8.0.16 server for this
 check.
