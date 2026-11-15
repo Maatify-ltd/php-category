@@ -18,6 +18,27 @@ each passing comparison and exits nonzero if a file is missing, additional,
 or different. Record the SHA, both command results, and the CI run alongside
 release qualification evidence.
 
+## Prepared RC.2 verification
+
+From the checkout, run the structural comparison, release presentation checks,
+and clean Composer installation probe for the exact candidate:
+
+```bash
+candidate=$(git rev-parse HEAD)
+bash scripts/ci/check-package-archives.sh "$candidate" --release-candidate 1.0.0-rc.2
+```
+
+CI runs the same check with `--verify-prepared`. This mode reads the undated
+candidate version from the specified commit's CHANGELOG and runs the structural
+comparison alone when no target is present.
+
+The probe exposes the candidate's local Category TAR through synthetic Composer
+metadata under the exact target version. It resolves the pinned Persistence RC
+from its actual published distribution and verifies the installed identities.
+Record the candidate SHA and this result with the PR evidence. After merge,
+record the checks separately on the exact resulting `main` SHA for release
+qualification.
+
 For release qualification, also review README identity and installation,
 CHANGELOG allocation and its Unreleased boundary, SECURITY lifecycle and
 support statements, and Composer requirements against the intended exact
