@@ -22,7 +22,7 @@ reference.
 
 ## Local verification
 
-Work from a repository checkout with PHP, Composer, Git, Bash, jq, and Docker
+Work from a repository checkout with PHP, Composer 2.11.2, Git, Bash, jq, and Docker
 with Compose v2 available. Run
 these checks from the repository root:
 

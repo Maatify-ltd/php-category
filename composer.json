@@ -1,6 +1,6 @@
 {
   "name": "maatify/php-category",
-  "description": "Framework-neutral hierarchical category and content domain with PDO persistence.",
+  "description": "Framework-agnostic PHP library for hierarchical category management, localized content, custom fields, image roles and media assignments, with MySQL/PDO persistence and typed domain APIs.",
   "keywords": [
     "category",
     "taxonomy",
