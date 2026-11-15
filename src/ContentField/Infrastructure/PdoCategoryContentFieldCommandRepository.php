@@ -99,7 +99,19 @@ final readonly class PdoCategoryContentFieldCommandRepository implements Categor
             'id' => $command->fieldId,
         ]);
 
-        return $statement->rowCount() > 0;
+        if ($statement->rowCount() > 0) {
+            return true;
+        }
+
+        // Use a current read because a no-op UPDATE can match a row newer
+        // than the Host transaction's consistent-read snapshot.
+        $exists = $this->pdo->prepare(
+            'SELECT 1 FROM `' . self::FIELD_TABLE . '` '
+            . 'WHERE `id` = :id AND `deleted_at` IS NULL FOR UPDATE',
+        );
+        $exists->execute(['id' => $command->fieldId]);
+
+        return $exists->fetchColumn() !== false;
     }
 
     public function updateDisplayOrder(

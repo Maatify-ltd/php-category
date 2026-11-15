@@ -83,7 +83,7 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
             'id' => $command->categoryId,
         ]);
 
-        return $statement->rowCount() > 0;
+        return $statement->rowCount() > 0 || $this->hasNonDeletedCategory($command->categoryId);
     }
 
     public function softDelete(SoftDeleteCategoryCommand $command, DateTimeImmutable $occurredAt): bool
@@ -131,7 +131,7 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
             'id' => $command->categoryId,
         ]);
 
-        return $statement->rowCount() > 0;
+        return $statement->rowCount() > 0 || $this->hasNonDeletedCategory($command->categoryId);
     }
 
     public function updateDisplayOrder(
@@ -153,6 +153,19 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
         );
 
         return $moved;
+    }
+
+    private function hasNonDeletedCategory(int $categoryId): bool
+    {
+        // MySQL reports changed rows. A locking read distinguishes a no-op
+        // from a missing row without relying on the Host transaction snapshot.
+        $statement = $this->pdo->prepare(
+            'SELECT 1 FROM `' . self::CATEGORY_TABLE . '` '
+            . 'WHERE `id` = :id AND `deleted_at` IS NULL FOR UPDATE',
+        );
+        $statement->execute(['id' => $categoryId]);
+
+        return $statement->fetchColumn() !== false;
     }
 
     private function activeParentId(int $categoryId): int|false|null
