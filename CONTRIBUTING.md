@@ -29,10 +29,22 @@ composer validate --strict
 composer dump-autoload --optimize --strict-psr
 composer check-platform-reqs
 composer audit --no-interaction --abandoned=fail
+composer check:style
 composer analyse
 composer test:unit
 composer test
 ```
+
+`composer check:style` checks package-owned PHP against PHP-FIG PER-CS 3.1
+using the PHP CS Fixer 3.0 rule set and a verifier for the 3.1 changes.
+`composer format` applies the fixer rules. Address any remaining 3.1 findings
+reported by the check, then rerun it. If the checker cannot classify a clear
+top-level comment that deliberately falls into the next case, submit a reviewed
+entry in `scripts/ci/per-cs-31-fallthrough-approved.json`. Use `file` for the
+repository-relative PHP path, `line` for the case line, `case` for the exact case
+label through its colon, and `comment` for the exact comment text without its
+delimiters. Normalize a multiline comment to a single line. An entry applies only
+at that location and cannot replace termination of the final case.
 
 The CI standalone-consumer check creates a clean temporary Composer project,
 installs this package from its VCS source, verifies optimized PSR-4 loading and

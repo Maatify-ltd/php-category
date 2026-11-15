@@ -413,14 +413,11 @@ final class CategorySchemaIntegrationTest extends TestCase
             throw new RuntimeException('Unable to read the canonical Category schema.');
         }
 
-        $schema = preg_replace(
-            [
-                '/^[ \t]*--[^\r\n]*(?:\r\n|\n|$)/m',
-                '/^[ \t]*DELIMITER[ \t]+\S+[ \t]*$/mi',
-            ],
-            '',
-            $schema,
-        );
+        $patterns = [
+            '/^[ \t]*--[^\r\n]*(?:\r\n|\n|$)/m',
+            '/^[ \t]*DELIMITER[ \t]+\S+[ \t]*$/mi',
+        ];
+        $schema = preg_replace($patterns, '', $schema);
 
         if ($schema === null) {
             throw new RuntimeException('Unable to normalize the canonical Category schema.');

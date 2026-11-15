@@ -8,8 +8,7 @@ use Maatify\Category\Exception\CategoryExceptionInterface;
 use Maatify\Exceptions\Exception\Conflict\GenericConflictMaatifyException;
 use Throwable;
 
-final class CategoryCodeAlreadyExistsException extends GenericConflictMaatifyException
-    implements CategoryExceptionInterface
+final class CategoryCodeAlreadyExistsException extends GenericConflictMaatifyException implements CategoryExceptionInterface
 {
     public static function withCode(string $code, ?Throwable $previous = null): self
     {

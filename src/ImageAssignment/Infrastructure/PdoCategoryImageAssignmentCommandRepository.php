@@ -289,8 +289,7 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         ?string $languageCode,
         ?string $platform,
         ?int $roleId,
-    ): string
-    {
+    ): string {
         $language = $languageCode === null
             ? 'N:'
             : 'L' . mb_strlen($languageCode) . ':' . $languageCode;

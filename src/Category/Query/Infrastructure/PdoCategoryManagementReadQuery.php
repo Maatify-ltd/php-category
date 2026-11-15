@@ -178,7 +178,7 @@ final readonly class PdoCategoryManagementReadQuery extends PdoReadQuerySupport 
             $descriptor,
             $pageRequest,
             $this->paginationConfig(),
-            fn (array $row): CategoryDTO => $this->hydrateCategory($row),
+            fn(array $row): CategoryDTO => $this->hydrateCategory($row),
         );
     }
 

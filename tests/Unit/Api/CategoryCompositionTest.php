@@ -66,7 +66,7 @@ final class CategoryCompositionTest extends TestCase
         self::assertSame($images, $facade->images());
 
         $methods = array_map(
-            static fn (ReflectionMethod $method): string => $method->getName(),
+            static fn(ReflectionMethod $method): string => $method->getName(),
             (new ReflectionClass(CategoryFacadeInterface::class))->getMethods(),
         );
         self::assertSame(['categories', 'contents', 'contentFields', 'imageRoles', 'images'], $methods);
@@ -231,7 +231,7 @@ final class CategoryCompositionTest extends TestCase
         $parameters = $method->getParameters();
 
         self::assertSame(['pdo', 'clock'], array_map(
-            static fn (\ReflectionParameter $parameter): string => $parameter->getName(),
+            static fn(\ReflectionParameter $parameter): string => $parameter->getName(),
             $parameters,
         ));
         self::assertInstanceOf(ReflectionNamedType::class, $parameters[0]->getType());
@@ -261,7 +261,7 @@ final class CategoryCompositionTest extends TestCase
     private function methodNames(string $interface): array
     {
         return array_map(
-            static fn (ReflectionMethod $method): string => $method->getName(),
+            static fn(ReflectionMethod $method): string => $method->getName(),
             (new ReflectionClass($interface))->getMethods(),
         );
     }

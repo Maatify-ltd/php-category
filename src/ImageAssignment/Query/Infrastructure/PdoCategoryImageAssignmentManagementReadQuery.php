@@ -156,7 +156,7 @@ final readonly class PdoCategoryImageAssignmentManagementReadQuery extends PdoRe
                 minPerPage: 1,
                 maxPerPage: 100,
             ),
-            fn (array $row): CategoryImageAssignmentDTO => $this->hydrateAssignment($row),
+            fn(array $row): CategoryImageAssignmentDTO => $this->hydrateAssignment($row),
         );
     }
 

@@ -130,7 +130,7 @@ final readonly class PdoCategoryContentFieldManagementReadQuery extends PdoReadQ
                 minPerPage: 1,
                 maxPerPage: 100,
             ),
-            fn (array $row): CategoryContentFieldDTO => $this->hydrateField($row),
+            fn(array $row): CategoryContentFieldDTO => $this->hydrateField($row),
         );
     }
 

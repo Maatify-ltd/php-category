@@ -7,8 +7,7 @@ namespace Maatify\Category\ContentField\Exception;
 use Maatify\Category\Exception\CategoryExceptionInterface;
 use Maatify\Exceptions\Exception\NotFound\ResourceNotFoundMaatifyException;
 
-final class CategoryContentFieldNotFoundException extends ResourceNotFoundMaatifyException
-    implements CategoryExceptionInterface
+final class CategoryContentFieldNotFoundException extends ResourceNotFoundMaatifyException implements CategoryExceptionInterface
 {
     public static function withId(int $fieldId): self
     {
