@@ -24,10 +24,10 @@ use Maatify\Category\Content\Query\Contract\CategoryContentReadQueryInterface;
 use Maatify\Category\Exception\CategoryNotFoundException;
 use Maatify\Category\Query\Contract\CategoryQueryReaderInterface;
 use Maatify\Category\Query\DTO\CategoryVisibleListCriteriaDTO;
-use Maatify\Persistence\Pdo\Transaction\TransactionRunnerInterface;
+use Maatify\PhpPersistence\Transaction\Repository\TransactionRunnerInterface;
 use Maatify\SharedCommon\Contracts\ClockInterface;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 
 /** Owns Category Content lifecycle orchestration only. */
 final readonly class ContentService implements ContentServiceInterface
@@ -42,6 +42,7 @@ final readonly class ContentService implements ContentServiceInterface
         private ClockInterface $clock,
     ) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryContentCommand $command): int
     {
         return $this->transaction->run(function () use ($command): int {
@@ -51,6 +52,7 @@ final readonly class ContentService implements ContentServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function update(UpdateCategoryContentCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -62,6 +64,7 @@ final readonly class ContentService implements ContentServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function updateName(UpdateCategoryContentNameCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -77,6 +80,7 @@ final readonly class ContentService implements ContentServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function updateDescription(UpdateCategoryContentDescriptionCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -92,6 +96,7 @@ final readonly class ContentService implements ContentServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function softDelete(SoftDeleteCategoryContentCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -103,6 +108,7 @@ final readonly class ContentService implements ContentServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function restore(RestoreCategoryContentCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -114,6 +120,7 @@ final readonly class ContentService implements ContentServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function listVisibleForCategory(
         int $categoryId,
         CategoryVisibleListCriteriaDTO $criteria = new CategoryVisibleListCriteriaDTO(),
@@ -123,6 +130,7 @@ final readonly class ContentService implements ContentServiceInterface
         return $this->visibleReader->listVisibleContents($id, $criteria);
     }
 
+    /** {@inheritDoc} */
     public function getByIdForManagement(
         int $contentId,
         CategoryDeletedStateEnum $deletedState = CategoryDeletedStateEnum::NON_DELETED,
@@ -137,15 +145,17 @@ final readonly class ContentService implements ContentServiceInterface
         return $content;
     }
 
+    /** {@inheritDoc} */
     public function listForManagement(CategoryContentListCriteriaDTO $criteria): CategoryContentCollectionDTO
     {
         return $this->managementReader->listContents($criteria);
     }
 
+    /** {@inheritDoc} */
     public function paginateForManagement(
         CategoryContentListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         return $this->managementReader->paginateContents($criteria, $pageRequest);
     }
 

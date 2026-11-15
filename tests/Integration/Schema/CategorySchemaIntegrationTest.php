@@ -248,11 +248,11 @@ final class CategorySchemaIntegrationTest extends TestCase
 
         $this->insertImageAssignment(2, 1, 101, null, null, null, true);
         $activeIdentityStatement = $this->connection()->query(
-            'SELECT `default_scope_identity` FROM `' . self::IMAGE_ASSIGNMENT_TABLE . '` WHERE `id` = 2',
+            'SELECT `default_scope_identity` = `ordering_scope` AS `same_scope` '
+            . 'FROM `' . self::IMAGE_ASSIGNMENT_TABLE . '` WHERE `id` = 2',
         );
         self::assertNotFalse($activeIdentityStatement);
-        $activeIdentity = $activeIdentityStatement->fetchColumn();
-        self::assertSame('C1|N:|N:|N:', $activeIdentity);
+        self::assertSame(1, $activeIdentityStatement->fetchColumn());
 
         try {
             $this->connection()->exec(
@@ -413,14 +413,11 @@ final class CategorySchemaIntegrationTest extends TestCase
             throw new RuntimeException('Unable to read the canonical Category schema.');
         }
 
-        $schema = preg_replace(
-            [
-                '/^[ \t]*--[^\r\n]*(?:\r\n|\n|$)/m',
-                '/^[ \t]*DELIMITER[ \t]+\S+[ \t]*$/mi',
-            ],
-            '',
-            $schema,
-        );
+        $patterns = [
+            '/^[ \t]*--[^\r\n]*(?:\r\n|\n|$)/m',
+            '/^[ \t]*DELIMITER[ \t]+\S+[ \t]*$/mi',
+        ];
+        $schema = preg_replace($patterns, '', $schema);
 
         if ($schema === null) {
             throw new RuntimeException('Unable to normalize the canonical Category schema.');

@@ -1,92 +1,85 @@
-# Maatify/php-category Standards Manifest
+# Maatify Engineering Standards Adoption Manifest
 
-This file is the local resolver record for the repository's selective pinned
-adoption. It records composition and provenance; the underlying standards and
-profiles remain the source of truth for their own rules.
+## Adoption Record
 
-## Adoption metadata
-
-- **Upstream repository:** `Maatify/php-engineering-standards`
-- **Adoption commit:** `2fc57f9320f8a7f7147fb20abbcfa311fdf40c28`
-- **Adoption date:** `2026-09-14` (source commit timestamp `2026-09-13T13:33:41+03:00`)
-- **Floating upstream `main`:** not used
-- **Adoption model:** Selective Pinned Adoption
+- **Overall Resolution Status:** `VALID`
+- **Adoption Model:** Selective pinned adoption
+- **Upstream Repository:** `https://github.com/Maatify-ltd/php-engineering-standards.git`
+- **Adoption Commit:** `7f73468922d4e58b5d86cd9511e1081c28acf420`
+- **Adoption Date:** `2026-11-15`
+- **Latest Applicability Re-evaluation:** `2026-11-15` against the exact Adoption Commit.
+- **Additional Standards:** None
+- **Explicit Exceptions/Overrides:** None
 
 ## Pinned Adoption Control Set
 
-These files are required to resolve and audit the active adoption:
+All files below are copied from the exact Adoption Commit recorded above.
 
-- [`standards/STANDARDS_ADOPTION_STANDARD_AR.md`](standards/STANDARDS_ADOPTION_STANDARD_AR.md)
-- [`standards/profiles/REPOSITORY_GOVERNANCE_PROFILE.md`](standards/profiles/REPOSITORY_GOVERNANCE_PROFILE.md)
-- [`standards/profiles/BASE_MODULE_PROFILE.md`](standards/profiles/BASE_MODULE_PROFILE.md)
-- [`standards/profiles/COMPOSER_PACKAGE_PROFILE.md`](standards/profiles/COMPOSER_PACKAGE_PROFILE.md)
+- [Standards Adoption Standard](standards/STANDARDS_ADOPTION_STANDARD_AR.md) — `std-standards-adoption` `5.0.1`
+- [Composer Package Profile](standards/profiles/COMPOSER_PACKAGE_PROFILE.md) — `composer-package` `4.0.0`
+- [Repository Governance Profile](standards/profiles/REPOSITORY_GOVERNANCE_PROFILE.md) — `repository-governance` `3.0.0`
 
-All four files are copied from the adoption commit above. No unused profile
-manifest is part of this control set.
+## Pinned Operational Assets Set
 
-## Active Profile Activations
-
-| Profile | Profile version | Scope | Direct relationship |
-|---|---:|---|---|
-| [`repository-governance`](standards/profiles/REPOSITORY_GOVERNANCE_PROFILE.md) | `1.0.0` | `/` | no inheritance |
-| [`base-module`](standards/profiles/BASE_MODULE_PROFILE.md) | `1.0.0` | `/` | extends `composer-package` |
-
-The inherited `composer-package` profile is pinned in the Control Set and is
-resolved for the `base-module` activation. Slim and Project-Aware Slim profiles
-are not active and are not copied.
-
-## Final Resolved Applicable Standards Set
-
-The set below is the final result of the two-stage resolution required by the
-pinned Adoption Standard: structural/transitive resolution produced the
-candidate references, then canonical applicability was evaluated separately
-for each active Profile/Scope against this repository's artifact facts. All
-eight candidates apply; no non-applicable candidate is recorded here.
-
-| Standard | Local path | Source Standard ID / Version | Resolved through |
+| Kind | Upstream Path | Local Path | SHA-256 |
 |---|---|---|---|
-| AI Collaboration Workflow | [`standards/ai/AI_COLLABORATION_WORKFLOW_AR.md`](standards/ai/AI_COLLABORATION_WORKFLOW_AR.md) | `std-ai-collaboration-workflow` / `6.0.0` | `repository-governance` |
-| GitHub Phase Stack Workflow | [`standards/GITHUB_PHASE_STACK_WORKFLOW_AR.md`](standards/GITHUB_PHASE_STACK_WORKFLOW_AR.md) | `std-github-phase-stack-workflow` / `2.2.0` | `repository-governance` |
-| Module Building Standard | [`standards/modules/MODULE_BUILDING_STANDARD.md`](standards/modules/MODULE_BUILDING_STANDARD.md) | `std-module-building` / `1.0.0` | `base-module` |
-| Package Building Standard | [`standards/packages/PACKAGE_BUILDING_STANDARD.md`](standards/packages/PACKAGE_BUILDING_STANDARD.md) | `std-package-building` / `1.3.0` | inherited `composer-package` |
-| Composer Package Standard | [`standards/packages/COMPOSER_PACKAGE_STANDARD.md`](standards/packages/COMPOSER_PACKAGE_STANDARD.md) | `std-composer-package` / `1.2.0` | inherited `composer-package` |
-| CI Workflow Standard | [`standards/packages/CI_WORKFLOW_STANDARD.md`](standards/packages/CI_WORKFLOW_STANDARD.md) | `std-ci-workflow` / `1.1.0` | inherited `composer-package` |
-| Library Presentation Standard | [`standards/packages/LIBRARY_PRESENTATION_STANDARD.md`](standards/packages/LIBRARY_PRESENTATION_STANDARD.md) | `std-library-presentation` / `1.0.1` | inherited `composer-package` |
-| Testing Standard | [`standards/testing/TESTING_STANDARD.md`](standards/testing/TESTING_STANDARD.md) | `std-testing` / `1.1.0` | inherited `composer-package` |
+| `skill` | `.agents/skills/maatify-standards-context-lifecycle/SKILL.md` | `.agents/skills/maatify-standards-context-lifecycle/SKILL.md` | `e86791d1d0e865610e4d77a557b3820624446ee0272cf03a49eee16aabba204b` |
+| `skill` | `.agents/skills/maatify-strict-release-acceptance/SKILL.md` | `.agents/skills/maatify-strict-release-acceptance/SKILL.md` | `95ed8a461577bf8a55ce421111cf074edff5d7f0c98fa8893371366099a2839d` |
+| `deterministic-helper` | `.agents/helpers/maatify-governance-context.php` | `.agents/helpers/maatify-governance-context.php` | `25852945a6d9fac44c8cfc55039b5a27e3aeb289e964c3e092b490e359ee5d59` |
 
-### Auditable final profile resolution
+## Active Profiles
 
-```text
-repository-governance (/)
-└── AI Collaboration Workflow 6.0.0
-└── GitHub Phase Stack Workflow 2.2.0
+### Activation 1: `composer-package`
 
-base-module (/)
-├── Module Building Standard 1.0.0
-└── composer-package (inherited)
-    ├── Package Building Standard 1.3.0
-    ├── Composer Package Standard 1.2.0
-    ├── CI Workflow Standard 1.1.0
-    ├── Library Presentation Standard 1.0.1
-    └── Testing Standard 1.1.0
-```
+- **Profile Version:** `4.0.0`
+- **Scope:** `/`
+- **Resolution Status:** `VALID`
+- **Exception State:** `NONE`
+- **Activation:** [Composer Package Profile](standards/profiles/COMPOSER_PACKAGE_PROFILE.md)
 
-`STANDARDS_ADOPTION_STANDARD_AR.md` is part of the Control Set and is not an
-engineering standard resolved by either active Profile.
+### Activation 2: `repository-governance`
 
-## Additional Standards and exceptions
+- **Profile Version:** `3.0.0`
+- **Scope:** `/`
+- **Resolution Status:** `VALID`
+- **Exception State:** `NONE`
+- **Activation:** [Repository Governance Profile](standards/profiles/REPOSITORY_GOVERNANCE_PROFILE.md)
 
-- **Explicit Additional Standards:** None.
-- **Explicit Exceptions/Overrides:** None.
+## Resolved Applicable Standards Set
 
-## Integrity and closure requirements
+The table records the final Stage 2 result for both activations.
 
-- Every retained pinned standard and profile is byte-for-byte equal to its
-  upstream blob at the adoption commit.
-- Relative links between retained files remain valid. Cross-references to
-  non-retained upstream standards are checked against the exact adoption commit
-  and do not add those standards to the local Adoption Set.
-- Unused profiles, unused module standards, `docs/audits/`, and `docs/decisions/`
-  are not copied into this repository's adoption set.
-- Normal engineering tasks resolve from this manifest and the local pinned
-  files; they do not require an upstream network request.
+| Standard ID | Version | Local path | Resolution provenance |
+|---|---:|---|---|
+| `std-package-building` | `4.0.0` | [PACKAGE_BUILDING_STANDARD.md](standards/packages/PACKAGE_BUILDING_STANDARD.md) | Direct requirement of composer-package. Category owns a reusable framework-neutral PDO/MySQL package. |
+| `std-composer-package` | `7.0.0` | [COMPOSER_PACKAGE_STANDARD.md](standards/packages/COMPOSER_PACKAGE_STANDARD.md) | Direct requirement of composer-package. The Composer manifest is at the standalone package root. |
+| `std-ci-workflow` | `7.0.0` | [CI_WORKFLOW_STANDARD.md](standards/packages/CI_WORKFLOW_STANDARD.md) | Direct requirement of composer-package. CI verifies the package, including its database behavior. |
+| `std-library-presentation` | `6.0.0` | [LIBRARY_PRESENTATION_STANDARD.md](standards/packages/LIBRARY_PRESENTATION_STANDARD.md) | Direct requirement of composer-package. Category owns its consumer documentation and distribution presentation. |
+| `std-testing` | `3.0.0` | [TESTING_STANDARD.md](standards/testing/TESTING_STANDARD.md) | Direct requirement of composer-package. Category owns executable runtime contracts. |
+| `std-php-source-documentation` | `1.0.0` | [PHP_SOURCE_DOCUMENTATION_STANDARD.md](standards/php/PHP_SOURCE_DOCUMENTATION_STANDARD.md) | Direct requirement of composer-package. Category owns maintained PHP source. |
+| `std-php-coding-style` | `1.0.2` | [PHP_CODING_STYLE_STANDARD.md](standards/php/PHP_CODING_STYLE_STANDARD.md) | Direct requirement of composer-package. Category owns maintained PHP source. |
+| `std-documentation-lifecycle` | `3.1.1` | [DOCUMENTATION_LIFECYCLE_STANDARD_AR.md](standards/governance/DOCUMENTATION_LIFECYCLE_STANDARD_AR.md) | Direct requirement of both profiles. Category maintains consumer documents and repository governance records. |
+| `std-decision-governance` | `1.0.0` | [DECISION_GOVERNANCE_STANDARD_AR.md](standards/governance/DECISION_GOVERNANCE_STANDARD_AR.md) | Direct requirement of repository-governance. Category governs durable package decisions. |
+| `std-ai-collaboration-workflow` | `13.0.0` | [AI_COLLABORATION_WORKFLOW_AR.md](standards/ai/AI_COLLABORATION_WORKFLOW_AR.md) | Direct requirement of repository-governance. Category follows the Maatify engineering workflow. |
+| `std-github-phase-stack-workflow` | `5.0.0` | [GITHUB_PHASE_STACK_WORKFLOW_AR.md](standards/GITHUB_PHASE_STACK_WORKFLOW_AR.md) | Direct requirement of repository-governance. Category follows the Maatify GitHub phase workflow. |
+
+## Resolution Summary
+
+The root Composer manifest defines and distributes the standalone
+`maatify/php-category` library. The same root owns its runtime, MySQL schema,
+tests, CI, consumer documentation, and governance records. An in-Host Base
+Module has a separate artifact root inside a Host repository. The legacy
+`base-module` activation is retired because this repository is the package
+itself. The `composer-package` and `repository-governance` profiles are now
+directly active at `/` and neither extends another profile.
+
+Stage 1 resolves nine direct candidates from `composer-package` and four from
+`repository-governance`. Both reference Documentation Lifecycle, giving
+12 unique candidates. Stage 2 excludes External Provider Verification because
+Category accepts Host-owned media identifiers as scalar values and owns no
+provider-specific integration contract. The 11 applicable standards appear in
+the table above. Category owns PDO/MySQL persistence and its schema, so the
+corresponding persistence and verification clauses apply.
+
+This upgrade replaces `d3dd98b8d82c8bcdd65614fe4ed80853bdcdcc73` with the
+approved Adoption Commit recorded above.

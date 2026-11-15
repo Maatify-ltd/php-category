@@ -8,7 +8,11 @@ use ArrayIterator;
 use Countable;
 use IteratorAggregate;
 
-/** @implements IteratorAggregate<int, CategoryImageAssignmentDTO> */
+/**
+ * Ordered assignment results from a visible or management query.
+ *
+ * @implements IteratorAggregate<int, CategoryImageAssignmentDTO>
+ */
 final readonly class CategoryImageAssignmentCollectionDTO implements IteratorAggregate, Countable, \JsonSerializable
 {
     /** @param list<CategoryImageAssignmentDTO> $items */

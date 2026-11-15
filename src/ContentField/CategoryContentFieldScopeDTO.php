@@ -9,6 +9,7 @@ use Maatify\Category\Common\Exception\CategoryInvalidArgumentException;
 /** Exact language/platform scope for a Category Content Field. */
 final readonly class CategoryContentFieldScopeDTO implements \JsonSerializable
 {
+    /** Builds an exact scope from bounded nullable language and platform values. A null dimension matches only null. */
     public function __construct(
         public ?string $languageCode = null,
         public ?string $platform = null,

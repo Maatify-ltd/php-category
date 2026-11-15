@@ -8,8 +8,8 @@ use Maatify\Category\Exception\CategoryExceptionInterface;
 use Maatify\Exceptions\Exception\Conflict\GenericConflictMaatifyException;
 use Throwable;
 
-final class CategoryCodeAlreadyExistsException extends GenericConflictMaatifyException
-    implements CategoryExceptionInterface
+/** The code is reserved by an existing Category, including a deleted Category. */
+final class CategoryCodeAlreadyExistsException extends GenericConflictMaatifyException implements CategoryExceptionInterface
 {
     public static function withCode(string $code, ?Throwable $previous = null): self
     {

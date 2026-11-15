@@ -13,6 +13,7 @@ final readonly class MoveCategoryCommand implements \JsonSerializable
     public int $categoryId;
     public ?int $parentId;
 
+    /** A null parent selects the root. A Category identity cannot also be the proposed parent. */
     public function __construct(int|string $categoryId, int|string|null $parentId)
     {
         $normalizedCategoryId = (new CategoryIdDTO($categoryId, 'categoryId'))->value;

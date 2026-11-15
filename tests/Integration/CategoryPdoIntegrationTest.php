@@ -34,7 +34,7 @@ use Maatify\Category\Content\Query\Infrastructure\PdoCategoryContentReadQuery;
 use Maatify\Category\Content\Api\Contract\ContentApiInterface;
 use Maatify\Category\Tests\Integration\Support\CategoryMySqlIntegrationTestCase;
 use Maatify\Category\Tests\Integration\Support\FixedCategoryClock;
-use Maatify\Persistence\Pdo\Transaction\PdoTransactionRunner;
+use Maatify\PhpPersistence\Transaction\Repository\PdoTransactionRunner;
 use PDO;
 use PDOException;
 use RuntimeException;
@@ -42,6 +42,60 @@ use Throwable;
 
 final class CategoryPdoIntegrationTest extends CategoryMySqlIntegrationTestCase
 {
+    public function testSameSecondNoOpCategoryStatusSucceeds(): void
+    {
+        $clock = new FixedCategoryClock();
+        $pdo = $this->connection();
+        $categories = $this->service($pdo, $clock);
+        $id = $categories->create(new CreateCategoryCommand('status-no-op'));
+        $command = new UpdateCategoryStatusCommand($id, CategoryStatusEnum::ACTIVE);
+
+        $categories->updateStatus($command);
+        $categories->updateStatus($command);
+
+        $stored = (new PdoCategoryQueryReader($pdo, $clock))->findById($id);
+        self::assertNotNull($stored);
+        self::assertSame(CategoryStatusEnum::ACTIVE, $stored->status);
+        self::assertSame($clock->now()->format('Y-m-d H:i:s'), $stored->updatedAt->format('Y-m-d H:i:s'));
+    }
+
+    public function testSameSecondNoOpCategoryMoveSucceeds(): void
+    {
+        $clock = new FixedCategoryClock();
+        $pdo = $this->connection();
+        $categories = $this->service($pdo, $clock);
+        $parentId = $categories->create(new CreateCategoryCommand('move-parent'));
+        $childId = $categories->create(new CreateCategoryCommand('move-child', $parentId));
+        $command = new MoveCategoryCommand($childId, $parentId);
+
+        $categories->move($command);
+        $categories->move($command);
+
+        $stored = (new PdoCategoryQueryReader($pdo, $clock))->findById($childId);
+        self::assertNotNull($stored);
+        self::assertSame($parentId, $stored->parentId);
+        self::assertSame(1, $stored->displayOrder);
+    }
+
+    public function testSameSecondNoOpContentUpdatesSucceed(): void
+    {
+        $clock = new FixedCategoryClock();
+        $pdo = $this->connection();
+        $categoryId = $this->service($pdo, $clock)->create(new CreateCategoryCommand('content-no-op'));
+        $contents = $this->contentService($pdo, $clock);
+        $id = $contents->create(new CreateCategoryContentCommand($categoryId, null, 'Same name', 'Same description'));
+
+        $contents->update(new UpdateCategoryContentCommand($id, 'Same name', 'Same description'));
+        $contents->updateName(new UpdateCategoryContentNameCommand($id, 'Same name'));
+        $contents->updateDescription(new UpdateCategoryContentDescriptionCommand($id, 'Same description'));
+
+        $stored = (new PdoCategoryContentQueryReader($pdo, $clock))->findContentById($id);
+        self::assertNotNull($stored);
+        self::assertSame('Same name', $stored->name);
+        self::assertSame('Same description', $stored->description);
+        self::assertSame($clock->now()->format('Y-m-d H:i:s'), $stored->updatedAt->format('Y-m-d H:i:s'));
+    }
+
     public function testHostClockTimezoneIsPreservedAcrossPersistenceAndAllHydrationAdapters(): void
     {
         $connection = $this->connection();
@@ -53,7 +107,6 @@ final class CategoryPdoIntegrationTest extends CategoryMySqlIntegrationTestCase
         );
 
         $updateClock = new FixedCategoryClock('2026-03-01 15:45:12 Africa/Cairo');
-        $updateService = $this->service($connection, $updateClock);
         $this->contentService($connection, $updateClock)->update(new UpdateCategoryContentCommand(
             $contentId,
             'Updated host clock content',
@@ -413,28 +466,35 @@ final class CategoryPdoIntegrationTest extends CategoryMySqlIntegrationTestCase
         $transaction = new PdoTransactionRunner($this->connection());
         $original = new RuntimeException('original transaction failure');
 
-        $thrown = null;
-        try {
-            $transaction->run(function () use ($original): void {
-                throw $original;
-            });
-        } catch (Throwable $thrown) {
-        }
-        self::assertSame($original, $thrown);
+        $this->assertTransactionThrowsOriginal($transaction, static function () use ($original): void {
+            throw $original;
+        }, $original);
         self::assertFalse($this->connection()->inTransaction());
 
-        $thrown = null;
-        try {
-            $transaction->run(function () use ($original): void {
-                // Simulate a driver/operation that closes the transaction before
-                // reporting its failure to the transaction adapter.
-                $this->connection()->commit();
-                throw $original;
-            });
-        } catch (Throwable $thrown) {
-        }
-        self::assertSame($original, $thrown);
+        $this->assertTransactionThrowsOriginal($transaction, function () use ($original): void {
+            // Simulate a driver/operation that closes the transaction before
+            // reporting its failure to the transaction adapter.
+            $this->connection()->commit();
+            throw $original;
+        }, $original);
         self::assertFalse($this->connection()->inTransaction());
+    }
+
+    /** @param callable(): void $callback */
+    private function assertTransactionThrowsOriginal(
+        PdoTransactionRunner $transaction,
+        callable $callback,
+        Throwable $original,
+    ): void {
+        try {
+            $transaction->run($callback);
+        } catch (Throwable $thrown) {
+            self::assertSame($original, $thrown);
+
+            return;
+        }
+
+        self::fail('Expected the original transaction failure.');
     }
 
     public function testMoveWaitsOnLockedParentAndThenSucceedsAfterTheTransactionReleasesIt(): void
@@ -467,7 +527,7 @@ final class CategoryPdoIntegrationTest extends CategoryMySqlIntegrationTestCase
 
         $blockedService->move(new MoveCategoryCommand($categoryId, $targetParentId));
         self::assertSame($targetParentId, (new PdoCategoryQueryReader($blockedConnection, new FixedCategoryClock()))->findById($categoryId)?->parentId);
-        $blockedConnection = null;
+        unset($blockedService, $blockedConnection);
     }
 
     public function testSoftDeleteWaitsOnTheLockedCategoryRow(): void
@@ -497,7 +557,7 @@ final class CategoryPdoIntegrationTest extends CategoryMySqlIntegrationTestCase
 
         $blockedService->softDelete(new SoftDeleteCategoryCommand($categoryId));
         self::assertNull((new PdoCategoryQueryReader($blockedConnection, new FixedCategoryClock()))->findActiveById($categoryId));
-        $blockedConnection = null;
+        unset($blockedService, $blockedConnection);
     }
 
     public function testStatusUpdateWaitsOnTheLockedCategoryRow(): void
@@ -530,7 +590,7 @@ final class CategoryPdoIntegrationTest extends CategoryMySqlIntegrationTestCase
             CategoryStatusEnum::INACTIVE,
             (new PdoCategoryQueryReader($blockedConnection, new FixedCategoryClock()))->findById($categoryId)?->status,
         );
-        $blockedConnection = null;
+        unset($blockedService, $blockedConnection);
     }
 
     /** @return array<int, int> */

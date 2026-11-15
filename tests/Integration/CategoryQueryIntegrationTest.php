@@ -26,7 +26,6 @@ final class CategoryQueryIntegrationTest extends CategoryMySqlIntegrationTestCas
     {
         $connection = $this->connection();
         $commandService = $this->commandService($connection);
-        $contentService = $this->contentService($connection);
         $firstId = $commandService->create(new CreateCategoryCommand('root-first'));
         $secondId = $commandService->create(new CreateCategoryCommand('root-second'));
         $thirdId = $commandService->create(new CreateCategoryCommand('root-third'));
@@ -135,7 +134,6 @@ final class CategoryQueryIntegrationTest extends CategoryMySqlIntegrationTestCas
     {
         $connection = $this->connection();
         $commandService = $this->commandService($connection);
-        $contentService = $this->contentService($connection);
         $activeRootId = $commandService->create(new CreateCategoryCommand('active-root'));
         $inactiveRootId = $commandService->create(new CreateCategoryCommand('inactive-root'));
         $firstChildId = $commandService->create(new CreateCategoryCommand('first-child', $activeRootId));

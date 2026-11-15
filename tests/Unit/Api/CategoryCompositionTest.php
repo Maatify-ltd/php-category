@@ -40,9 +40,9 @@ use Maatify\Category\ImageAssignment\Ordering\Command\UpdateCategoryImageAssignm
 use Maatify\Category\ImageRole\Lifecycle\Command\CreateCategoryImageRoleCommand;
 use Maatify\SharedCommon\Contracts\ClockInterface;
 use PHPUnit\Framework\TestCase;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
-use Maatify\Persistence\Pdo\Pagination\SortDirectionEnum;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
+use Maatify\PhpPersistence\Pagination\Enum\SortDirectionEnum;
 use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionMethod;
@@ -66,7 +66,7 @@ final class CategoryCompositionTest extends TestCase
         self::assertSame($images, $facade->images());
 
         $methods = array_map(
-            static fn (ReflectionMethod $method): string => $method->getName(),
+            static fn(ReflectionMethod $method): string => $method->getName(),
             (new ReflectionClass(CategoryFacadeInterface::class))->getMethods(),
         );
         self::assertSame(['categories', 'contents', 'contentFields', 'imageRoles', 'images'], $methods);
@@ -123,7 +123,7 @@ final class CategoryCompositionTest extends TestCase
         $service = $this->createMock(CategoryServiceInterface::class);
         $criteria = new \Maatify\Category\Query\DTO\CategoryListCriteriaDTO(search: 'category');
         $pageRequest = new PageRequest(page: 1, perPage: 10, sortBy: 'code', sortDirection: 'ASC');
-        $page = new PageResult(
+        $page = new PageResultDTO(
             data: [],
             page: 1,
             perPage: 10,
@@ -231,7 +231,7 @@ final class CategoryCompositionTest extends TestCase
         $parameters = $method->getParameters();
 
         self::assertSame(['pdo', 'clock'], array_map(
-            static fn (\ReflectionParameter $parameter): string => $parameter->getName(),
+            static fn(\ReflectionParameter $parameter): string => $parameter->getName(),
             $parameters,
         ));
         self::assertInstanceOf(ReflectionNamedType::class, $parameters[0]->getType());
@@ -261,7 +261,7 @@ final class CategoryCompositionTest extends TestCase
     private function methodNames(string $interface): array
     {
         return array_map(
-            static fn (ReflectionMethod $method): string => $method->getName(),
+            static fn(ReflectionMethod $method): string => $method->getName(),
             (new ReflectionClass($interface))->getMethods(),
         );
     }

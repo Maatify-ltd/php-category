@@ -1,33 +1,32 @@
 # Security Policy
 
-[![Maatify Category](https://img.shields.io/badge/Maatify-Category-blue?style=for-the-badge)](https://github.com/Maatify/php-category)
-[![Maatify Ecosystem](https://img.shields.io/badge/Maatify-Ecosystem-9C27B0?style=for-the-badge)](https://github.com/Maatify)
+[![Maatify Category](https://img.shields.io/badge/Maatify-Category-blue?style=for-the-badge)](https://github.com/Maatify-ltd/php-category)
+[![Maatify Ecosystem](https://img.shields.io/badge/Maatify-Ecosystem-9C27B0?style=for-the-badge)](https://github.com/Maatify-ltd)
 
 ## Scope
 
-**Release Candidate boundary:** `v1.0.0-rc.1`
+**Release artifact target** · `v1.0.0-rc.2`
+
+**Publication state at preparation** · RC.2 was unpublished. The previously
+published candidate was [RC.1](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.1).
 
 This policy covers package-owned runtime contracts, Composer metadata, schema,
-and CI configuration. The publication state of this exact package and version
-is determined only by its external resolution and installation through an
-approved Composer distribution source; repository contents alone do not
-establish publication. When externally available, `v1.0.0-rc.1` is a Pre-Stable
-pre-release, not a Stable release, and does not establish a Stable support
-commitment. Host applications, Host-owned tables, and integrations outside
-this repository are not maintained by this package.
+and CI configuration. Host applications and their integrations remain outside
+package support.
 
 ## Supported Versions
 
-No Stable release line is currently supported. The Release Candidate does not
-create a Stable support commitment.
+There was no published Stable support line at preparation. Neither release
+candidate establishes a Stable support commitment.
 
 | Version | Support status |
 |---------|-----------------|
-| `v1.0.0-rc.1` | Release Candidate boundary; not a supported Stable release |
+| `v1.0.0-rc.2` | Prepared Release Candidate artifact |
+| `v1.0.0-rc.1` | Previously published Release Candidate |
 | Stable release lines | None |
 
 ## Reporting a Vulnerability
 
 Please report vulnerabilities through the repository's
-[private GitHub security advisory channel](https://github.com/Maatify/php-category/security/advisories/new).
+[private GitHub security advisory channel](https://github.com/Maatify-ltd/php-category/security/advisories/new).
 Do not disclose sensitive details in a public issue.

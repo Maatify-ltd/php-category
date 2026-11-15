@@ -12,13 +12,13 @@ use Maatify\Category\ImageRole\Lifecycle\Enum\CategoryImageRoleStatusEnum;
 use Maatify\Category\ImageRole\Query\Contract\CategoryImageRoleManagementReadQueryInterface;
 use Maatify\Category\ImageRole\Query\DTO\CategoryImageRoleCollectionDTO;
 use Maatify\Category\ImageRole\Query\DTO\CategoryImageRoleListCriteriaDTO;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
-use Maatify\Persistence\Pdo\Pagination\PaginationConfig;
-use Maatify\Persistence\Pdo\Pagination\PdoPaginationQueryDescriptor;
-use Maatify\Persistence\Pdo\Pagination\PdoPaginator;
-use Maatify\Persistence\Pdo\Pagination\SortDirectionEnum;
-use Maatify\Persistence\Pdo\Pagination\SortWhitelist;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
+use Maatify\PhpPersistence\Pagination\Config\PaginationConfig;
+use Maatify\PhpPersistence\Pagination\Criteria\PdoPaginationQueryDescriptor;
+use Maatify\PhpPersistence\Pagination\Repository\PdoPaginator;
+use Maatify\PhpPersistence\Pagination\Enum\SortDirectionEnum;
+use Maatify\PhpPersistence\Pagination\ValueObject\SortWhitelist;
 use Maatify\SharedCommon\Contracts\ClockInterface;
 use PDO;
 
@@ -36,13 +36,14 @@ final readonly class PdoCategoryImageRoleManagementReadQuery extends PdoReadQuer
         $this->paginator = new PdoPaginator();
     }
 
+    /** {@inheritDoc} */
     public function findImageRoleById(
         int $roleId,
         CategoryDeletedStateEnum $deletedState,
     ): ?CategoryImageRoleDTO {
         $where = ['`id` = :role_id'];
         $params = ['role_id' => $roleId];
-        $this->appendDeletedStateFilter($where, $params, $deletedState, 'role');
+        $this->appendDeletedStateFilter($where, $deletedState, 'role');
 
         $statement = $this->pdo->prepare(
             $this->imageRoleSelect() . ' WHERE ' . implode(' AND ', $where) . ' LIMIT 1',
@@ -54,13 +55,14 @@ final readonly class PdoCategoryImageRoleManagementReadQuery extends PdoReadQuer
         return is_array($row) ? $this->hydrateRole($row) : null;
     }
 
+    /** {@inheritDoc} */
     public function findImageRoleByKey(
         string $roleKey,
         CategoryDeletedStateEnum $deletedState,
     ): ?CategoryImageRoleDTO {
         $where = ['`role_key` = :role_key'];
         $params = ['role_key' => $roleKey];
-        $this->appendDeletedStateFilter($where, $params, $deletedState, 'role');
+        $this->appendDeletedStateFilter($where, $deletedState, 'role');
 
         $statement = $this->pdo->prepare(
             $this->imageRoleSelect() . ' WHERE ' . implode(' AND ', $where) . ' LIMIT 1',
@@ -72,6 +74,7 @@ final readonly class PdoCategoryImageRoleManagementReadQuery extends PdoReadQuer
         return is_array($row) ? $this->hydrateRole($row) : null;
     }
 
+    /** {@inheritDoc} */
     public function listImageRoles(CategoryImageRoleListCriteriaDTO $criteria): CategoryImageRoleCollectionDTO
     {
         $where = [];
@@ -81,7 +84,7 @@ final readonly class PdoCategoryImageRoleManagementReadQuery extends PdoReadQuer
             $where[] = '`role`.`status` = :role_status';
             $params['role_status'] = $criteria->status->value;
         }
-        $this->appendDeletedStateFilter($where, $params, $criteria->deletedState, 'role');
+        $this->appendDeletedStateFilter($where, $criteria->deletedState, 'role');
 
         $statement = $this->pdo->prepare(
             $this->imageRoleSelect()
@@ -101,8 +104,8 @@ final readonly class PdoCategoryImageRoleManagementReadQuery extends PdoReadQuer
         return new CategoryImageRoleCollectionDTO($items);
     }
 
-    /** @return PageResult<CategoryImageRoleDTO> */
-    public function paginateImageRoles(CategoryImageRoleListCriteriaDTO $criteria, PageRequest $pageRequest): PageResult
+    /** @return PageResultDTO<CategoryImageRoleDTO> */
+    public function paginateImageRoles(CategoryImageRoleListCriteriaDTO $criteria, PageRequest $pageRequest): PageResultDTO
     {
         $where = [];
         /** @var array<string, int|string> $params */
@@ -111,7 +114,7 @@ final readonly class PdoCategoryImageRoleManagementReadQuery extends PdoReadQuer
             $where[] = '`role`.`status` = :role_status';
             $params['role_status'] = $criteria->status->value;
         }
-        $this->appendDeletedStateFilter($where, $params, $criteria->deletedState, 'role');
+        $this->appendDeletedStateFilter($where, $criteria->deletedState, 'role');
         $whereSql = $where === [] ? '' : ' WHERE ' . implode(' AND ', $where);
         $descriptor = new PdoPaginationQueryDescriptor(
             totalSql: 'SELECT COUNT(*) ' . $this->imageRoleFrom() . $whereSql,
@@ -141,7 +144,7 @@ final readonly class PdoCategoryImageRoleManagementReadQuery extends PdoReadQuer
                 minPerPage: 1,
                 maxPerPage: 100,
             ),
-            fn (array $row): CategoryImageRoleDTO => $this->hydrateRole($row),
+            fn(array $row): CategoryImageRoleDTO => $this->hydrateRole($row),
         );
     }
 
@@ -161,11 +164,9 @@ final readonly class PdoCategoryImageRoleManagementReadQuery extends PdoReadQuer
 
     /**
      * @param list<string> $where
-     * @param array<string, int|string> $params
      */
     private function appendDeletedStateFilter(
         array &$where,
-        array &$params,
         CategoryDeletedStateEnum $deletedState,
         string $tableAlias,
     ): void {

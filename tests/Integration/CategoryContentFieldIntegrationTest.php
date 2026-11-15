@@ -25,11 +25,37 @@ use Maatify\Category\Common\Exception\CategoryInvalidArgumentException;
 use Maatify\Category\ContentField\Api\Contract\ContentFieldApiInterface;
 use Maatify\Category\Tests\Integration\Support\CategoryMySqlIntegrationTestCase;
 use Maatify\Category\Tests\Integration\Support\FixedCategoryClock;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
 use PDO;
 
 final class CategoryContentFieldIntegrationTest extends CategoryMySqlIntegrationTestCase
 {
+    public function testSameSecondNoOpContentFieldUpdatesSucceed(): void
+    {
+        $categories = $this->commandService($this->connection());
+        $fields = $this->fieldService($this->connection());
+        $categoryId = $categories->create(new CreateCategoryCommand('field-no-op'));
+        $id = $fields->create(new CreateCategoryContentFieldCommand(
+            $categoryId,
+            'summary',
+            null,
+            null,
+            CategoryContentFieldFormatEnum::TEXT,
+            'Same value',
+        ));
+
+        $fields->update(new UpdateCategoryContentFieldCommand($id, CategoryContentFieldFormatEnum::TEXT, 'Same value'));
+        $fields->updateValue(new UpdateCategoryContentFieldValueCommand($id, 'Same value'));
+
+        $stored = $fields->listVisibleForCategory($categoryId, new CategoryContentFieldScopeDTO());
+        self::assertSame([$id], $this->ids($stored));
+        self::assertSame([CategoryContentFieldFormatEnum::TEXT], $this->formats($stored));
+        foreach ($stored as $field) {
+            self::assertSame('Same value', $field->value);
+            self::assertSame('2026-01-01 00:00:00', $field->updatedAt->format('Y-m-d H:i:s'));
+        }
+    }
+
     public function testAllFourScopesFormatsAndIndependentOrderingAreSupported(): void
     {
         $service = $this->commandService($this->connection());

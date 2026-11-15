@@ -22,6 +22,7 @@ final readonly class PdoCategoryContentCommandRepository implements CategoryCont
 
     public function __construct(private PDO $pdo) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryContentCommand $command, DateTimeImmutable $occurredAt): int
     {
         try {
@@ -62,6 +63,7 @@ final readonly class PdoCategoryContentCommandRepository implements CategoryCont
         return (int) $id;
     }
 
+    /** {@inheritDoc} */
     public function update(UpdateCategoryContentCommand $command, DateTimeImmutable $occurredAt): bool
     {
         $statement = $this->pdo->prepare(
@@ -76,9 +78,22 @@ final readonly class PdoCategoryContentCommandRepository implements CategoryCont
             'id' => $command->contentId,
         ]);
 
-        return $statement->rowCount() > 0;
+        if ($statement->rowCount() > 0) {
+            return true;
+        }
+
+        // Use a current read because a no-op UPDATE can match a row newer
+        // than the Host transaction's consistent-read snapshot.
+        $exists = $this->pdo->prepare(
+            'SELECT 1 FROM `' . self::CONTENT_TABLE . '` '
+            . 'WHERE `id` = :id AND `deleted_at` IS NULL FOR UPDATE',
+        );
+        $exists->execute(['id' => $command->contentId]);
+
+        return $exists->fetchColumn() !== false;
     }
 
+    /** {@inheritDoc} */
     public function softDelete(
         SoftDeleteCategoryContentCommand $command,
         DateTimeImmutable $occurredAt,
@@ -98,6 +113,7 @@ final readonly class PdoCategoryContentCommandRepository implements CategoryCont
         return $statement->rowCount() > 0;
     }
 
+    /** {@inheritDoc} */
     public function restore(
         RestoreCategoryContentCommand $command,
         DateTimeImmutable $occurredAt,

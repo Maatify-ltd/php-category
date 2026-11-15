@@ -1,7 +1,7 @@
 # Code of Conduct — maatify/php-category
 
-[![Maatify Category](https://img.shields.io/badge/Maatify-Category-blue?style=for-the-badge)](https://github.com/Maatify/php-category)
-[![Maatify Ecosystem](https://img.shields.io/badge/Maatify-Ecosystem-9C27B0?style=for-the-badge)](https://github.com/Maatify)
+[![Maatify Category](https://img.shields.io/badge/Maatify-Category-blue?style=for-the-badge)](https://github.com/Maatify-ltd/php-category)
+[![Maatify Ecosystem](https://img.shields.io/badge/Maatify-Ecosystem-9C27B0?style=for-the-badge)](https://github.com/Maatify-ltd)
 
 ## Our Standard
 

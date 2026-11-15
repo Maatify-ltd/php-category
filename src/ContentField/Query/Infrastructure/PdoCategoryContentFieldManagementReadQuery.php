@@ -12,13 +12,13 @@ use Maatify\Category\ContentField\Query\Contract\CategoryContentFieldManagementR
 use Maatify\Category\ContentField\Query\DTO\CategoryContentFieldCollectionDTO;
 use Maatify\Category\ContentField\Query\DTO\CategoryContentFieldDTO;
 use Maatify\Category\ContentField\Query\DTO\CategoryContentFieldListCriteriaDTO;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
-use Maatify\Persistence\Pdo\Pagination\PaginationConfig;
-use Maatify\Persistence\Pdo\Pagination\PdoPaginationQueryDescriptor;
-use Maatify\Persistence\Pdo\Pagination\PdoPaginator;
-use Maatify\Persistence\Pdo\Pagination\SortDirectionEnum;
-use Maatify\Persistence\Pdo\Pagination\SortWhitelist;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
+use Maatify\PhpPersistence\Pagination\Config\PaginationConfig;
+use Maatify\PhpPersistence\Pagination\Criteria\PdoPaginationQueryDescriptor;
+use Maatify\PhpPersistence\Pagination\Repository\PdoPaginator;
+use Maatify\PhpPersistence\Pagination\Enum\SortDirectionEnum;
+use Maatify\PhpPersistence\Pagination\ValueObject\SortWhitelist;
 use Maatify\SharedCommon\Contracts\ClockInterface;
 use PDO;
 
@@ -36,13 +36,14 @@ final readonly class PdoCategoryContentFieldManagementReadQuery extends PdoReadQ
         $this->paginator = new PdoPaginator();
     }
 
+    /** {@inheritDoc} */
     public function findContentFieldById(
         int $fieldId,
         CategoryDeletedStateEnum $deletedState,
     ): ?CategoryContentFieldDTO {
         $where = ['`id` = :field_id'];
         $params = ['field_id' => $fieldId];
-        $this->appendDeletedStateFilter($where, $params, $deletedState, 'field');
+        $this->appendDeletedStateFilter($where, $deletedState, 'field');
 
         $statement = $this->pdo->prepare(
             $this->contentFieldSelect() . ' WHERE ' . implode(' AND ', $where) . ' LIMIT 1',
@@ -54,6 +55,7 @@ final readonly class PdoCategoryContentFieldManagementReadQuery extends PdoReadQ
         return is_array($row) ? $this->hydrateField($row) : null;
     }
 
+    /** {@inheritDoc} */
     public function listContentFields(
         CategoryContentFieldListCriteriaDTO $criteria,
     ): CategoryContentFieldCollectionDTO {
@@ -68,14 +70,13 @@ final readonly class PdoCategoryContentFieldManagementReadQuery extends PdoReadQ
             $where[] = '`field`.`field_key` = :field_key';
             $params['field_key'] = $criteria->fieldKey;
         }
-        $this->appendDeletedStateFilter($where, $params, $criteria->deletedState, 'field');
+        $this->appendDeletedStateFilter($where, $criteria->deletedState, 'field');
         $this->appendScopeFilter($where, $params, $criteria->scope);
 
         $statement = $this->pdo->prepare(
             $this->contentFieldSelect()
             . ($where === [] ? '' : ' WHERE ' . implode(' AND ', $where))
-            . ' ORDER BY `field`.`category_id` ASC, `field`.`ordering_scope` ASC, '
-            . '`field`.`display_order` ASC, `field`.`id` ASC LIMIT :max_results',
+            . ' ORDER BY ' . $this->managementOrderBy() . ' LIMIT :max_results',
         );
         $this->executeBounded($statement, $params, $criteria->maxResults);
         /** @var list<array<string, mixed>> $rows */
@@ -90,11 +91,11 @@ final readonly class PdoCategoryContentFieldManagementReadQuery extends PdoReadQ
         return new CategoryContentFieldCollectionDTO($items);
     }
 
-    /** @return PageResult<CategoryContentFieldDTO> */
+    /** @return PageResultDTO<CategoryContentFieldDTO> */
     public function paginateContentFields(
         CategoryContentFieldListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         $where = [];
         /** @var array<string, int|string> $params */
         $params = [];
@@ -130,7 +131,7 @@ final readonly class PdoCategoryContentFieldManagementReadQuery extends PdoReadQ
                 minPerPage: 1,
                 maxPerPage: 100,
             ),
-            fn (array $row): CategoryContentFieldDTO => $this->hydrateField($row),
+            fn(array $row): CategoryContentFieldDTO => $this->hydrateField($row),
         );
     }
 
@@ -151,7 +152,7 @@ final readonly class PdoCategoryContentFieldManagementReadQuery extends PdoReadQ
             $where[] = '`field`.`field_key` = :field_key';
             $params['field_key'] = $criteria->fieldKey;
         }
-        $this->appendDeletedStateFilter($where, $params, $criteria->deletedState, 'field');
+        $this->appendDeletedStateFilter($where, $criteria->deletedState, 'field');
         $this->appendScopeFilter($where, $params, $criteria->scope);
     }
 
@@ -160,25 +161,31 @@ final readonly class PdoCategoryContentFieldManagementReadQuery extends PdoReadQ
         return 'FROM `' . self::CONTENT_FIELD_TABLE . '` AS `field`';
     }
 
+    /** Groups collation-equivalent scopes and uses a deterministic order within each group. */
+    private function managementOrderBy(): string
+    {
+        return '`field`.`category_id` ASC, '
+            . '`field`.`language_code` IS NULL ASC, `field`.`language_code` ASC, '
+            . '`field`.`platform` IS NULL ASC, `field`.`platform` ASC, '
+            . '`field`.`display_order` ASC, `field`.`id` ASC';
+    }
+
     private function contentFieldPaginationSelect(): string
     {
-        // The paginator's single default key is backed by the complete four-column business ordering.
+        // The paginator exposes the same order as the bounded management list.
         return 'SELECT `field`.`id`, `field`.`category_id`, `field`.`field_key`, '
             . '`field`.`language_code`, `field`.`platform`, `field`.`format`, `field`.`value`, '
             . '`field`.`display_order`, `field`.`ordering_scope`, `field`.`created_at`, '
             . '`field`.`updated_at`, `field`.`deleted_at`, '
-            . 'ROW_NUMBER() OVER (ORDER BY `field`.`category_id` ASC, `field`.`ordering_scope` ASC, '
-            . '`field`.`display_order` ASC, `field`.`id` ASC) AS `management_order` '
+            . 'ROW_NUMBER() OVER (ORDER BY ' . $this->managementOrderBy() . ') AS `management_order` '
             . 'FROM `' . self::CONTENT_FIELD_TABLE . '` AS `field`';
     }
 
     /**
      * @param list<string> $where
-     * @param array<string, int|string> $params
      */
     private function appendDeletedStateFilter(
         array &$where,
-        array &$params,
         CategoryDeletedStateEnum $deletedState,
         string $tableAlias,
     ): void {

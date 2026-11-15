@@ -14,6 +14,7 @@ final readonly class CategoryImageAssignmentDTO implements \JsonSerializable
     public ?string $languageCode;
     public ?string $platform;
 
+    /** Requires positive identities and order and a valid scope. The Role identity can be null. */
     public function __construct(
         public int $id,
         public int $categoryId,

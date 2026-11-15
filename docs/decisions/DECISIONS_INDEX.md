@@ -1,0 +1,10 @@
+# Decisions Index
+
+| Decision ID | Title | Status | Scope / Concern | Decision Record | Canonical Contract / Current Owner | Supersedes | Superseded By |
+|---|---|---|---|---|---|---|---|
+| DEC-001 | Adopt the published Persistence RC in Category | ACTIVE | Shared Ordering, Pagination, and Transactions | [Decision record](DEC-001-persistence-rc-migration.md) | [Category Package Reference](../../CATEGORY_PACKAGE_REFERENCE.md) | — | — |
+| DEC-002 | Enforce the approved PHP security patch floors in Composer | SUPERSEDED | Historical PHP runtime compatibility and dependency resolution | [Decision record](DEC-002-php-security-patch-floors.md) | [Composer manifest](../../composer.json) | — | [DEC-006](DEC-006-php-forward-eligibility.md) |
+| DEC-003 | Discover current mutation scopes under Host transactions | ACTIVE | Order and Image Assignment default lock boundaries | [Decision record](DEC-003-current-mutation-scope.md) | [Category Package Reference](../../CATEGORY_PACKAGE_REFERENCE.md) | — | — |
+| DEC-004 | Share MySQL scope equality between reads and mutations | ACTIVE | Image Assignment and Content Field scope semantics and upgrades | [Decision record](DEC-004-collation-equivalent-scopes.md) | [Category Package Reference](../../CATEGORY_PACKAGE_REFERENCE.md) | — | — |
+| DEC-005 | Adopt the Maatify Proprietary License | ACTIVE | Category licensing and consumer-facing license presentation | [Decision record](DEC-005-maatify-proprietary-license.md) | [LICENSE](../../LICENSE) | — | — |
+| DEC-006 | Allow forward PHP 8 Composer eligibility | ACTIVE | Composer interpreter eligibility and Stable PHP qualification | [Decision record](DEC-006-php-forward-eligibility.md) | [Composer manifest](../../composer.json) | [DEC-002](DEC-002-php-security-patch-floors.md) | — |

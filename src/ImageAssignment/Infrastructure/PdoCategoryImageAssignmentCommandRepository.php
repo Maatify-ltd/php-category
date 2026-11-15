@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Maatify\Category\ImageAssignment\Infrastructure;
 
+use Closure;
 use DateTimeImmutable;
 use Maatify\Category\ImageAssignment\Default\Command\ClearCategoryImageAssignmentDefaultCommand;
 use Maatify\Category\ImageAssignment\Assignment\Command\CreateCategoryImageAssignmentCommand;
@@ -14,8 +15,9 @@ use Maatify\Category\ImageAssignment\Ordering\Command\UpdateCategoryImageAssignm
 use Maatify\Category\ImageAssignment\Contract\CategoryImageAssignmentCommandRepositoryInterface;
 use Maatify\Category\ImageAssignment\Assignment\Exception\CategoryImageAssignmentAlreadyExistsException;
 use Maatify\Category\Common\Exception\CategoryPersistenceException;
-use Maatify\Persistence\Pdo\Ordering\ScopedOrderingConfig;
-use Maatify\Persistence\Pdo\Ordering\ScopedOrderingManager;
+use Maatify\Category\Common\Infrastructure\PdoCategoryOrderingScope;
+use Maatify\PhpPersistence\Ordering\Config\ScopedOrderingConfig;
+use Maatify\PhpPersistence\Ordering\Repository\ScopedOrderingManager;
 use PDO;
 use PDOException;
 
@@ -24,25 +26,28 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
 {
     private const ASSIGNMENT_TABLE = 'maa_category_category_image_assignments';
 
+    /** @param (Closure(): PDO)|null $scopeLookup */
     public function __construct(
         private PDO $pdo,
         private ScopedOrderingManager $orderingManager,
+        private ?Closure $scopeLookup = null,
     ) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryImageAssignmentCommand $command, DateTimeImmutable $occurredAt): int
     {
-        $orderingScope = $this->orderingScope(
+        $orderingScope = PdoCategoryOrderingScope::forValues(
+            $this->pdo,
             $command->categoryId,
             $command->languageCode,
             $command->platform,
             $command->roleId,
         );
         $this->lockCreationScope($orderingScope);
-        $displayOrder = $this->orderingManager->getNextPosition(
-            $this->pdo,
-            $this->orderingConfig(),
-            $orderingScope,
-        );
+        $orderingConfig = $this->orderingConfig();
+        $displayOrder = $this->pdo->inTransaction()
+            ? $this->orderingManager->getNextPositionForUpdate($this->pdo, $orderingConfig, $orderingScope)
+            : $this->orderingManager->getNextPosition($this->pdo, $orderingConfig, $orderingScope);
 
         $statement = $this->pdo->prepare(
             'INSERT INTO `' . self::ASSIGNMENT_TABLE . '` '
@@ -89,11 +94,12 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         return (int) $id;
     }
 
+    /** {@inheritDoc} */
     public function updateDisplayOrder(
         UpdateCategoryImageAssignmentDisplayOrderCommand $command,
         DateTimeImmutable $occurredAt,
     ): bool {
-        $orderingScope = $this->activeOrderingScope($command->assignmentId);
+        $orderingScope = $this->readActiveOrderingScope($this->pdo, $command->assignmentId, $this->pdo->inTransaction());
         if ($orderingScope === false) {
             return false;
         }
@@ -108,11 +114,12 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         );
     }
 
+    /** {@inheritDoc} */
     public function setDefault(
         SetCategoryImageAssignmentDefaultCommand $command,
         DateTimeImmutable $occurredAt,
     ): bool {
-        $orderingScope = $this->activeOrderingScope($command->assignmentId);
+        $orderingScope = $this->defaultOrderingScope($command->assignmentId);
         if ($orderingScope === false) {
             return false;
         }
@@ -149,11 +156,12 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         return true;
     }
 
+    /** {@inheritDoc} */
     public function clearDefault(
         ClearCategoryImageAssignmentDefaultCommand $command,
         DateTimeImmutable $occurredAt,
     ): bool {
-        $orderingScope = $this->activeOrderingScope($command->assignmentId);
+        $orderingScope = $this->defaultOrderingScope($command->assignmentId);
         if ($orderingScope === false) {
             return false;
         }
@@ -177,6 +185,7 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         return true;
     }
 
+    /** {@inheritDoc} */
     public function softDelete(
         SoftDeleteCategoryImageAssignmentCommand $command,
         DateTimeImmutable $occurredAt,
@@ -197,6 +206,7 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         return $statement->rowCount() > 0;
     }
 
+    /** {@inheritDoc} */
     public function restore(
         RestoreCategoryImageAssignmentCommand $command,
         DateTimeImmutable $occurredAt,
@@ -215,11 +225,25 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         return $statement->rowCount() > 0;
     }
 
-    private function activeOrderingScope(int $assignmentId): string|false
+    /** Reads the immutable scope before taking any default-mutation lock. */
+    private function defaultOrderingScope(int $assignmentId): string|false
     {
-        $statement = $this->pdo->prepare(
+        $scope = $this->readActiveOrderingScope($this->pdo, $assignmentId);
+        if ($scope !== false || $this->scopeLookup === null) {
+            return $scope;
+        }
+
+        // The Host read sees its own writes. A separate autocommit read can see
+        // rows committed after the Host snapshot without acquiring a target lock.
+        return $this->readActiveOrderingScope(($this->scopeLookup)(), $assignmentId);
+    }
+
+    /** Returns the stored scope, or false if the assignment has no non-deleted row. */
+    private function readActiveOrderingScope(PDO $pdo, int $assignmentId, bool $forUpdate = false): string|false
+    {
+        $statement = $pdo->prepare(
             'SELECT `ordering_scope` FROM `' . self::ASSIGNMENT_TABLE . '` '
-            . 'WHERE `id` = :id AND `deleted_at` IS NULL LIMIT 1',
+            . 'WHERE `id` = :id AND `deleted_at` IS NULL LIMIT 1' . ($forUpdate ? ' FOR UPDATE' : ''),
         );
         $statement->execute(['id' => $assignmentId]);
         $value = $statement->fetchColumn();
@@ -283,25 +307,6 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
             nullableScope: false,
             updatedAtColumn: 'updated_at',
         );
-    }
-
-    private function orderingScope(
-        int $categoryId,
-        ?string $languageCode,
-        ?string $platform,
-        ?int $roleId,
-    ): string
-    {
-        $language = $languageCode === null
-            ? 'N:'
-            : 'L' . mb_strlen($languageCode) . ':' . $languageCode;
-        $platformValue = $platform === null
-            ? 'N:'
-            : 'L' . mb_strlen($platform) . ':' . $platform;
-
-        $role = $roleId === null ? 'N:' : 'R' . $roleId;
-
-        return 'C' . $categoryId . '|' . $language . '|' . $platformValue . '|' . $role;
     }
 
     private function formatTimestamp(DateTimeImmutable $occurredAt): string

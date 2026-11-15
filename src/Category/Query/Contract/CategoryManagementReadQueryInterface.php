@@ -8,8 +8,8 @@ use Maatify\Category\Query\DTO\CategoryCollectionDTO;
 use Maatify\Category\Query\DTO\CategoryDTO;
 use Maatify\Category\Query\DTO\CategoryListCriteriaDTO;
 use Maatify\Category\Common\Enum\CategoryDeletedStateEnum;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 
 /** Dedicated management read port, separate from consumer visibility reads. */
 interface CategoryManagementReadQueryInterface
@@ -29,16 +29,28 @@ interface CategoryManagementReadQueryInterface
     /** Lists direct children in display-order/id order, bounded by the criteria. */
     public function listChildren(int $parentId, CategoryListCriteriaDTO $criteria): CategoryCollectionDTO;
 
-    /** @return PageResult<CategoryDTO> */
-    public function paginateCategories(CategoryListCriteriaDTO $criteria, PageRequest $pageRequest): PageResult;
+    /**
+     * Returns the management page, base total, and filtered count for the requested scope.
+     *
+     * @return PageResultDTO<CategoryDTO>
+     */
+    public function paginateCategories(CategoryListCriteriaDTO $criteria, PageRequest $pageRequest): PageResultDTO;
 
-    /** @return PageResult<CategoryDTO> */
-    public function paginateRootCategories(CategoryListCriteriaDTO $criteria, PageRequest $pageRequest): PageResult;
+    /**
+     * Returns the management page, base total, and filtered count for the requested scope.
+     *
+     * @return PageResultDTO<CategoryDTO>
+     */
+    public function paginateRootCategories(CategoryListCriteriaDTO $criteria, PageRequest $pageRequest): PageResultDTO;
 
-    /** @return PageResult<CategoryDTO> */
+    /**
+     * Returns the management page, base total, and filtered count for the requested scope.
+     *
+     * @return PageResultDTO<CategoryDTO>
+     */
     public function paginateChildren(
         int $parentId,
         CategoryListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult;
+    ): PageResultDTO;
 }

@@ -18,9 +18,9 @@ use Maatify\Category\ImageRole\Query\DTO\CategoryImageRoleCollectionDTO;
 use Maatify\Category\ImageRole\Query\DTO\CategoryImageRoleListCriteriaDTO;
 use Maatify\Category\ImageRole\Query\Contract\CategoryImageRoleManagementReadQueryInterface;
 use Maatify\Category\ImageRole\Query\Contract\CategoryImageRoleQueryReaderInterface;
-use Maatify\Persistence\Pdo\Transaction\TransactionRunnerInterface;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Transaction\Repository\TransactionRunnerInterface;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 use Maatify\SharedCommon\Contracts\ClockInterface;
 
 /** Owns Image Role lifecycle orchestration only. */
@@ -34,13 +34,15 @@ final readonly class ImageRoleService implements ImageRoleServiceInterface
         private ClockInterface $clock,
     ) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryImageRoleCommand $command): int
     {
         return $this->transaction->run(
-            fn (): int => $this->commandRepository->create($command, $this->clock->now()),
+            fn(): int => $this->commandRepository->create($command, $this->clock->now()),
         );
     }
 
+    /** {@inheritDoc} */
     public function updateStatus(UpdateCategoryImageRoleStatusCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -55,6 +57,7 @@ final readonly class ImageRoleService implements ImageRoleServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function softDelete(SoftDeleteCategoryImageRoleCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -69,6 +72,7 @@ final readonly class ImageRoleService implements ImageRoleServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function restore(RestoreCategoryImageRoleCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -80,6 +84,7 @@ final readonly class ImageRoleService implements ImageRoleServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function getByIdForManagement(
         int $roleId,
         CategoryDeletedStateEnum $deletedState = CategoryDeletedStateEnum::NON_DELETED,
@@ -94,6 +99,7 @@ final readonly class ImageRoleService implements ImageRoleServiceInterface
         return $role;
     }
 
+    /** {@inheritDoc} */
     public function getByKeyForManagement(
         string $roleKey,
         CategoryDeletedStateEnum $deletedState = CategoryDeletedStateEnum::NON_DELETED,
@@ -108,15 +114,17 @@ final readonly class ImageRoleService implements ImageRoleServiceInterface
         return $role;
     }
 
+    /** {@inheritDoc} */
     public function listForManagement(CategoryImageRoleListCriteriaDTO $criteria): CategoryImageRoleCollectionDTO
     {
         return $this->managementReader->listImageRoles($criteria);
     }
 
+    /** {@inheritDoc} */
     public function paginateForManagement(
         CategoryImageRoleListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         return $this->managementReader->paginateImageRoles($criteria, $pageRequest);
     }
 

@@ -10,6 +10,7 @@ use Maatify\Category\ContentField\Api\Contract\ContentFieldApiInterface;
 use Maatify\Category\ImageAssignment\Api\Contract\ImageAssignmentApiInterface;
 use Maatify\Category\ImageRole\Api\Contract\ImageRoleApiInterface;
 
+/** Entry point exposing the five Domain APIs backed by the configured Host dependencies. */
 interface CategoryFacadeInterface
 {
     public function categories(): CategoryApiInterface;

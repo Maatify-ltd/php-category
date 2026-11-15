@@ -14,8 +14,8 @@ use Maatify\Category\Ordering\Command\UpdateCategoryDisplayOrderCommand;
 use Maatify\Category\Lifecycle\Command\UpdateCategoryStatusCommand;
 use Maatify\Category\Lifecycle\Exception\CategoryCodeAlreadyExistsException;
 use Maatify\Category\Common\Exception\CategoryPersistenceException;
-use Maatify\Persistence\Pdo\Ordering\ScopedOrderingConfig;
-use Maatify\Persistence\Pdo\Ordering\ScopedOrderingManager;
+use Maatify\PhpPersistence\Ordering\Config\ScopedOrderingConfig;
+use Maatify\PhpPersistence\Ordering\Repository\ScopedOrderingManager;
 use PDO;
 use PDOException;
 
@@ -29,14 +29,14 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
         private ScopedOrderingManager $orderingManager,
     ) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryCommand $command, DateTimeImmutable $occurredAt): int
     {
         $this->lockCreationScope($command->parentId);
-        $displayOrder = $this->orderingManager->getNextPosition(
-            $this->pdo,
-            $this->orderingConfig(),
-            $command->parentId,
-        );
+        $orderingConfig = $this->orderingConfig();
+        $displayOrder = $this->pdo->inTransaction()
+            ? $this->orderingManager->getNextPositionForUpdate($this->pdo, $orderingConfig, $command->parentId)
+            : $this->orderingManager->getNextPosition($this->pdo, $orderingConfig, $command->parentId);
 
         $statement = $this->pdo->prepare(
             'INSERT INTO `' . self::CATEGORY_TABLE . '` '
@@ -70,6 +70,7 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
         return (int) $id;
     }
 
+    /** {@inheritDoc} */
     public function move(MoveCategoryCommand $command, DateTimeImmutable $occurredAt): bool
     {
         $statement = $this->pdo->prepare(
@@ -83,9 +84,10 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
             'id' => $command->categoryId,
         ]);
 
-        return $statement->rowCount() > 0;
+        return $statement->rowCount() > 0 || $this->hasNonDeletedCategory($command->categoryId);
     }
 
+    /** {@inheritDoc} */
     public function softDelete(SoftDeleteCategoryCommand $command, DateTimeImmutable $occurredAt): bool
     {
         $statement = $this->pdo->prepare(
@@ -103,6 +105,7 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
         return $statement->rowCount() > 0;
     }
 
+    /** {@inheritDoc} */
     public function restore(RestoreCategoryCommand $command, DateTimeImmutable $occurredAt): bool
     {
         $statement = $this->pdo->prepare(
@@ -118,6 +121,7 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
         return $statement->rowCount() > 0;
     }
 
+    /** {@inheritDoc} */
     public function updateStatus(UpdateCategoryStatusCommand $command, DateTimeImmutable $occurredAt): bool
     {
         $statement = $this->pdo->prepare(
@@ -131,9 +135,10 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
             'id' => $command->categoryId,
         ]);
 
-        return $statement->rowCount() > 0;
+        return $statement->rowCount() > 0 || $this->hasNonDeletedCategory($command->categoryId);
     }
 
+    /** {@inheritDoc} */
     public function updateDisplayOrder(
         UpdateCategoryDisplayOrderCommand $command,
         DateTimeImmutable $occurredAt,
@@ -155,11 +160,26 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
         return $moved;
     }
 
+    /** Uses a current read to distinguish an unchanged update from an absent non-deleted row. */
+    private function hasNonDeletedCategory(int $categoryId): bool
+    {
+        // MySQL reports changed rows. A locking read distinguishes a no-op
+        // from a missing row without relying on the Host transaction snapshot.
+        $statement = $this->pdo->prepare(
+            'SELECT 1 FROM `' . self::CATEGORY_TABLE . '` '
+            . 'WHERE `id` = :id AND `deleted_at` IS NULL FOR UPDATE',
+        );
+        $statement->execute(['id' => $categoryId]);
+
+        return $statement->fetchColumn() !== false;
+    }
+
+    /** Returns the stored parent, null for a root Category, or false when the read finds no non-deleted row. */
     private function activeParentId(int $categoryId): int|false|null
     {
         $statement = $this->pdo->prepare(
             'SELECT `parent_id` FROM `' . self::CATEGORY_TABLE . '` '
-            . 'WHERE `id` = :id AND `deleted_at` IS NULL LIMIT 1',
+            . 'WHERE `id` = :id AND `deleted_at` IS NULL LIMIT 1' . ($this->pdo->inTransaction() ? ' FOR UPDATE' : ''),
         );
         $statement->execute(['id' => $categoryId]);
         $value = $statement->fetchColumn();

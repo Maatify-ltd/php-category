@@ -18,44 +18,51 @@ use Maatify\Category\ImageAssignment\Query\DTO\CategoryImageAssignmentCollection
 use Maatify\Category\ImageAssignment\Query\DTO\CategoryImageAssignmentDTO;
 use Maatify\Category\ImageAssignment\Query\DTO\CategoryImageAssignmentListCriteriaDTO;
 use Maatify\Category\Query\DTO\CategoryVisibleListCriteriaDTO;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 
 /** Public Category Image Assignment API; images() on the facade means assignments only. */
 final readonly class ImageAssignmentApi implements ImageAssignmentApiInterface
 {
     public function __construct(private ImageAssignmentServiceInterface $service) {}
 
+    /** {@inheritDoc} */
     public function assign(CreateCategoryImageAssignmentCommand $command): int
     {
         return $this->service->assign($command);
     }
 
+    /** {@inheritDoc} */
     public function reorder(UpdateCategoryImageAssignmentDisplayOrderCommand $command): void
     {
         $this->service->reorder($command);
     }
 
+    /** {@inheritDoc} */
     public function setDefault(SetCategoryImageAssignmentDefaultCommand $command): void
     {
         $this->service->setDefault($command);
     }
 
+    /** {@inheritDoc} */
     public function clearDefault(ClearCategoryImageAssignmentDefaultCommand $command): void
     {
         $this->service->clearDefault($command);
     }
 
+    /** {@inheritDoc} */
     public function remove(SoftDeleteCategoryImageAssignmentCommand $command): void
     {
         $this->service->remove($command);
     }
 
+    /** {@inheritDoc} */
     public function restore(RestoreCategoryImageAssignmentCommand $command): void
     {
         $this->service->restore($command);
     }
 
+    /** {@inheritDoc} */
     public function listVisibleForCategory(
         int $categoryId,
         CategoryImageAssignmentScopeDTO $scope,
@@ -64,6 +71,7 @@ final readonly class ImageAssignmentApi implements ImageAssignmentApiInterface
         return $this->service->listVisibleForCategory($categoryId, $scope, $criteria);
     }
 
+    /** {@inheritDoc} */
     public function getByIdForManagement(
         int $assignmentId,
         CategoryDeletedStateEnum $deletedState = CategoryDeletedStateEnum::NON_DELETED,
@@ -71,16 +79,18 @@ final readonly class ImageAssignmentApi implements ImageAssignmentApiInterface
         return $this->service->getByIdForManagement($assignmentId, $deletedState);
     }
 
+    /** {@inheritDoc} */
     public function listForManagement(
         CategoryImageAssignmentListCriteriaDTO $criteria,
     ): CategoryImageAssignmentCollectionDTO {
         return $this->service->listForManagement($criteria);
     }
 
+    /** {@inheritDoc} */
     public function paginateForManagement(
         CategoryImageAssignmentListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         return $this->service->paginateForManagement($criteria, $pageRequest);
     }
 }

@@ -7,8 +7,10 @@ namespace Maatify\Category\Content\Query\DTO;
 use DateTimeImmutable;
 use Maatify\Category\Common\Exception\CategoryInvalidArgumentException;
 
+/** Immutable Content read model. A null language identifies the unlocalized row. */
 final readonly class CategoryContentDTO implements \JsonSerializable
 {
+    /** Requires positive identities, a bounded nonblank name, and a bounded nonblank language when supplied. */
     public function __construct(
         public int $id,
         public int $categoryId,

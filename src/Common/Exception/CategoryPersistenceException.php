@@ -10,8 +10,7 @@ use Maatify\Exceptions\Exception\System\SystemMaatifyException;
 use Throwable;
 
 /** Represents Category-owned persistence and storage-shape failures. */
-final class CategoryPersistenceException extends SystemMaatifyException
-    implements CategoryExceptionInterface
+final class CategoryPersistenceException extends SystemMaatifyException implements CategoryExceptionInterface
 {
     protected function defaultErrorCode(): ErrorCodeEnum
     {

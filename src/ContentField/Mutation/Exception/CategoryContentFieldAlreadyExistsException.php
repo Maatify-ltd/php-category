@@ -8,8 +8,8 @@ use Maatify\Category\Exception\CategoryExceptionInterface;
 use Maatify\Exceptions\Exception\Conflict\GenericConflictMaatifyException;
 use Throwable;
 
-final class CategoryContentFieldAlreadyExistsException extends GenericConflictMaatifyException
-    implements CategoryExceptionInterface
+/** The exact Category, key, language, and platform identity is already reserved. */
+final class CategoryContentFieldAlreadyExistsException extends GenericConflictMaatifyException implements CategoryExceptionInterface
 {
     public static function withIdentity(
         int $categoryId,

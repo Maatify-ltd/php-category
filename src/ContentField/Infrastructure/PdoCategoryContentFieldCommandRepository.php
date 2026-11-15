@@ -13,8 +13,9 @@ use Maatify\Category\ContentField\Ordering\Command\UpdateCategoryContentFieldDis
 use Maatify\Category\ContentField\Contract\CategoryContentFieldCommandRepositoryInterface;
 use Maatify\Category\ContentField\Mutation\Exception\CategoryContentFieldAlreadyExistsException;
 use Maatify\Category\Common\Exception\CategoryPersistenceException;
-use Maatify\Persistence\Pdo\Ordering\ScopedOrderingConfig;
-use Maatify\Persistence\Pdo\Ordering\ScopedOrderingManager;
+use Maatify\Category\Common\Infrastructure\PdoCategoryOrderingScope;
+use Maatify\PhpPersistence\Ordering\Config\ScopedOrderingConfig;
+use Maatify\PhpPersistence\Ordering\Repository\ScopedOrderingManager;
 use PDO;
 use PDOException;
 
@@ -28,19 +29,20 @@ final readonly class PdoCategoryContentFieldCommandRepository implements Categor
         private ScopedOrderingManager $orderingManager,
     ) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryContentFieldCommand $command, DateTimeImmutable $occurredAt): int
     {
-        $orderingScope = $this->orderingScope(
+        $orderingScope = PdoCategoryOrderingScope::forValues(
+            $this->pdo,
             $command->categoryId,
             $command->languageCode,
             $command->platform,
         );
         $this->lockCreationScope($orderingScope);
-        $displayOrder = $this->orderingManager->getNextPosition(
-            $this->pdo,
-            $this->orderingConfig(),
-            $orderingScope,
-        );
+        $orderingConfig = $this->orderingConfig();
+        $displayOrder = $this->pdo->inTransaction()
+            ? $this->orderingManager->getNextPositionForUpdate($this->pdo, $orderingConfig, $orderingScope)
+            : $this->orderingManager->getNextPosition($this->pdo, $orderingConfig, $orderingScope);
 
         $statement = $this->pdo->prepare(
             'INSERT INTO `' . self::FIELD_TABLE . '` '
@@ -85,6 +87,7 @@ final readonly class PdoCategoryContentFieldCommandRepository implements Categor
         return (int) $id;
     }
 
+    /** {@inheritDoc} */
     public function update(UpdateCategoryContentFieldCommand $command, DateTimeImmutable $occurredAt): bool
     {
         $statement = $this->pdo->prepare(
@@ -99,9 +102,22 @@ final readonly class PdoCategoryContentFieldCommandRepository implements Categor
             'id' => $command->fieldId,
         ]);
 
-        return $statement->rowCount() > 0;
+        if ($statement->rowCount() > 0) {
+            return true;
+        }
+
+        // Use a current read because a no-op UPDATE can match a row newer
+        // than the Host transaction's consistent-read snapshot.
+        $exists = $this->pdo->prepare(
+            'SELECT 1 FROM `' . self::FIELD_TABLE . '` '
+            . 'WHERE `id` = :id AND `deleted_at` IS NULL FOR UPDATE',
+        );
+        $exists->execute(['id' => $command->fieldId]);
+
+        return $exists->fetchColumn() !== false;
     }
 
+    /** {@inheritDoc} */
     public function updateDisplayOrder(
         UpdateCategoryContentFieldDisplayOrderCommand $command,
         DateTimeImmutable $occurredAt,
@@ -121,6 +137,7 @@ final readonly class PdoCategoryContentFieldCommandRepository implements Categor
         );
     }
 
+    /** {@inheritDoc} */
     public function softDelete(
         SoftDeleteCategoryContentFieldCommand $command,
         DateTimeImmutable $occurredAt,
@@ -140,6 +157,7 @@ final readonly class PdoCategoryContentFieldCommandRepository implements Categor
         return $statement->rowCount() > 0;
     }
 
+    /** {@inheritDoc} */
     public function restore(
         RestoreCategoryContentFieldCommand $command,
         DateTimeImmutable $occurredAt,
@@ -157,11 +175,12 @@ final readonly class PdoCategoryContentFieldCommandRepository implements Categor
         return $statement->rowCount() > 0;
     }
 
+    /** Returns the stored scope, or false if the field has no non-deleted row. */
     private function activeOrderingScope(int $fieldId): string|false
     {
         $statement = $this->pdo->prepare(
             'SELECT `ordering_scope` FROM `' . self::FIELD_TABLE . '` '
-            . 'WHERE `id` = :id AND `deleted_at` IS NULL LIMIT 1',
+            . 'WHERE `id` = :id AND `deleted_at` IS NULL LIMIT 1' . ($this->pdo->inTransaction() ? ' FOR UPDATE' : ''),
         );
         $statement->execute(['id' => $fieldId]);
         $value = $statement->fetchColumn();
@@ -197,18 +216,6 @@ final readonly class PdoCategoryContentFieldCommandRepository implements Categor
             nullableScope: false,
             updatedAtColumn: 'updated_at',
         );
-    }
-
-    private function orderingScope(int $categoryId, ?string $languageCode, ?string $platform): string
-    {
-        $language = $languageCode === null
-            ? 'N:'
-            : 'L' . mb_strlen($languageCode) . ':' . $languageCode;
-        $platformValue = $platform === null
-            ? 'N:'
-            : 'L' . mb_strlen($platform) . ':' . $platform;
-
-        return 'C' . $categoryId . '|' . $language . '|' . $platformValue;
     }
 
     private function formatTimestamp(DateTimeImmutable $occurredAt): string

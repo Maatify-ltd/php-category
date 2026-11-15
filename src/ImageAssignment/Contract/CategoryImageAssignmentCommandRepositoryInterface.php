@@ -15,8 +15,10 @@ use Maatify\Category\ImageAssignment\Ordering\Command\UpdateCategoryImageAssignm
 /** Write port for the Category-owned Media Asset assignment lifecycle. */
 interface CategoryImageAssignmentCommandRepositoryInterface
 {
+    /** Inserts a record using the supplied mutation time and returns its generated identity. */
     public function create(CreateCategoryImageAssignmentCommand $command, DateTimeImmutable $occurredAt): int;
 
+    /** Moves the row within its current ordering scope. Returns false when the row cannot be repositioned. */
     public function updateDisplayOrder(
         UpdateCategoryImageAssignmentDisplayOrderCommand $command,
         DateTimeImmutable $occurredAt,
@@ -34,11 +36,13 @@ interface CategoryImageAssignmentCommandRepositoryInterface
         DateTimeImmutable $occurredAt,
     ): bool;
 
+    /** Marks a non-deleted row deleted. Returns false when there is no matching non-deleted row. */
     public function softDelete(
         SoftDeleteCategoryImageAssignmentCommand $command,
         DateTimeImmutable $occurredAt,
     ): bool;
 
+    /** Clears the deletion marker. Returns false when there is no matching deleted row. */
     public function restore(
         RestoreCategoryImageAssignmentCommand $command,
         DateTimeImmutable $occurredAt,

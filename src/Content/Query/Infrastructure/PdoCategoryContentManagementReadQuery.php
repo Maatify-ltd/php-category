@@ -10,13 +10,13 @@ use Maatify\Category\Content\Query\Contract\CategoryContentManagementReadQueryIn
 use Maatify\Category\Content\Query\DTO\CategoryContentCollectionDTO;
 use Maatify\Category\Content\Query\DTO\CategoryContentDTO;
 use Maatify\Category\Content\Query\DTO\CategoryContentListCriteriaDTO;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
-use Maatify\Persistence\Pdo\Pagination\PaginationConfig;
-use Maatify\Persistence\Pdo\Pagination\PdoPaginationQueryDescriptor;
-use Maatify\Persistence\Pdo\Pagination\PdoPaginator;
-use Maatify\Persistence\Pdo\Pagination\SortDirectionEnum;
-use Maatify\Persistence\Pdo\Pagination\SortWhitelist;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
+use Maatify\PhpPersistence\Pagination\Config\PaginationConfig;
+use Maatify\PhpPersistence\Pagination\Criteria\PdoPaginationQueryDescriptor;
+use Maatify\PhpPersistence\Pagination\Repository\PdoPaginator;
+use Maatify\PhpPersistence\Pagination\Enum\SortDirectionEnum;
+use Maatify\PhpPersistence\Pagination\ValueObject\SortWhitelist;
 use Maatify\SharedCommon\Contracts\ClockInterface;
 use PDO;
 
@@ -41,7 +41,7 @@ final readonly class PdoCategoryContentManagementReadQuery extends PdoReadQueryS
     ): ?CategoryContentDTO {
         $where = ['`id` = :content_id'];
         $params = ['content_id' => $contentId];
-        $this->appendDeletedStateFilter($where, $params, $deletedState, 'content');
+        $this->appendDeletedStateFilter($where, $deletedState, 'content');
 
         $statement = $this->pdo->prepare(
             $this->contentSelect() . ' WHERE ' . implode(' AND ', $where) . ' LIMIT 1',
@@ -63,7 +63,7 @@ final readonly class PdoCategoryContentManagementReadQuery extends PdoReadQueryS
             $where[] = '`category_id` = :content_category_id';
             $params['content_category_id'] = $criteria->categoryId;
         }
-        $this->appendDeletedStateFilter($where, $params, $criteria->deletedState, 'content');
+        $this->appendDeletedStateFilter($where, $criteria->deletedState, 'content');
 
         $statement = $this->pdo->prepare(
             $this->contentSelect()
@@ -83,8 +83,8 @@ final readonly class PdoCategoryContentManagementReadQuery extends PdoReadQueryS
         return new CategoryContentCollectionDTO($items);
     }
 
-    /** @return PageResult<CategoryContentDTO> */
-    public function paginateContents(CategoryContentListCriteriaDTO $criteria, PageRequest $pageRequest): PageResult
+    /** @return PageResultDTO<CategoryContentDTO> */
+    public function paginateContents(CategoryContentListCriteriaDTO $criteria, PageRequest $pageRequest): PageResultDTO
     {
         $where = [];
         /** @var array<string, int|string> $params */
@@ -119,7 +119,7 @@ final readonly class PdoCategoryContentManagementReadQuery extends PdoReadQueryS
                 minPerPage: 1,
                 maxPerPage: 100,
             ),
-            fn (array $row): CategoryContentDTO => $this->hydrateContent($row),
+            fn(array $row): CategoryContentDTO => $this->hydrateContent($row),
         );
     }
 
@@ -136,7 +136,7 @@ final readonly class PdoCategoryContentManagementReadQuery extends PdoReadQueryS
             $where[] = '`content`.`category_id` = :content_category_id';
             $params['content_category_id'] = $criteria->categoryId;
         }
-        $this->appendDeletedStateFilter($where, $params, $criteria->deletedState, 'content');
+        $this->appendDeletedStateFilter($where, $criteria->deletedState, 'content');
     }
 
     private function contentFrom(): string
@@ -146,11 +146,9 @@ final readonly class PdoCategoryContentManagementReadQuery extends PdoReadQueryS
 
     /**
      * @param list<string> $where
-     * @param array<string, int|string> $params
      */
     private function appendDeletedStateFilter(
         array &$where,
-        array &$params,
         CategoryDeletedStateEnum $deletedState,
         string $tableAlias,
     ): void {

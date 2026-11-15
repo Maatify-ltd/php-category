@@ -5,7 +5,36 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [Unreleased]
+## [1.0.0-rc.2]
+
+### Changed
+
+- Adopt the Maatify Proprietary License for RC.2. Written
+  authorization is available free of charge. Published RC.1 retains its MIT
+  license.
+- Enforce PHP security patch floors in Composer with
+  `>=8.4.27 <8.5 || >=8.5.12 <9.0`. The compatibility matrix covers Stable PHP
+  8.4 and 8.5. Later PHP 8 minors retain forward Composer eligibility.
+- Use `maatify/php-persistence 1.0.0-rc.1` for shared Ordering, Pagination, and
+  Transactions. Consumers using shared request/result types or explicit
+  transaction wiring must update their imports.
+- Allocate display order from current MySQL state inside a Host transaction
+  for Category, Image Assignment, and Content Field creation.
+
+### Fixed
+
+- Declare `ext-ctype` as a Composer runtime requirement so installation checks
+  for the extension used to validate newly created record IDs.
+- Keep same-value updates successful for existing Category, Content, and Content
+  Field rows when MySQL reports zero changed rows. Missing or deleted rows still
+  follow the existing error contract. [#62](https://github.com/Maatify-ltd/php-category/issues/62)
+- Read the current ordering scope for Category, Content Field, and Image
+  Assignment reorders inside a Host transaction. Image Assignment default
+  mutations support an optional lazy same-primary lookup for older Host
+  snapshots.
+- Use MySQL collation equality for Image Assignment and Content Field reads,
+  identity, and ordering, including Image Assignment defaults. Existing
+  installations must follow the [schema upgrade](schema/README.md#upgrade-an-existing-image-assignment-or-content-field-schema).
 
 ## [1.0.0-rc.1] - 2026-09-15
 
@@ -16,7 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - MySQL schema, PDO repositories, shared Persistence transaction runner, and real-engine
   Integration tests for hierarchy, lifecycle, ordering, and visibility.
 - Root Package Reference and standards-aligned Composer/CI configuration.
-- Added the practical [Consumer Usage Guide](docs/USAGE_GUIDE.md) for factory
+- Added the practical [Consumer Usage Guide](docs/guides/USAGE_GUIDE.md) for factory
   setup, the five Domain APIs, exact scopes, lifecycle, pagination, and
   end-to-end Host workflows.
 - Expanded management query APIs with shared Persistence pagination,
@@ -84,5 +113,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `PdoTransactionRunner` with the same PDO used by Category persistence;
   caller-owned outer transactions remain Host-owned.
 
-[Unreleased]: https://github.com/Maatify/php-category/compare/v1.0.0-rc.1...HEAD
-[1.0.0-rc.1]: https://github.com/Maatify/php-category/releases/tag/v1.0.0-rc.1
+[1.0.0-rc.1]: https://github.com/Maatify-ltd/php-category/releases/tag/v1.0.0-rc.1

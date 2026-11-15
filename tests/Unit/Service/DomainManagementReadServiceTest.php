@@ -22,9 +22,9 @@ use Maatify\Category\Lifecycle\Enum\CategoryStatusEnum;
 use Maatify\Category\Common\Exception\CategoryInvalidArgumentException;
 use Maatify\Category\Exception\CategoryNotFoundException;
 use Maatify\Category\Content\Exception\CategoryContentNotFoundException;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
-use Maatify\Persistence\Pdo\Pagination\SortDirectionEnum;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
+use Maatify\PhpPersistence\Pagination\Enum\SortDirectionEnum;
 
 final class DomainManagementReadServiceTest extends DomainReadServiceTestCase
 {
@@ -123,7 +123,7 @@ final class DomainManagementReadServiceTest extends DomainReadServiceTestCase
     {
         $criteria = new CategoryListCriteriaDTO(search: 'category');
         $pageRequest = new PageRequest(page: 2, perPage: 1, sortBy: 'code', sortDirection: 'DESC');
-        $page = new PageResult(
+        $page = new PageResultDTO(
             data: [$this->category(2)],
             page: 2,
             perPage: 1,

@@ -18,44 +18,51 @@ use Maatify\Category\ContentField\Query\DTO\CategoryContentFieldCollectionDTO;
 use Maatify\Category\ContentField\Query\DTO\CategoryContentFieldDTO;
 use Maatify\Category\ContentField\Query\DTO\CategoryContentFieldListCriteriaDTO;
 use Maatify\Category\Query\DTO\CategoryVisibleListCriteriaDTO;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 
 /** Public Category Content Field domain API. */
 final readonly class ContentFieldApi implements ContentFieldApiInterface
 {
     public function __construct(private ContentFieldServiceInterface $service) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryContentFieldCommand $command): int
     {
         return $this->service->create($command);
     }
 
+    /** {@inheritDoc} */
     public function update(UpdateCategoryContentFieldCommand $command): void
     {
         $this->service->update($command);
     }
 
+    /** {@inheritDoc} */
     public function updateValue(UpdateCategoryContentFieldValueCommand $command): void
     {
         $this->service->updateValue($command);
     }
 
+    /** {@inheritDoc} */
     public function updateDisplayOrder(UpdateCategoryContentFieldDisplayOrderCommand $command): void
     {
         $this->service->updateDisplayOrder($command);
     }
 
+    /** {@inheritDoc} */
     public function softDelete(SoftDeleteCategoryContentFieldCommand $command): void
     {
         $this->service->softDelete($command);
     }
 
+    /** {@inheritDoc} */
     public function restore(RestoreCategoryContentFieldCommand $command): void
     {
         $this->service->restore($command);
     }
 
+    /** {@inheritDoc} */
     public function listVisibleForCategory(
         int $categoryId,
         CategoryContentFieldScopeDTO $scope,
@@ -64,6 +71,7 @@ final readonly class ContentFieldApi implements ContentFieldApiInterface
         return $this->service->listVisibleForCategory($categoryId, $scope, $criteria);
     }
 
+    /** {@inheritDoc} */
     public function getByIdForManagement(
         int $fieldId,
         CategoryDeletedStateEnum $deletedState = CategoryDeletedStateEnum::NON_DELETED,
@@ -71,15 +79,17 @@ final readonly class ContentFieldApi implements ContentFieldApiInterface
         return $this->service->getByIdForManagement($fieldId, $deletedState);
     }
 
+    /** {@inheritDoc} */
     public function listForManagement(CategoryContentFieldListCriteriaDTO $criteria): CategoryContentFieldCollectionDTO
     {
         return $this->service->listForManagement($criteria);
     }
 
+    /** {@inheritDoc} */
     public function paginateForManagement(
         CategoryContentFieldListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         return $this->service->paginateForManagement($criteria, $pageRequest);
     }
 }

@@ -24,6 +24,7 @@ final readonly class PdoCategoryReadQuery extends PdoReadQuerySupport implements
         private ClockInterface $clock,
     ) {}
 
+    /** {@inheritDoc} */
     public function findVisibleById(int $categoryId): ?CategoryDTO
     {
         $statement = $this->pdo->prepare(
@@ -59,6 +60,7 @@ final readonly class PdoCategoryReadQuery extends PdoReadQuerySupport implements
         return is_array($row) ? $this->hydrateCategory($row) : null;
     }
 
+    /** {@inheritDoc} */
     public function listVisibleRootCategories(
         CategoryVisibleListCriteriaDTO $criteria = new CategoryVisibleListCriteriaDTO(),
     ): CategoryCollectionDTO {
@@ -78,6 +80,7 @@ final readonly class PdoCategoryReadQuery extends PdoReadQuerySupport implements
         return $this->hydrateCategories($rows);
     }
 
+    /** {@inheritDoc} */
     public function listVisibleChildren(
         int $parentId,
         CategoryVisibleListCriteriaDTO $criteria = new CategoryVisibleListCriteriaDTO(),

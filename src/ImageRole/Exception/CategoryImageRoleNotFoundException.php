@@ -7,8 +7,8 @@ namespace Maatify\Category\ImageRole\Exception;
 use Maatify\Category\Exception\CategoryExceptionInterface;
 use Maatify\Exceptions\Exception\NotFound\ResourceNotFoundMaatifyException;
 
-final class CategoryImageRoleNotFoundException extends ResourceNotFoundMaatifyException
-    implements CategoryExceptionInterface
+/** No Role matches the requested identity and deletion requirements. */
+final class CategoryImageRoleNotFoundException extends ResourceNotFoundMaatifyException implements CategoryExceptionInterface
 {
     public static function withId(int $roleId): self
     {

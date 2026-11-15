@@ -22,11 +22,13 @@ final readonly class PdoCategoryQueryReader extends PdoReadQuerySupport implemen
         private ClockInterface $clock,
     ) {}
 
+    /** {@inheritDoc} */
     public function findById(int $categoryId): ?CategoryDTO
     {
         return $this->findCategory($categoryId, false, false);
     }
 
+    /** {@inheritDoc} */
     public function findByCode(string $code): ?CategoryDTO
     {
         $statement = $this->pdo->prepare(
@@ -42,6 +44,7 @@ final readonly class PdoCategoryQueryReader extends PdoReadQuerySupport implemen
         return is_array($row) ? $this->hydrateCategory($row) : null;
     }
 
+    /** {@inheritDoc} */
     public function findActiveById(int $categoryId): ?CategoryDTO
     {
         return $this->findCategory($categoryId, true, false);

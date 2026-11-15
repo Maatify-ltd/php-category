@@ -9,7 +9,11 @@ use Countable;
 use IteratorAggregate;
 use Maatify\Category\ImageRole\CategoryImageRoleDTO;
 
-/** @implements IteratorAggregate<int, CategoryImageRoleDTO> */
+/**
+ * Ordered Role results from a management query.
+ *
+ * @implements IteratorAggregate<int, CategoryImageRoleDTO>
+ */
 final readonly class CategoryImageRoleCollectionDTO implements IteratorAggregate, Countable, \JsonSerializable
 {
     /** @param list<CategoryImageRoleDTO> $items */

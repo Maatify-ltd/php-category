@@ -8,8 +8,10 @@ use DateTimeImmutable;
 use Maatify\Category\Lifecycle\Enum\CategoryStatusEnum;
 use Maatify\Category\Common\Exception\CategoryInvalidArgumentException;
 
+/** Immutable Category read model with a nullable parent and an independent deletion timestamp. */
 final readonly class CategoryDTO implements \JsonSerializable
 {
+    /** Requires positive identities and display order. A Category cannot be its own parent. */
     public function __construct(
         public int $id,
         public ?int $parentId,

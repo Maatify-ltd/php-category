@@ -4,7 +4,9 @@ declare(strict_types=1);
 
 namespace Maatify\Category\Factory;
 
+use Closure;
 use Maatify\Category\Api\CategoryApi;
+use Maatify\Category\Common\Exception\CategoryInvalidArgumentException;
 use Maatify\Category\Content\Api\ContentApi;
 use Maatify\Category\Content\Infrastructure\PdoCategoryContentCommandRepository;
 use Maatify\Category\Content\Query\Infrastructure\PdoCategoryContentManagementReadQuery;
@@ -35,8 +37,8 @@ use Maatify\Category\Query\Infrastructure\PdoCategoryManagementReadQuery;
 use Maatify\Category\Query\Infrastructure\PdoCategoryQueryReader;
 use Maatify\Category\Query\Infrastructure\PdoCategoryReadQuery;
 use Maatify\Category\Service\CategoryService;
-use Maatify\Persistence\Pdo\Ordering\ScopedOrderingManager;
-use Maatify\Persistence\Pdo\Transaction\PdoTransactionRunner;
+use Maatify\PhpPersistence\Ordering\Repository\ScopedOrderingManager;
+use Maatify\PhpPersistence\Transaction\Repository\PdoTransactionRunner;
 use Maatify\SharedCommon\Contracts\ClockInterface;
 use PDO;
 
@@ -45,7 +47,45 @@ final class CategoryFactory
 {
     private function __construct() {}
 
+    /**
+     * Composes all Domain APIs with the same Host PDO and Clock.
+     *
+     * The Host supplies an installed schema and retains ownership of its connection
+     * and any already-open transaction. Composition does not open a connection or
+     * mutate storage.
+     */
     public static function create(PDO $pdo, ClockInterface $clock): CategoryFacadeInterface
+    {
+        return self::compose($pdo, $clock, null);
+    }
+
+    /**
+     * Configures a lazy non-locking scope lookup for Image Assignment defaults.
+     *
+     * The Host provides a dedicated MySQL PDO to the same primary and schema,
+     * with autocommit and exception mode enabled. All writes and locking reads
+     * use the original Host PDO.
+     *
+     * @param callable(): PDO $openScopeLookup Opens the lookup when the Host snapshot cannot find an assignment.
+     */
+    public static function forHost(PDO $pdo, ClockInterface $clock, callable $openScopeLookup): CategoryFacadeInterface
+    {
+        $lookup = null;
+        $scopeLookup = static function () use ($pdo, $openScopeLookup, &$lookup): PDO {
+            if ($lookup === null) {
+                $candidate = $openScopeLookup();
+                self::validateScopeLookup($pdo, $candidate);
+                $lookup = $candidate;
+            }
+
+            return $lookup;
+        };
+
+        return self::compose($pdo, $clock, $scopeLookup);
+    }
+
+    /** @param (Closure(): PDO)|null $scopeLookup */
+    private static function compose(PDO $pdo, ClockInterface $clock, ?Closure $scopeLookup): CategoryFacadeInterface
     {
         $transaction = new PdoTransactionRunner($pdo);
         $ordering = new ScopedOrderingManager();
@@ -99,7 +139,7 @@ final class CategoryFactory
                 $clock,
             )),
             new ImageAssignmentApi(new ImageAssignmentService(
-                new PdoCategoryImageAssignmentCommandRepository($pdo, $ordering),
+                new PdoCategoryImageAssignmentCommandRepository($pdo, $ordering, $scopeLookup),
                 $queryReader,
                 $imageRoleQueryReader,
                 $imageAssignmentQueryReader,
@@ -109,5 +149,31 @@ final class CategoryFactory
                 $clock,
             )),
         );
+    }
+
+    private static function validateScopeLookup(PDO $pdo, PDO $lookup): void
+    {
+        if ($lookup === $pdo || $lookup->getAttribute(PDO::ATTR_DRIVER_NAME) !== 'mysql'
+            || $lookup->getAttribute(PDO::ATTR_ERRMODE) !== PDO::ERRMODE_EXCEPTION
+            || $lookup->inTransaction()
+            || !(bool) $lookup->getAttribute(PDO::ATTR_AUTOCOMMIT)
+        ) {
+            throw new CategoryInvalidArgumentException(
+                'The scope lookup requires a separate MySQL connection in autocommit and exception mode.',
+            );
+        }
+
+        $hostDatabase = self::databaseIdentity($pdo);
+        if ($hostDatabase === null || self::databaseIdentity($lookup) !== $hostDatabase) {
+            throw new CategoryInvalidArgumentException('The scope lookup must use the same MySQL server and selected schema as the Host.');
+        }
+    }
+
+    private static function databaseIdentity(PDO $pdo): ?string
+    {
+        $statement = $pdo->query("SELECT CONCAT(@@server_uuid, ':', DATABASE())");
+        $identity = $statement === false ? null : $statement->fetchColumn();
+
+        return is_string($identity) && $identity !== '' ? $identity : null;
     }
 }
