@@ -95,7 +95,7 @@ For an installation with the former length-prefixed `ordering_scope` columns:
 
 1. Take a verified backup, test the migration on a copy, and stop every writer
    to the Category tables. Keep writers stopped until the schema and application
-   have both been updated. Use an account with SELECT, ALTER and CREATE TEMPORARY
+   have both been updated. Use an account with SELECT, CREATE, INSERT, ALTER, and CREATE TEMPORARY
    TABLES access for the target database.
 2. Apply [001-scope-equality.sql](migrations/001-scope-equality.sql) to that
    database in a dedicated MySQL batch session using input redirection and
