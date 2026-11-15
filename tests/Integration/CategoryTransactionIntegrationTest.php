@@ -9,6 +9,9 @@ use Maatify\Category\Api\CategoryApiInterface;
 use Maatify\Category\ContentField\Api\Contract\ContentFieldApiInterface;
 use Maatify\Category\ImageAssignment\Api\Contract\ImageAssignmentApiInterface;
 use Maatify\Category\Lifecycle\Command\CreateCategoryCommand;
+use Maatify\Category\Content\Mutation\Command\CreateCategoryContentCommand;
+use Maatify\Category\Content\Mutation\Command\UpdateCategoryContentCommand;
+use Maatify\Category\ContentField\Mutation\Command\UpdateCategoryContentFieldCommand;
 use Maatify\Category\ContentField\Mutation\Command\CreateCategoryContentFieldCommand;
 use Maatify\Category\ImageAssignment\Assignment\Command\CreateCategoryImageAssignmentCommand;
 use Maatify\Category\ImageAssignment\CategoryImageAssignmentScopeDTO;
@@ -164,6 +167,57 @@ final class CategoryTransactionIntegrationTest extends CategoryMySqlIntegrationT
         $updated = (new PdoCategoryQueryReader($connection, new FixedCategoryClock()))->findById($categoryId);
         self::assertNotNull($updated);
         self::assertSame(CategoryStatusEnum::INACTIVE, $updated->status);
+    }
+
+    public function testSameSecondNoOpsUseCurrentRowsInsideAnOlderHostSnapshot(): void
+    {
+        $clock = new FixedCategoryClock();
+        $writer = CategoryFactory::create($this->connection(), $clock);
+        $host = $this->newConnection();
+        $consumer = CategoryFactory::create($host, $clock);
+        $snapshotReader = new PdoCategoryQueryReader($host, $clock);
+        $host->exec('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+        $host->beginTransaction();
+
+        try {
+            // Open the snapshot before the writer commits the rows.
+            self::assertNull($snapshotReader->findByCode('snapshot-no-op'));
+            $categoryId = $writer->categories()->create(new CreateCategoryCommand('snapshot-no-op'));
+            $contentId = $writer->contents()->create(
+                new CreateCategoryContentCommand($categoryId, null, 'Same name', 'Same description'),
+            );
+            $fieldId = $writer->contentFields()->create(new CreateCategoryContentFieldCommand(
+                $categoryId,
+                'summary',
+                null,
+                null,
+                CategoryContentFieldFormatEnum::TEXT,
+                'Same value',
+            ));
+            self::assertNull($snapshotReader->findById($categoryId));
+
+            $consumer->categories()->updateStatus(new UpdateCategoryStatusCommand($categoryId, CategoryStatusEnum::ACTIVE));
+            self::assertTrue($host->inTransaction());
+            $consumer->contents()->update(new UpdateCategoryContentCommand($contentId, 'Same name', 'Same description'));
+            self::assertTrue($host->inTransaction());
+            $consumer->contentFields()->update(
+                new UpdateCategoryContentFieldCommand($fieldId, CategoryContentFieldFormatEnum::TEXT, 'Same value'),
+            );
+            self::assertTrue($host->inTransaction());
+
+            $consumer->contents()->update(new UpdateCategoryContentCommand($contentId, 'Uncommitted name', 'Same description'));
+            self::assertSame('Uncommitted name', $consumer->contents()->getByIdForManagement($contentId)->name);
+            $host->rollBack();
+        } finally {
+            if ($host->inTransaction()) {
+                $host->rollBack();
+            }
+        }
+
+        self::assertFalse($host->inTransaction());
+        self::assertSame(CategoryStatusEnum::ACTIVE, $writer->categories()->getById($categoryId)->status);
+        self::assertSame('Same name', $writer->contents()->getByIdForManagement($contentId)->name);
+        self::assertSame('Same value', $writer->contentFields()->getByIdForManagement($fieldId)->value);
     }
 
     public function testOrderedCreatesUseCurrentScopeInsideAnOlderHostSnapshot(): void
