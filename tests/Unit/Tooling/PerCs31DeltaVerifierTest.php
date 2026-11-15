@@ -81,15 +81,15 @@ final class PerCs31DeltaVerifierTest extends TestCase
             self::assertSame(0, $exitCode, $output);
             self::assertStringContainsString('PER-CS 3.1 delta verification passed', $output);
 
-            $wording = 'The break is left out on purpose so execution continues into the next case.';
-            $rationale = $wording . ' The next case will run its recovery routine if the value is absent.';
+            $wording = "The break is left out on purpose so the next case handles the '?' token.";
+            $rationale = $wording . ' The next case handles "?" and `?` if the value is absent.';
             $unusual = str_replace('Falls through intentionally.', $wording, $source);
             self::assertNotFalse(file_put_contents($scratch . '/' . $fixture, $unusual . "\n"));
             [$exitCode, $output] = self::runCommand(['composer', 'check:style'], $scratch);
             self::assertSame(1, $exitCode, $output);
             self::assertStringContainsString($approvalFile, $output);
 
-            $ambiguous = 'Perhaps we should omit the break.';
+            $ambiguous = rtrim($wording, '.') . '?';
             $unusual = str_replace(
                 'Intentionally omit break so execution proceeds to the next case.',
                 $rationale,
