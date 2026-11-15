@@ -23,6 +23,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Fixed
 
+- Declare `ext-ctype` as a Composer runtime requirement so installation checks
+  for the extension used to validate newly created record IDs.
 - Keep same-value updates successful for existing Category, Content, and Content
   Field rows when MySQL reports zero changed rows. Missing or deleted rows still
   follow the existing error contract. [#62](https://github.com/Maatify-ltd/php-category/issues/62)

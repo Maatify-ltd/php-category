@@ -943,9 +943,10 @@ appropriate `CategoryPersistenceException` hierarchy.
 
 The package is `maatify/php-category`, type `library`, under the
 `Maatify\Category\` PSR-4 namespace. Its direct runtime requirements are PHP
-`>=8.4.27 <8.5 || >=8.5.12 <9.0`, `ext-mbstring`, `ext-pdo`, `ext-pdo_mysql`,
-`maatify/exceptions:^1.0`, `maatify/php-persistence:1.0.0-rc.1`, and
-`maatify/shared-common:^1.0`. These requirements describe the `v1.0.0-rc.2` artifact.
+`>=8.4.27 <8.5 || >=8.5.12 <9.0`, `ext-ctype`, `ext-mbstring`, `ext-pdo`,
+`ext-pdo_mysql`, `maatify/exceptions:^1.0`, `maatify/php-persistence:1.0.0-rc.1`,
+and `maatify/shared-common:^1.0`. These requirements describe the `v1.0.0-rc.2`
+artifact.
 The [previously published Category RC.1](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.1)
 retains the PHP constraint and Persistence dependency recorded at its tag.
 The compatibility matrix covers Stable PHP 8.4 and 8.5. Later PHP 8 minors

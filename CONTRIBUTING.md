@@ -96,10 +96,14 @@ For workflow lint and the package-owned whitespace check, use:
 
 ```bash
 docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint@sha256:887a259a5a534f3c4f36cb02dca341673c6089431057242cdc931e9f133147e9
+: "${BASE_SHA:?Set BASE_SHA to the full PR base commit SHA}"
 git diff --check "$BASE_SHA...HEAD" -- . ':(exclude)docs/php-engineering-standards/**'
 ```
 
-Set `BASE_SHA` to the current PR base commit for the whitespace comparison.
+Set `BASE_SHA` to the full current PR base commit SHA for the local comparison.
+When starting Category Package CI manually, supply the full comparison base
+commit SHA as the `base_sha` workflow input. The check fails if the base is
+missing or invalid.
 
 The package does not commit `composer.lock`; Composer may create it temporarily
 during local verification. Remove it before committing.
