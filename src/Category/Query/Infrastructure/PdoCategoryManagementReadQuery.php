@@ -12,13 +12,13 @@ use Maatify\Category\Query\Contract\CategoryManagementReadQueryInterface;
 use Maatify\Category\Query\DTO\CategoryCollectionDTO;
 use Maatify\Category\Query\DTO\CategoryDTO;
 use Maatify\Category\Query\DTO\CategoryListCriteriaDTO;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
-use Maatify\Persistence\Pdo\Pagination\PaginationConfig;
-use Maatify\Persistence\Pdo\Pagination\PdoPaginationQueryDescriptor;
-use Maatify\Persistence\Pdo\Pagination\PdoPaginator;
-use Maatify\Persistence\Pdo\Pagination\SortDirectionEnum;
-use Maatify\Persistence\Pdo\Pagination\SortWhitelist;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
+use Maatify\PhpPersistence\Pagination\Config\PaginationConfig;
+use Maatify\PhpPersistence\Pagination\Criteria\PdoPaginationQueryDescriptor;
+use Maatify\PhpPersistence\Pagination\Repository\PdoPaginator;
+use Maatify\PhpPersistence\Pagination\Enum\SortDirectionEnum;
+use Maatify\PhpPersistence\Pagination\ValueObject\SortWhitelist;
 use Maatify\SharedCommon\Contracts\ClockInterface;
 use PDO;
 
@@ -41,7 +41,7 @@ final readonly class PdoCategoryManagementReadQuery extends PdoReadQuerySupport 
     {
         $where = ['`id` = :category_id'];
         $params = ['category_id' => $categoryId];
-        $this->appendDeletedStateFilter($where, $params, $deletedState, 'category');
+        $this->appendDeletedStateFilter($where, $deletedState, 'category');
 
         $statement = $this->pdo->prepare(
             $this->categorySelect() . ' WHERE ' . implode(' AND ', $where) . ' LIMIT 1',
@@ -58,7 +58,7 @@ final readonly class PdoCategoryManagementReadQuery extends PdoReadQuerySupport 
     {
         $where = ['`category`.`code` = :category_code'];
         $params = ['category_code' => $code];
-        $this->appendDeletedStateFilter($where, $params, $deletedState, 'category');
+        $this->appendDeletedStateFilter($where, $deletedState, 'category');
 
         $statement = $this->pdo->prepare(
             $this->categorySelect() . ' WHERE ' . implode(' AND ', $where) . ' LIMIT 1',
@@ -88,24 +88,24 @@ final readonly class PdoCategoryManagementReadQuery extends PdoReadQuerySupport 
         return $this->listCategoriesWithWhere($criteria, ['`parent_id` = :parent_id'], ['parent_id' => $parentId]);
     }
 
-    /** @return PageResult<CategoryDTO> */
-    public function paginateCategories(CategoryListCriteriaDTO $criteria, PageRequest $pageRequest): PageResult
+    /** @return PageResultDTO<CategoryDTO> */
+    public function paginateCategories(CategoryListCriteriaDTO $criteria, PageRequest $pageRequest): PageResultDTO
     {
         return $this->paginateCategoriesWithWhere($criteria, [], [], $pageRequest);
     }
 
-    /** @return PageResult<CategoryDTO> */
-    public function paginateRootCategories(CategoryListCriteriaDTO $criteria, PageRequest $pageRequest): PageResult
+    /** @return PageResultDTO<CategoryDTO> */
+    public function paginateRootCategories(CategoryListCriteriaDTO $criteria, PageRequest $pageRequest): PageResultDTO
     {
         return $this->paginateCategoriesWithWhere($criteria, ['`parent_id` IS NULL'], [], $pageRequest);
     }
 
-    /** @return PageResult<CategoryDTO> */
+    /** @return PageResultDTO<CategoryDTO> */
     public function paginateChildren(
         int $parentId,
         CategoryListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         return $this->paginateCategoriesWithWhere(
             $criteria,
             ['`parent_id` = :parent_id'],
@@ -146,14 +146,14 @@ final readonly class PdoCategoryManagementReadQuery extends PdoReadQuerySupport 
     /**
      * @param list<string> $scopeWhere
      * @param array<string, int|string> $scopeParams
-     * @return PageResult<CategoryDTO>
+     * @return PageResultDTO<CategoryDTO>
      */
     private function paginateCategoriesWithWhere(
         CategoryListCriteriaDTO $criteria,
         array $scopeWhere,
         array $scopeParams,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         $baseWhere = $scopeWhere;
         $baseParams = $scopeParams;
         $this->appendCategoryCriteria($baseWhere, $baseParams, $criteria, false);
@@ -196,7 +196,7 @@ final readonly class PdoCategoryManagementReadQuery extends PdoReadQuerySupport 
             $where[] = '`category`.`status` = :category_status';
             $params['category_status'] = $criteria->status->value;
         }
-        $this->appendDeletedStateFilter($where, $params, $criteria->deletedState, 'category');
+        $this->appendDeletedStateFilter($where, $criteria->deletedState, 'category');
         if ($includeSearch) {
             $this->appendCategorySearch($where, $params, $criteria);
         }
@@ -257,11 +257,9 @@ final readonly class PdoCategoryManagementReadQuery extends PdoReadQuerySupport 
 
     /**
      * @param list<string> $where
-     * @param array<string, int|string> $params
      */
     private function appendDeletedStateFilter(
         array &$where,
-        array &$params,
         CategoryDeletedStateEnum $deletedState,
         string $tableAlias,
     ): void {

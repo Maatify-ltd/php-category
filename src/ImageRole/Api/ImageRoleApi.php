@@ -14,8 +14,8 @@ use Maatify\Category\ImageRole\Lifecycle\Command\SoftDeleteCategoryImageRoleComm
 use Maatify\Category\ImageRole\Lifecycle\Command\UpdateCategoryImageRoleStatusCommand;
 use Maatify\Category\ImageRole\Query\DTO\CategoryImageRoleCollectionDTO;
 use Maatify\Category\ImageRole\Query\DTO\CategoryImageRoleListCriteriaDTO;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 
 /** Public Category Image Role domain API; reads are management-only by contract. */
 final readonly class ImageRoleApi implements ImageRoleApiInterface
@@ -61,7 +61,7 @@ final readonly class ImageRoleApi implements ImageRoleApiInterface
         return $this->service->listForManagement($criteria);
     }
 
-    public function paginateForManagement(CategoryImageRoleListCriteriaDTO $criteria, PageRequest $pageRequest): PageResult
+    public function paginateForManagement(CategoryImageRoleListCriteriaDTO $criteria, PageRequest $pageRequest): PageResultDTO
     {
         return $this->service->paginateForManagement($criteria, $pageRequest);
     }

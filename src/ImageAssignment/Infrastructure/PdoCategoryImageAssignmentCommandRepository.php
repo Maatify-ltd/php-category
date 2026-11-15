@@ -14,8 +14,8 @@ use Maatify\Category\ImageAssignment\Ordering\Command\UpdateCategoryImageAssignm
 use Maatify\Category\ImageAssignment\Contract\CategoryImageAssignmentCommandRepositoryInterface;
 use Maatify\Category\ImageAssignment\Assignment\Exception\CategoryImageAssignmentAlreadyExistsException;
 use Maatify\Category\Common\Exception\CategoryPersistenceException;
-use Maatify\Persistence\Pdo\Ordering\ScopedOrderingConfig;
-use Maatify\Persistence\Pdo\Ordering\ScopedOrderingManager;
+use Maatify\PhpPersistence\Ordering\Config\ScopedOrderingConfig;
+use Maatify\PhpPersistence\Ordering\Repository\ScopedOrderingManager;
 use PDO;
 use PDOException;
 
@@ -38,11 +38,10 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
             $command->roleId,
         );
         $this->lockCreationScope($orderingScope);
-        $displayOrder = $this->orderingManager->getNextPosition(
-            $this->pdo,
-            $this->orderingConfig(),
-            $orderingScope,
-        );
+        $orderingConfig = $this->orderingConfig();
+        $displayOrder = $this->pdo->inTransaction()
+            ? $this->orderingManager->getNextPositionForUpdate($this->pdo, $orderingConfig, $orderingScope)
+            : $this->orderingManager->getNextPosition($this->pdo, $orderingConfig, $orderingScope);
 
         $statement = $this->pdo->prepare(
             'INSERT INTO `' . self::ASSIGNMENT_TABLE . '` '

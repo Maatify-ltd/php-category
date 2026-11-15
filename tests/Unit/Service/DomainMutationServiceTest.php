@@ -298,7 +298,6 @@ final class DomainMutationServiceTest extends TestCase
             deletedAt: null,
         );
         $queryReader = new InMemoryCategoryQueryReader([$this->category(5, null)], [$content]);
-        $commandRepository = new InMemoryCategoryCommandRepository();
         $contentRepository = new InMemoryCategoryContentCommandRepository();
         $service = new ContentService(
             $contentRepository,

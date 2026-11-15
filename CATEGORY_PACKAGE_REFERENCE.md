@@ -257,7 +257,7 @@ atomic update. No generic or string-based field update exists.
 - `CategoryManagementReadQueryInterface` is the dedicated management Category
   read port. Content, Content Field, Image Role, and Image Assignment each
   expose a separate management read port in their own domain boundary.
-- `Maatify\Persistence\Pdo\Transaction\TransactionRunnerInterface` defines
+- `Maatify\PhpPersistence\Transaction\Repository\TransactionRunnerInterface` defines
   the shared transaction boundary used by the domain services. The Factory
   wires `PdoTransactionRunner` with the same PDO instance used by Category
   repositories and shared Ordering operations.
@@ -425,9 +425,9 @@ CategoryApiInterface [Maatify\Category\Api; src/Category/Api]
   listForManagement(CategoryListCriteriaDTO): CategoryCollectionDTO
   listRootCategoriesForManagement(CategoryListCriteriaDTO): CategoryCollectionDTO
   listChildrenForManagement(int, CategoryListCriteriaDTO): CategoryCollectionDTO
-  paginateForManagement(CategoryListCriteriaDTO, PageRequest): PageResult<CategoryDTO>
-  paginateRootCategoriesForManagement(CategoryListCriteriaDTO, PageRequest): PageResult<CategoryDTO>
-  paginateChildrenForManagement(int, CategoryListCriteriaDTO, PageRequest): PageResult<CategoryDTO>
+  paginateForManagement(CategoryListCriteriaDTO, PageRequest): PageResultDTO<CategoryDTO>
+  paginateRootCategoriesForManagement(CategoryListCriteriaDTO, PageRequest): PageResultDTO<CategoryDTO>
+  paginateChildrenForManagement(int, CategoryListCriteriaDTO, PageRequest): PageResultDTO<CategoryDTO>
 
 ContentApiInterface
   create(CreateCategoryContentCommand): int
@@ -439,7 +439,7 @@ ContentApiInterface
   listVisibleForCategory(int, CategoryVisibleListCriteriaDTO = new CategoryVisibleListCriteriaDTO()): CategoryContentCollectionDTO
   getByIdForManagement(int, CategoryDeletedStateEnum = NON_DELETED): CategoryContentDTO
   listForManagement(CategoryContentListCriteriaDTO): CategoryContentCollectionDTO
-  paginateForManagement(CategoryContentListCriteriaDTO, PageRequest): PageResult<CategoryContentDTO>
+  paginateForManagement(CategoryContentListCriteriaDTO, PageRequest): PageResultDTO<CategoryContentDTO>
 
 ContentFieldApiInterface
   create(CreateCategoryContentFieldCommand): int
@@ -451,7 +451,7 @@ ContentFieldApiInterface
   listVisibleForCategory(int, CategoryContentFieldScopeDTO, CategoryVisibleListCriteriaDTO = new CategoryVisibleListCriteriaDTO()): CategoryContentFieldCollectionDTO
   getByIdForManagement(int, CategoryDeletedStateEnum = NON_DELETED): CategoryContentFieldDTO
   listForManagement(CategoryContentFieldListCriteriaDTO): CategoryContentFieldCollectionDTO
-  paginateForManagement(CategoryContentFieldListCriteriaDTO, PageRequest): PageResult<CategoryContentFieldDTO>
+  paginateForManagement(CategoryContentFieldListCriteriaDTO, PageRequest): PageResultDTO<CategoryContentFieldDTO>
 
 ImageRoleApiInterface
   create(CreateCategoryImageRoleCommand): int
@@ -461,7 +461,7 @@ ImageRoleApiInterface
   getByIdForManagement(int, CategoryDeletedStateEnum = NON_DELETED): CategoryImageRoleDTO
   getByKeyForManagement(string, CategoryDeletedStateEnum = NON_DELETED): CategoryImageRoleDTO
   listForManagement(CategoryImageRoleListCriteriaDTO): CategoryImageRoleCollectionDTO
-  paginateForManagement(CategoryImageRoleListCriteriaDTO, PageRequest): PageResult<CategoryImageRoleDTO>
+  paginateForManagement(CategoryImageRoleListCriteriaDTO, PageRequest): PageResultDTO<CategoryImageRoleDTO>
 
 ImageAssignmentApiInterface [images()]
   assign(CreateCategoryImageAssignmentCommand): int
@@ -473,7 +473,7 @@ ImageAssignmentApiInterface [images()]
   listVisibleForCategory(int, CategoryImageAssignmentScopeDTO, CategoryVisibleListCriteriaDTO = new CategoryVisibleListCriteriaDTO()): CategoryImageAssignmentCollectionDTO
   getByIdForManagement(int, CategoryDeletedStateEnum = NON_DELETED): CategoryImageAssignmentDTO
   listForManagement(CategoryImageAssignmentListCriteriaDTO): CategoryImageAssignmentCollectionDTO
-  paginateForManagement(CategoryImageAssignmentListCriteriaDTO, PageRequest): PageResult<CategoryImageAssignmentDTO>
+  paginateForManagement(CategoryImageAssignmentListCriteriaDTO, PageRequest): PageResultDTO<CategoryImageAssignmentDTO>
 
 CategoryCommandRepositoryInterface
   create(CreateCategoryCommand, DateTimeImmutable): int
@@ -530,30 +530,30 @@ CategoryManagementReadQueryInterface [Category domain]
   listCategories(CategoryListCriteriaDTO): CategoryCollectionDTO
   listRootCategories(CategoryListCriteriaDTO): CategoryCollectionDTO
   listChildren(int, CategoryListCriteriaDTO): CategoryCollectionDTO
-  paginateCategories(CategoryListCriteriaDTO, PageRequest): PageResult<CategoryDTO>
-  paginateRootCategories(CategoryListCriteriaDTO, PageRequest): PageResult<CategoryDTO>
-  paginateChildren(int, CategoryListCriteriaDTO, PageRequest): PageResult<CategoryDTO>
+  paginateCategories(CategoryListCriteriaDTO, PageRequest): PageResultDTO<CategoryDTO>
+  paginateRootCategories(CategoryListCriteriaDTO, PageRequest): PageResultDTO<CategoryDTO>
+  paginateChildren(int, CategoryListCriteriaDTO, PageRequest): PageResultDTO<CategoryDTO>
 
 CategoryContentManagementReadQueryInterface
   findContentById(int, CategoryDeletedStateEnum): ?CategoryContentDTO
   listContents(CategoryContentListCriteriaDTO): CategoryContentCollectionDTO
-  paginateContents(CategoryContentListCriteriaDTO, PageRequest): PageResult<CategoryContentDTO>
+  paginateContents(CategoryContentListCriteriaDTO, PageRequest): PageResultDTO<CategoryContentDTO>
 
 CategoryImageRoleManagementReadQueryInterface
   findImageRoleById(int, CategoryDeletedStateEnum): ?CategoryImageRoleDTO
   findImageRoleByKey(string, CategoryDeletedStateEnum): ?CategoryImageRoleDTO
   listImageRoles(CategoryImageRoleListCriteriaDTO): CategoryImageRoleCollectionDTO
-  paginateImageRoles(CategoryImageRoleListCriteriaDTO, PageRequest): PageResult<CategoryImageRoleDTO>
+  paginateImageRoles(CategoryImageRoleListCriteriaDTO, PageRequest): PageResultDTO<CategoryImageRoleDTO>
 
 CategoryImageAssignmentManagementReadQueryInterface
   findImageAssignmentById(int, CategoryDeletedStateEnum): ?CategoryImageAssignmentDTO
   listImageAssignments(CategoryImageAssignmentListCriteriaDTO): CategoryImageAssignmentCollectionDTO
-  paginateImageAssignments(CategoryImageAssignmentListCriteriaDTO, PageRequest): PageResult<CategoryImageAssignmentDTO>
+  paginateImageAssignments(CategoryImageAssignmentListCriteriaDTO, PageRequest): PageResultDTO<CategoryImageAssignmentDTO>
 
 CategoryContentFieldManagementReadQueryInterface
   findContentFieldById(int, CategoryDeletedStateEnum): ?CategoryContentFieldDTO
   listContentFields(CategoryContentFieldListCriteriaDTO): CategoryContentFieldCollectionDTO
-  paginateContentFields(CategoryContentFieldListCriteriaDTO, PageRequest): PageResult<CategoryContentFieldDTO>
+  paginateContentFields(CategoryContentFieldListCriteriaDTO, PageRequest): PageResultDTO<CategoryContentFieldDTO>
 
 CategoryQueryReaderInterface [internal mutation-support port]
   findById(int): ?CategoryDTO
@@ -578,7 +578,7 @@ CategoryContentFieldQueryReaderInterface
   findContentFieldById(int): ?CategoryContentFieldDTO
   findContentFieldByIdForUpdate(int): ?CategoryContentFieldDTO
 
-TransactionRunnerInterface (from maatify/persistence)
+TransactionRunnerInterface (from maatify/php-persistence)
   run(callable $callback): mixed
 ```
 
@@ -644,7 +644,7 @@ PdoCategoryImageRoleManagementReadQuery(PDO, ClockInterface)
 PdoCategoryImageAssignmentQueryReader(PDO, ClockInterface)
 PdoCategoryImageAssignmentReadQuery(PDO, ClockInterface)
 PdoCategoryImageAssignmentManagementReadQuery(PDO, ClockInterface)
-PdoTransactionRunner(PDO) [Host wiring from maatify/persistence]
+PdoTransactionRunner(PDO) [Host wiring from maatify/php-persistence]
 ```
 
 The concrete adapters implement the public contracts listed above and contain
@@ -659,7 +659,7 @@ explicit deleted state, and use the same bound. Category lists are ordered by
 `display_order, id`; Content lists are ordered by `language_code, id`.
 Image Role lists are ordered by `role_key, id`.
 Every management list API also has a paginated counterpart returning the
-canonical `PageResult<T>` from `maatify/persistence`. The package does not
+canonical `PageResultDTO<T>` from `maatify/php-persistence`. The package does not
 implement a local pagination engine: the shared `PdoPaginator` owns page
 normalization, counts, limits, offsets, sorting, and pagination metadata, while
 the package owns SQL, filters, Category search, and row mapping. Language fallback remains Host-owned. Content collections may contain
@@ -895,11 +895,14 @@ stored `DATETIME` values with `$clock->getTimezone()`. Category owns timestamps
 as values, but does not own timezone policy; the Host provides the Clock and its
 timezone.
 
-Display-order creation and mutations consume the stable `maatify/persistence`
-Ordering API, including nullable root scopes and atomic `updated_at` mutation.
-Creation locks the target scope inside the package transaction before asking
-the API for `MAX(display_order) + 1`. The package does not implement a local
-ordering or pagination substitute.
+Display-order creation and mutations consume the published
+`maatify/php-persistence 1.0.0-rc.1` Ordering API, including nullable root
+scopes and atomic `updated_at` mutation. Creation retains the existing scope
+lock and delegates allocation to the shared current-read allocator inside the
+application transaction. A direct adapter invocation outside a transaction can
+still use the plain read. Concurrent direct writes require caller-side
+serialization. The shared Ordering manager uses an operation-local savepoint
+for reorder writes inside a Host-owned transaction.
 
 Default assignment and clearing use the same shared transaction runner and PDO
 instance. The write adapter locks every row in the target generated exact
@@ -927,7 +930,9 @@ appropriate `CategoryPersistenceException` hierarchy.
 The package is `maatify/php-category`, type `library`, under the
 `Maatify\Category\` PSR-4 namespace. Its direct runtime requirements are PHP
 `^8.4`, `ext-mbstring`, `ext-pdo`, `ext-pdo_mysql`, `maatify/exceptions:^1.0`,
-`maatify/persistence:^1.3`, and `maatify/shared-common:^1.0`. Development
+`maatify/php-persistence:1.0.0-rc.1`, and `maatify/shared-common:^1.0`. These
+requirements describe the checkout. Published Category RC.1 retains the
+dependency recorded at its tag. Development
 tools are declared separately in `require-dev`; the reusable library does not
 commit `composer.lock`.
 

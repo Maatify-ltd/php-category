@@ -30,14 +30,15 @@ Framework-neutral hierarchical categories, contents, extensible Host-defined
 content fields, a Category-owned Image Role registry, and Category-owned image assignments for reusable PHP
 applications.
 
-**Version:** `v1.0.0-rc.1`
+**Published version:** `v1.0.0-rc.1`
 
 **Release status:** Release Candidate (Pre-Stable)
 
 **Composer install:** `composer require maatify/php-category:1.0.0-rc.1`
 
-The command resolves only when this exact RC is externally available through the
-approved Composer distribution source.
+The published RC.1 retains its original Persistence dependency. The current
+checkout uses `maatify/php-persistence 1.0.0-rc.1` for Ordering, Pagination,
+and Transactions.
 
 No Stable compatibility or supported Stable line is claimed. Before the first
 Stable release, the Consumer Verification Harness and at least two independent
@@ -78,7 +79,7 @@ Catalog, Product, Admin, Slim, HTTP, permissions, and presentation layers.
   exact consumer reads; field keys remain Host-defined.
 - Shared Persistence transaction and row-locking contracts for
   hierarchy/lifecycle invariants; the Host owns outer transaction boundaries.
-- Shared `maatify/persistence` Ordering API for root and nested scopes.
+- Shared `maatify/php-persistence` Ordering API for root and nested scopes.
 - MySQL recursive ancestor visibility filtering for query/list reads.
 - Deterministic, bounded consumer visibility lists and management reads with
   separate typed criteria; management criteria expose explicit status and
@@ -112,7 +113,7 @@ bounded to at most 100 rows. Category lists use `display_order, id`; Content
 lists use `language_code, id`; Image Role lists use `role_key, id`; Image
 Assignment and Content Field lists use exact scopes and deterministic
 `display_order, id` ordering within each scope. Management list APIs also
-expose canonical `maatify/persistence` pagination results. The package owns
+expose canonical `maatify/php-persistence` pagination results. The package owns
 Category search in its SQL/query layer and does not implement a local search or
 pagination engine.
 For paginated Image Assignment and Content Field management lists, the default
@@ -215,15 +216,18 @@ visibility.
 
 ## Installation
 
-Install the `v1.0.0-rc.1` Release Candidate with Composer:
+Install the published `v1.0.0-rc.1` Release Candidate with Composer. For
+its dependency and API documentation, see the
+[published tag](https://github.com/Maatify-ltd/php-category/tree/v1.0.0-rc.1).
 
 ```bash
 composer require maatify/php-category:1.0.0-rc.1
 ```
 
-A branch, repository checkout, local path, or VCS source is not a published RC
-and does not substitute for exact-version Consumer Verification Harness or
-Real Host validation.
+The rest of this README describes the current checkout. Its consumer root
+must explicitly allow `maatify/php-persistence:1.0.0-rc.1@RC` while retaining
+`minimum-stability: stable`. See the [migration decision](docs/decisions/DEC-001-persistence-rc-migration.md)
+for the updated shared types and verification scope.
 
 ## Quick Usage
 

@@ -22,15 +22,19 @@ application layer.
 
 ## Installation and prerequisites
 
-Install the `v1.0.0-rc.1` Release Candidate using its exact Composer version:
+Install the published Category RC.1 using its exact Composer version:
 
 ```bash
 composer require maatify/php-category:1.0.0-rc.1
 ```
 
-The runtime contract requires PHP `^8.4`, `ext-mbstring`, `ext-pdo`,
+For the published release contract, use the [RC.1 guide](https://github.com/Maatify-ltd/php-category/blob/v1.0.0-rc.1/docs/USAGE_GUIDE.md).
+
+The examples below describe the current checkout. A consumer installing that
+checkout must explicitly allow `maatify/php-persistence:1.0.0-rc.1@RC` in its
+root Composer configuration. The runtime contract requires PHP `^8.4`, `ext-mbstring`, `ext-pdo`,
 `ext-pdo_mysql`, MySQL `8.0.16+`, `maatify/exceptions:^1.0`,
-`maatify/persistence:^1.3`, and `maatify/shared-common:^1.0`. Install and run
+`maatify/php-persistence:1.0.0-rc.1`, and `maatify/shared-common:^1.0`. Install and run
 the package-owned MySQL schema using the Host's deployment process before
 calling the factory.
 
@@ -572,10 +576,10 @@ mapping remains a Host responsibility.
 
 ## Management pagination
 
-Pagination uses the shared `maatify/persistence` contract:
+Pagination uses the shared `maatify/php-persistence` contract:
 
 ```php
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
 
 $page = $category->categories()->paginateForManagement(
     new CategoryListCriteriaDTO(search: 'news'),
@@ -598,7 +602,7 @@ API default for invalid sort input, and resets a page beyond the available
 range to page `1`. An empty result is represented by page `1`,
 `totalPages = 0`, and no navigation flags.
 
-Every `PageResult` exposes:
+Every `PageResultDTO` exposes:
 
 ```text
 data, page, perPage, total, filtered, totalPages,
@@ -622,14 +626,14 @@ The public sort keys and defaults are:
 | Image Assignments | `business_order` ASC | `business_order`, `category_id`, `display_order`, `media_asset_id`, `id`, `created_at` |
 
 The package owns domain filters, Category code search, SQL, and DTO mapping.
-`maatify/persistence` owns pagination normalization, count execution, bounded
+`maatify/php-persistence` owns pagination normalization, count execution, bounded
 limit/offset, sort whitelist enforcement, and pagination metadata. The package
 does not provide a second local pagination or search engine.
 
 ## DTOs, collections, and errors
 
 All public mutation inputs are typed Commands. Public reads return typed DTOs,
-collections, or `PageResult` values. Collections are immutable,
+collections, or `PageResultDTO` values. Collections are immutable,
 `Countable`, `IteratorAggregate`, and `JsonSerializable`; consume them with
 `count()`, `isEmpty()`, `foreach`, or `json_encode()`.
 

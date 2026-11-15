@@ -15,8 +15,8 @@ use Maatify\Category\Query\DTO\CategoryCollectionDTO;
 use Maatify\Category\Query\DTO\CategoryDTO;
 use Maatify\Category\Query\DTO\CategoryListCriteriaDTO;
 use Maatify\Category\Query\DTO\CategoryVisibleListCriteriaDTO;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 
 /**
  * Public application contract for Category business mutations.
@@ -67,19 +67,19 @@ interface CategoryApiInterface
 
     public function listChildrenForManagement(int $parentId, CategoryListCriteriaDTO $criteria): CategoryCollectionDTO;
 
-    /** @return PageResult<CategoryDTO> */
-    public function paginateForManagement(CategoryListCriteriaDTO $criteria, PageRequest $pageRequest): PageResult;
+    /** @return PageResultDTO<CategoryDTO> */
+    public function paginateForManagement(CategoryListCriteriaDTO $criteria, PageRequest $pageRequest): PageResultDTO;
 
-    /** @return PageResult<CategoryDTO> */
+    /** @return PageResultDTO<CategoryDTO> */
     public function paginateRootCategoriesForManagement(
         CategoryListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult;
+    ): PageResultDTO;
 
-    /** @return PageResult<CategoryDTO> */
+    /** @return PageResultDTO<CategoryDTO> */
     public function paginateChildrenForManagement(
         int $parentId,
         CategoryListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult;
+    ): PageResultDTO;
 }

@@ -29,7 +29,7 @@
 --   - display_order is always a positive position within the nullable
 --     parent_id scope.
 --   - Category application creation assigns it through the shared
---     maatify/persistence Ordering API inside its transaction.
+--     maatify/php-persistence Ordering API inside its transaction.
 --
 -- Content lifecycle contract:
 --   - Category application commands own Content creation, content update, soft
@@ -43,7 +43,7 @@
 --   - The stable identity is (category_id, media_asset_id, role_id,
 --     language_code, platform), including soft-deleted rows.
 --   - ordering_scope is a generated composite scope consumed by the shared
---     maatify/persistence Ordering API; it includes Category identity and all
+--     maatify/php-persistence Ordering API; it includes Category identity and all
 --     exact nullable dimensions because ordering is independent per scope.
 --   - is_default is an explicit assignment property. Each exact scope allows
 --     zero or one active default; no fallback, auto-default, or promotion is
@@ -68,7 +68,7 @@
 --     unique, including soft-deleted rows. NULL scope dimensions are mapped
 --     to generated identity columns for NULL-safe uniqueness.
 --   - ordering_scope is a generated exact Category plus language/platform
---     scope consumed by maatify/persistence; fields share one sequence per
+--     scope consumed by maatify/php-persistence; fields share one sequence per
 --     exact scope regardless of field_key.
 -- =============================================================================
 
@@ -78,7 +78,7 @@ CREATE TABLE `maa_category_categories`
     `parent_id`     BIGINT UNSIGNED NULL COMMENT 'Nullable internal parent category identity; NULL identifies a root category; no Host-table reference',
     `code`          VARCHAR(100) NOT NULL COMMENT 'Stable immutable category code; remains reserved after soft deletion',
     `status`        VARCHAR(20) NOT NULL DEFAULT 'active' COMMENT 'Administrative category status; allowed values are active or inactive',
-    `display_order` INT NOT NULL COMMENT 'Business-controlled positive order within the same parent scope; assigned by the Category application through maatify/persistence',
+    `display_order` INT NOT NULL COMMENT 'Business-controlled positive order within the same parent scope; assigned by the Category application through maatify/php-persistence',
     `created_at`    DATETIME NOT NULL COMMENT 'Host Clock timestamp assigned by the Category application when the category is created',
     `updated_at`    DATETIME NOT NULL COMMENT 'Host Clock timestamp assigned by the Category application on mutation, soft delete, or restore',
     `deleted_at`    DATETIME NULL COMMENT 'Host Clock timestamp assigned by the Category application on soft delete; NULL means not deleted',
@@ -179,9 +179,9 @@ CREATE TABLE `maa_category_category_image_assignments`
                 ELSE CONCAT('R', CAST(`role_id` AS CHAR))
             END
         )
-    ) STORED COMMENT 'Generated exact Category plus role/language/platform ordering scope for maatify/persistence',
+    ) STORED COMMENT 'Generated exact Category plus role/language/platform ordering scope for maatify/php-persistence',
     `is_default`             TINYINT(1) NOT NULL DEFAULT 0 COMMENT 'Explicit default marker within the exact Category, Role, language, and platform scope; zero or one active default is allowed',
-    `display_order`          INT NOT NULL COMMENT 'Business-controlled positive order within the exact Category and scope; assigned by the Category application through maatify/persistence',
+    `display_order`          INT NOT NULL COMMENT 'Business-controlled positive order within the exact Category and scope; assigned by the Category application through maatify/php-persistence',
     `created_at`             DATETIME NOT NULL COMMENT 'Host Clock timestamp assigned by the Category application when the assignment is created',
     `updated_at`             DATETIME NOT NULL COMMENT 'Host Clock timestamp assigned by the Category application on ordering, default mutation, soft delete, or restore',
     `deleted_at`             DATETIME NULL COMMENT 'Host Clock timestamp assigned by the Category application on soft delete; NULL means not deleted',
@@ -248,10 +248,10 @@ CREATE TABLE `maa_category_category_content_fields`
                 ELSE CONCAT('L', CHAR_LENGTH(`platform`), ':', `platform`)
             END
         )
-    ) STORED COMMENT 'Generated exact Category plus language/platform ordering scope for maatify/persistence',
+    ) STORED COMMENT 'Generated exact Category plus language/platform ordering scope for maatify/php-persistence',
     `format`                 VARCHAR(10) CHARACTER SET utf8mb4 COLLATE utf8mb4_bin NOT NULL COMMENT 'Typed stored content format: exact lowercase text, html, or json',
     `value`                  LONGTEXT NOT NULL COMMENT 'Required Host-defined content value; Category stores raw text/HTML/JSON without rendering or sanitization',
-    `display_order`          INT NOT NULL COMMENT 'Business-controlled positive order within the exact Category and scope; assigned through maatify/persistence',
+    `display_order`          INT NOT NULL COMMENT 'Business-controlled positive order within the exact Category and scope; assigned through maatify/php-persistence',
     `created_at`             DATETIME NOT NULL COMMENT 'Host Clock timestamp assigned by the Category application when the field is created',
     `updated_at`             DATETIME NOT NULL COMMENT 'Host Clock timestamp assigned by the Category application on field mutation, ordering, soft delete, or restore',
     `deleted_at`             DATETIME NULL COMMENT 'Host Clock timestamp assigned by the Category application on soft delete; NULL means not deleted',

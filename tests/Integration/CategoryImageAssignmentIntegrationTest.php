@@ -30,7 +30,7 @@ use Maatify\Category\Exception\CategoryNotFoundException;
 use Maatify\Category\ImageAssignment\Query\Infrastructure\PdoCategoryImageAssignmentQueryReader;
 use Maatify\Category\Tests\Integration\Support\CategoryMySqlIntegrationTestCase;
 use Maatify\Category\Tests\Integration\Support\FixedCategoryClock;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
 use PDO;
 
 final class CategoryImageAssignmentIntegrationTest extends CategoryMySqlIntegrationTestCase
@@ -252,7 +252,6 @@ final class CategoryImageAssignmentIntegrationTest extends CategoryMySqlIntegrat
     {
         $connection = $this->connection();
         $service = $this->commandService($connection);
-        $clock = new FixedCategoryClock();
         $imageService = $this->imageService($connection);
         $categoryId = $service->create(new CreateCategoryCommand('image-default-lifecycle-category'));
         $firstId = $imageService->assign(new CreateCategoryImageAssignmentCommand($categoryId, 200));
@@ -347,7 +346,6 @@ final class CategoryImageAssignmentIntegrationTest extends CategoryMySqlIntegrat
     {
         $connection = $this->connection();
         $service = $this->commandService($connection);
-        $clock = new FixedCategoryClock();
         $imageService = $this->imageService($connection);
         $categoryId = $service->create(new CreateCategoryCommand('image-lifecycle-category'));
         $assignmentId = $imageService->assign(
