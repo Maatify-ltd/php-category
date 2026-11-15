@@ -1183,18 +1183,11 @@ final class CategoryConcurrencyIntegrationTest extends CategoryMySqlIntegrationT
 
         /** @var array<int, int|null> $parents */
         $parents = [];
-        while (($row = $statement->fetch(PDO::FETCH_ASSOC)) !== false) {
-            $idValue = $row['id'] ?? null;
-            if (!is_int($idValue) && !is_string($idValue)) {
-                self::fail('Category id must be an integer value.');
-            }
-            $id = (int) $idValue;
-
-            $parentId = $row['parent_id'] ?? null;
+        foreach ($statement->fetchAll(PDO::FETCH_KEY_PAIR) as $id => $parentId) {
             if ($parentId !== null && !is_int($parentId) && !is_string($parentId)) {
                 self::fail('Category parent_id must be an integer or null.');
             }
-            $parents[$id] = $parentId === null ? null : (int) $parentId;
+            $parents[(int) $id] = $parentId === null ? null : (int) $parentId;
         }
 
         return $parents;
