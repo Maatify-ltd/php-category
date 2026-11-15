@@ -71,6 +71,9 @@ final class PerCs31DeltaVerifierTest extends TestCase
                     case 4:
                         echo "First: {$name}";
                         break;
+                    case 5:
+                        echo 'Another case';
+                        break;
                     default:
                         echo "Following: {$name}";
                         break;
@@ -82,7 +85,7 @@ final class PerCs31DeltaVerifierTest extends TestCase
             self::assertStringContainsString('PER-CS 3.1 delta verification passed', $output);
 
             $wording = "The break is left out on purpose so the next case handles the '?' token.";
-            $rationale = $wording . ' The next case handles "?", `?`, “?” and ‘?’ if the value is absent.';
+            $rationale = 'حذف تعليمة الإنهاء مقصود حتى يستمر التنفيذ في الحالة التالية التي تعالج "?", `?`, “?”, ‘?’, “؟”، ‘؟’. The next case handles these tokens if the value is absent.';
             $unusual = str_replace('Falls through intentionally.', $wording, $source);
             self::assertNotFalse(file_put_contents($scratch . '/' . $fixture, $unusual . "\n"));
             [$exitCode, $output] = self::runCommand(['composer', 'check:style'], $scratch);
@@ -91,6 +94,7 @@ final class PerCs31DeltaVerifierTest extends TestCase
 
             $ambiguous = rtrim($wording, '.') . '?';
             $quotedQuestion = '"The next case handles this token?"';
+            $arabicQuestion = 'هل تريد ترك هذا هنا؟';
             $unusual = str_replace(
                 'Intentionally omit break so execution proceeds to the next case.',
                 $rationale,
@@ -102,7 +106,8 @@ final class PerCs31DeltaVerifierTest extends TestCase
                 ['file' => $fixture, 'line' => 9, 'case' => 'case 2:', 'comment' => $ambiguous],
                 ['file' => $fixture, 'line' => 12, 'case' => 'case 3:', 'comment' => $rationale],
                 ['file' => $fixture, 'line' => 15, 'case' => 'case 4:', 'comment' => $quotedQuestion],
-                ['file' => $fixture, 'line' => 18, 'case' => 'default:', 'comment' => $rationale],
+                ['file' => $fixture, 'line' => 18, 'case' => 'case 5:', 'comment' => $arabicQuestion],
+                ['file' => $fixture, 'line' => 21, 'case' => 'default:', 'comment' => $rationale],
             ], JSON_THROW_ON_ERROR)));
             [$exitCode, $output] = self::runCommand(['composer', 'check:style'], $scratch);
             self::assertSame(0, $exitCode, $output);
@@ -111,17 +116,22 @@ final class PerCs31DeltaVerifierTest extends TestCase
 
             $invalid = str_replace('// ' . $wording . "\n", '// ' . str_replace('on purpose', 'by design', $wording) . "\n", $unusual);
             $invalid = str_replace('Fall through to share the next case handler.', $ambiguous, $invalid);
-            $invalid = str_replace('case 3:', 'case 5:', $invalid);
+            $invalid = str_replace('case 3:', 'case 6:', $invalid);
             $invalid = str_replace(
                 'echo "First: {$name}";' . "\n        break;",
                 'echo "First: {$name}";' . "\n        // " . $quotedQuestion,
+                $invalid,
+            );
+            $invalid = str_replace(
+                "echo 'Another case';" . "\n        break;",
+                "echo 'Another case';" . "\n        // " . $arabicQuestion,
                 $invalid,
             );
             $invalid = str_replace('echo "Following: {$name}";' . "\n        break;", 'echo "Following: {$name}";' . "\n        // " . $rationale, $invalid);
             self::assertNotFalse(file_put_contents($scratch . '/' . $fixture, $invalid . "\n"));
             [$exitCode, $output] = self::runCommand(['composer', 'check:style'], $scratch);
             self::assertSame(1, $exitCode, $output);
-            foreach ([6, 9, 12, 15, 18] as $line) {
+            foreach ([6, 9, 12, 15, 18, 21] as $line) {
                 self::assertStringContainsString($fixture . ':' . $line . ' [switch-case-termination]', $output);
             }
             self::assertSame($invalid . "\n", file_get_contents($scratch . '/' . $fixture));

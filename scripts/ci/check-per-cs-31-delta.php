@@ -535,7 +535,7 @@ final class PerCs31DeltaVerifier
             }
 
             $body = trim($token['text'], "/*# \t\r\n");
-            $normalized = preg_replace('/\R[ \t]*\*?[ \t]*/', ' ', $body);
+            $normalized = preg_replace('/\R[ \t]*\*?[ \t]*/u', ' ', $body);
             if ($normalized === null) {
                 continue;
             }
@@ -569,17 +569,17 @@ final class PerCs31DeltaVerifier
 
     private static function hasQuestionMarkOutsideQuotedToken(string $comment): bool
     {
-        if (!str_contains($comment, '?')) {
+        if (!str_contains($comment, '?') && !str_contains($comment, '؟')) {
             return false;
         }
 
         // Ignore only the quoted token; a complete quoted question still counts.
         $quotedToken = <<<'REGEX'
-            ~(?<![\\\p{L}\p{N}_])(?:'\?'|"\?"|`\?`|“\?”|‘\?’)(?![\p{L}\p{N}_])~u
+            ~(?<![\\\p{L}\p{N}_])(?:'[?؟]'|"[?؟]"|`[?؟]`|“[?؟]”|‘[?؟]’)(?![\p{L}\p{N}_])~u
             REGEX;
         $withoutTokens = preg_replace($quotedToken, '', $comment);
 
-        return $withoutTokens === null || str_contains($withoutTokens, '?');
+        return $withoutTokens === null || str_contains($withoutTokens, '?') || str_contains($withoutTokens, '؟');
     }
 
     private static function declaresFallthrough(string $comment): bool
