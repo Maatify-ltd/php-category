@@ -4,7 +4,7 @@
 
 هذا المستودع مكتبة PHP مستقلة قابلة لإعادة الاستخدام عبر Composer، ويمثل
 `Category` و`Category Content` و`Content Fields` و`Image Roles` و`Image Assignments`
-كـ **Base Module** قابل للاستخراج.
+ضمن حزمة تُوزَّع من جذر المستودع.
 
 القواعد العامة لا تُعاد كتابتها هنا. مصدر اعتماد المعايير المحلي وسجل تركيبها
 هو [`docs/php-engineering-standards/STANDARDS_MANIFEST.md`](docs/php-engineering-standards/STANDARDS_MANIFEST.md)،
@@ -36,9 +36,9 @@
 ## 3. Profile Activations الخاصة بالمشروع
 
 - `repository-governance` على Scope: `/`.
-- `base-module` على Scope: `/`.
-- `base-module` يرث `composer-package`.
-- لا تُفعّل Profiles الخاصة بـ Slim أو Project-Aware Slim.
+- `composer-package` على Scope: `/`.
+- التفعيلان مباشران دون inheritance. يبيّن الـManifest سبب انطباقهما
+  على الحزمة المستقلة.
 
 يجب أن يظل الـManifest هو المرجع القابل للتدقيق للنسخ والإصدارات والعلاقات؛ لا
 تكرر هذه البيانات أو قائمة المعايير كاملة داخل هذا الملف.
@@ -105,7 +105,7 @@ Phase Draft → fresh child branch → Draft Child PR targeting Phase Draft
 → Squash Merge to Phase Draft
 ```
 
+تستهدف Child PRs الـPhase Draft النشطة التي اعتمدها المالك للمرحلة الحالية.
 يُمنع commit مباشر على Phase Draft، أو Child PR إلى `main`، أو دمج Work Unit
-غير مكتملة، أو اعتبار Verification بديلًا عن Acceptance، أو إنشاء umbrella
-Draft جديدة بدل PR #48 القائمة. يظل دمج Phase Draft إلى `main` قرارًا مستقلًا
-للمالك.
+غير مكتملة، أو اعتبار Verification بديلًا عن Acceptance. يظل دمج Phase Draft
+إلى `main` قرارًا مستقلًا للمالك.

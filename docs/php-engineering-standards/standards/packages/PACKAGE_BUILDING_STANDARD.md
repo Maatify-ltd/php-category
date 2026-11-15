@@ -5,7 +5,7 @@
 ## Standard Metadata
 
 - **Standard ID:** `std-package-building`
-- **Standard Version:** `1.3.0`
+- **Standard Version:** `4.0.0`
 - **Standard Version Format:** `MAJOR.MINOR.PATCH`
 
 This document is the law for building any new standalone Composer package in the Maatify ecosystem.
@@ -30,17 +30,28 @@ PHP 8.4 is the minimum baseline for newly created Maatify PHP libraries, reusabl
 
 ### Persistence Conditional Applicability
 
-All rules in this Standard concerning PDO, SQL, `schema/`, migrations, transaction handling, Ordering/Pagination, PDO hydration, database integration, and database-focused testing apply only when the package owns persistence or database behavior.
+All rules in this Standard concerning PDO, SQL, `schema/`, migrations, transaction handling, Ordering/Pagination, PDO hydration, database integration, and database-focused testing apply only when the package owns SQL persistence or SQL database behavior.
 
-A package without persistence or database behavior is not required to use PDO, provide `schema/`, define migrations, or implement database-specific architecture or tests. When a package does own persistence or database behavior, all applicable persistence requirements in this Standard remain mandatory, including direct PDO usage, no ORM, and no external query builder. Small internal SQL fragment builders are allowed only for repeated package-local query logic.
+A package without persistence or database behavior is not required to use PDO, provide `schema/`, define migrations, or implement database-specific architecture or tests. When a package does own persistence or database behavior, all applicable persistence requirements in this Standard remain mandatory. For SQL persistence, these requirements include direct PDO usage, no ORM, and no external query builder. Small internal SQL fragment builders are allowed only for repeated package-local query logic.
+
+### Default SQL Persistence Profile
+
+The default SQL persistence profile is MySQL/MariaDB-compatible and uses direct PDO.
+
+A package MAY define a different or additional persistence backend, including non-SQL storage, as part of its documented persistence contract. A claimed backend MUST be explicitly documented, actually implemented, and protected by real persistence verification/tests applicable to that backend.
+
+Additional backends are package-specific and MUST NOT be required of any package.
+
+PDO driver availability alone does not establish database support.
 
 ### Scope and Ownership
 
 - This file owns runtime architecture, package structure, and package-specific testing applicability.
 - [`TESTING_STANDARD.md`](../testing/TESTING_STANDARD.md) owns the general testing strategy, observable-behavior evidence, regression-protection model, and Consumer Verification Harness contract; this Standard defines Package-readiness applicability and MUST NOT duplicate the Harness's detailed requirements.
-- [`COMPOSER_PACKAGE_STANDARD.md`](COMPOSER_PACKAGE_STANDARD.md) owns `composer.json`, dependency declarations, and version constraints.
+- [`COMPOSER_PACKAGE_STANDARD.md`](COMPOSER_PACKAGE_STANDARD.md) owns the canonical Composer manifest contract represented by `composer.json`, including dependency declarations and version constraints.
 - [`CI_WORKFLOW_STANDARD.md`](CI_WORKFLOW_STANDARD.md) owns workflow and check execution.
-- [`LIBRARY_PRESENTATION_STANDARD.md`](LIBRARY_PRESENTATION_STANDARD.md) owns README structure, badges, and release-facing files.
+- [`LIBRARY_PRESENTATION_STANDARD.md`](LIBRARY_PRESENTATION_STANDARD.md) owns README structure, badges, release-facing files, and the consumer-facing Usage Guide/examples artifact requirements.
+- [`DOCUMENTATION_LIFECYCLE_STANDARD_AR.md`](../governance/DOCUMENTATION_LIFECYCLE_STANDARD_AR.md) owns document roles, current-versus-historical semantics, freshness, retention, and documentation-reference hygiene.
 
 These standards MUST use cross-references and MUST NOT duplicate each other's detailed rules.
 
@@ -59,12 +70,12 @@ To maintain standalone Composer package boundaries and a framework-agnostic arch
 - **Clock/Date-Time:** A package that requires a clock abstraction MUST depend on `maatify/shared-common` and consume `ClockInterface`, available from `v1.0.0`. `SystemClock` is a production implementation available from `v1.0.0`, but it is not mandatory for every consumer. No shared Frozen/Test Clock is claimed by this Standard.
   Repository: https://github.com/Maatify/SharedCommon
 
-- **Persistence Utilities:** Packages that require reusable PDO row-position/display-order management (available from `v1.0.0`) or pagination capabilities (available from `v1.1.0`) must depend on `maatify/persistence`.
-  Repository: https://github.com/Maatify/persistence
+- **Persistence Utilities:** Packages that require reusable PDO row-position/display-order management or pagination capabilities must depend on `maatify/php-persistence`.
+  Repository: https://github.com/Maatify-ltd/php-persistence
 
 **Rule:** Packages MUST NOT define package-local duplicates of a capability that is available through a stable public API in a Maatify shared package. This prohibition includes exception hierarchies, clock abstractions, PDO row-position/display-order mechanics, and PDO pagination mechanics.
 
-A consuming package MUST declare the minimum stable dependency version that exposes every shared API it uses. Proposed architecture documents, unreleased branches, commits, and implementation contracts are not consumable public APIs and MUST NOT be copied into consumer packages.
+A consuming package MUST declare the minimum stable dependency version that exposes every shared API it uses, subject only to the temporary trial exception in Section 11. Proposed architecture documents, unreleased branches, commits, and implementation contracts are not consumable public APIs and MUST NOT be copied into consumer packages.
 
 The declaration, constraint, ordering, and validation rules for these dependencies are governed by [COMPOSER_PACKAGE_STANDARD.md](COMPOSER_PACKAGE_STANDARD.md).
 
@@ -82,17 +93,17 @@ Repository presentation, governance-document identity, release-facing metadata, 
 Composer package metadata, dependency declarations, autoloading, scripts, configuration, stability, and lock-file policy MUST follow [COMPOSER_PACKAGE_STANDARD.md](COMPOSER_PACKAGE_STANDARD.md).
 
 
-Every package must contain these files at its package root (the repository root for a standalone package; for an in-project Base Module, the Artifact Root defined in [`MODULE_BUILDING_STANDARD.md`](../modules/MODULE_BUILDING_STANDARD.md)):
+Every package must contain these files at its package root (the repository root for a standalone package; for an in-project Base Module, the Artifact Root defined in `MODULE_BUILDING_STANDARD.md`):
 
 ```
 ├── README.md                          ← installation, quick examples, what it does / does not
-├── CHANGELOG.md                       ← Keep a Changelog; release history begins at [1.0.0]
-├── {PACKAGE_NAME}_PACKAGE_REFERENCE.md ← canonical stable package contract (e.g. EXAMPLE_PACKAGE_REFERENCE.md)
+├── CHANGELOG.md                       ← Keep a Changelog; release-preparation and CHANGELOG presentation semantics are owned by LIBRARY_PRESENTATION_STANDARD.md
+├── {PACKAGE_NAME}_PACKAGE_REFERENCE.md ← canonical stable public/runtime package contract (e.g. EXAMPLE_PACKAGE_REFERENCE.md)
 ├── composer.json                      ← governed by COMPOSER_PACKAGE_STANDARD.md
 ├── phpstan.neon                       ← governed by Section 21
 ├── src/                               ← all PHP source code
 ├── tests/                             ← if applicable
-├── schema/                            ← if applicable (only when the package has persistence or database behavior)
+├── schema/                            ← if applicable (only when the package has SQL persistence or SQL database behavior)
 └── docs/                              ← detailed architecture, integration, roadmap, and audit documents
 ```
 
@@ -106,21 +117,24 @@ The canonical path is:
 /{PACKAGE_NAME}_PACKAGE_REFERENCE.md
 ```
 
-The root Package Reference owns:
+The root Package Reference owns the stable public/runtime/behavioral package contract:
 
-- the complete stable package contract
 - the public Runtime API inventory
 - stable behavior and exception guarantees
 - package boundaries and non-goals
 - links to detailed supporting documentation
 
+Composer-facing identity, metadata, requirements, dependencies, autoloading, scripts, configuration, stability, and distribution declarations are not canonical Package Reference declarations. They are owned by `composer.json` under [COMPOSER_PACKAGE_STANDARD.md](COMPOSER_PACKAGE_STANDARD.md).
+
+The Package Reference MAY explain runtime implications, reference dependency expectations, and document supported integration behavior, but it MUST NOT override or compete with `composer.json` for Composer manifest declarations.
+
 Detailed architecture decisions, proposed implementation contracts, integration guides, roadmaps, deferred scope, and audits belong under `docs/`.
 
-Supporting documents under `docs/` MAY provide deeper detail, but they MUST NOT become a second competing Package Reference. They SHOULD link back to the root Package Reference when they define or explain part of the stable package contract.
+Supporting documents under `docs/` MAY provide deeper detail, but they MUST NOT become a second competing Package Reference. They SHOULD link back to the root Package Reference when they define or explain part of the stable public/runtime/behavioral package contract.
 
 The root Package Reference SHOULD index the relevant detailed documents under `docs/`.
 
-A multi-domain package still has one canonical root Package Reference unless a domain is extracted into a separate Composer package with its own repository and package contract.
+A multi-domain package still has one canonical root Package Reference unless a domain is extracted into a separate Composer package with its own repository and public/runtime/behavioral package contract.
 
 ---
 
@@ -160,29 +174,250 @@ New packages and unpublished APIs MUST NOT introduce alternative names that omit
 
 ## 5. Directory Structure Inside `src/`
 
-The default organizing principle is:
+The canonical organizing law is:
 
 ```text
-Domain → Capability → Layer
+Domain → Capability → Responsibility
 ```
 
-Organize first around meaningful domain boundaries, then around capabilities within each domain, and introduce layers inside a capability when its size or responsibilities need them. This is a design direction, not a required directory template: small packages MUST NOT add empty or ceremonial folders just to match a diagram.
+`Responsibility` is a semantic placement owner, not a generic architectural layer. The Package Reference MUST declare exactly one source topology, and that declaration governs placement:
 
-`Common/` is appropriate only for genuinely shared, framework-neutral primitives. The Host owns application bootstrap, container bindings, and framework-specific providers; conditional construction entry points are governed by Section 18.
+```text
+Source Topology: Single Capability
+```
 
-Packages MUST NOT impose `Admin/Customer` directories where those are not real domain boundaries. Package runtime exclusions are defined in Section 15.
+```text
+Source Topology: Multi Capability
+
+Capabilities:
+- ...
+```
+
+```text
+Source Topology: Multi Domain
+
+Domains:
+- ...
+```
+
+The only canonical source topologies are:
+
+### A. Single Capability
+
+```text
+src/
+└── {Responsibility}/
+```
+
+### B. Multiple Capabilities
+
+```text
+src/
+└── {Capability}/
+    └── {Responsibility}/
+```
+
+### C. Multiple Real Domains
+
+```text
+src/
+└── {Domain}/
+    └── {Capability}/
+        └── {Responsibility}/
+```
+
+Do not introduce a redundant Domain or Capability directory when the Package itself already represents that boundary. A Responsibility or Capability directory MUST appear only when the artifact owns a real responsibility or capability; empty and ceremonial folders are forbidden.
+
+### Canonical Responsibility Vocabulary
+
+The following names are canonical placement directories when the corresponding responsibility exists. They are not fifteen equal layers and MUST NOT be materialized as a flat tree by default:
+
+```text
+Command/
+Criteria/
+DTO/
+Service/
+Repository/
+Contract/
+Adapter/
+Exception/
+Enum/
+ValueObject/
+Config/
+Factory/
+Builder/
+Mapper/
+Facade/
+```
+
+Their meanings are:
+
+- `Command/` — mutation or action intent.
+- `Criteria/` — query, search, or filter input.
+- `DTO/` — result or data snapshots.
+- `Service/` — business or application orchestration.
+- `Repository/` — persistence/query boundaries and their implementations.
+- `Contract/` — general runtime or boundary contracts only when no more specific responsibility owns the contract.
+- `Adapter/` — external, provider, or backend adaptation other than repository persistence.
+- `Exception/` — Package- or capability-owned exceptions.
+- `Enum/` — Package- or capability-owned enums.
+- `ValueObject/` — immutable domain values that are not Commands, Criteria, or DTOs.
+- `Config/` — explicit configuration contracts.
+- `Factory/` — construction.
+- `Builder/` — progressive or domain construction.
+- `Mapper/` — explicit transformation or mapping.
+- `Facade/` — a thin public discovery or access surface when needed.
+
+### Interface Placement
+
+An interface MUST be placed with the responsibility it describes when that responsibility has a more specific owner. Do not place every interface in `Contract/`.
+
+```text
+Repository/
+├── RedirectRepositoryInterface.php
+└── Pdo/
+    └── PdoRedirectRepository.php
+```
+
+```text
+Builder/
+├── JsonLdBuilderInterface.php
+├── ProductJsonLdBuilder.php
+└── OfferJsonLdBuilder.php
+```
+
+Use `Contract/` only for a general boundary that is not more clearly owned by another responsibility, such as a broad Host, provider, or transport abstraction.
+
+### Technology Placement
+
+Technology is not an architecture root for new code. The canonical order is:
+
+```text
+Capability → Responsibility → Technology
+```
+
+For example:
+
+```text
+Repository/Pdo/
+Adapter/Redis/
+Adapter/Mongo/
+Adapter/Smtp/
+```
+
+New code MUST NOT introduce technology-rooted alternatives such as `src/Pdo/`, `src/Redis/`, `src/MySQL/`, or `src/Mongo/` merely because an implementation uses that technology. If a technology is intrinsic to the identity of an entire Package, it MUST NOT be repeated as a directory without a placement responsibility.
+
+### Common and Package-Wide Responsibilities
+
+`Common/` is permitted only for genuinely shared, framework-neutral primitives or contracts used by more than one Capability or Domain and not owned more clearly by one of them. It is not a dumping ground. `Shared/`, `Helpers/`, `Utils/`, and `Internal/` are not canonical architecture directories for new responsibilities.
+
+A responsibility that genuinely spans multiple Capabilities MAY be placed directly under `src/`, for example:
+
+```text
+src/
+└── Exception/
+    └── {PackageName}ExceptionInterface.php
+```
+
+A capability-specific exception belongs under `{Capability}/Exception/`. The same rule applies to package-wide `Factory/`, `Facade/`, and other responsibilities: root placement is allowed only when the ownership is genuinely package-wide.
+
+### Management and Consumer Use Cases
+
+When this Standard requires distinct Management and Consumer use cases, the split MUST remain inside the Capability:
+
+```text
+{Capability}/
+├── Management/
+│   ├── Command/
+│   ├── Criteria/
+│   ├── DTO/
+│   └── Service/
+└── Consumer/
+    ├── Criteria/
+    ├── DTO/
+    └── Service/
+```
+
+Do not create root `Admin/` or `Customer/` taxonomies merely for actor labels. Infrastructure Packages MUST use their real domain and capability boundaries.
+
+### Compatibility and Legacy Placement
+
+The canonical structure remains mandatory. Standards Adoption or a Standards Upgrade MUST NOT, by itself, force a compatibility-breaking release solely to normalize source topology. A topology change is governed by the following deterministic decision model.
+
+#### New or Pre-Stable Packages
+
+A new or unpublished Package, and a Package that has not yet reached its first Stable release, MUST remediate a non-compliant `src/` topology before that first Stable release. A Package MUST NOT enter its first Stable release with a knowingly non-compliant source topology when no previously published compatibility contract requires that layout. No legacy compatibility exception may be created from a structure that has not yet been published.
+
+#### Published Packages: Non-Breaking Remediation
+
+Publication alone is not a reason to defer remediation. When the canonical topology can be applied without breaking any existing compatibility boundary, the Package MUST apply it in the current work or the nearest appropriate approved scope. The review MUST consider, as applicable:
+
+- public namespaces and published FQCNs;
+- the Composer autoload contract;
+- the public Runtime API;
+- documented extension, integration, construction, or import paths;
+- consumer-visible class and interface names; and
+- any other documented compatibility boundary.
+
+If the move does not cross a proven compatibility boundary, Compatibility MUST NOT be used to postpone the canonical placement.
+
+#### Published Packages: Breaking Remediation
+
+If an actual review proves that applying the canonical topology would break an existing compatibility boundary, the current release line MAY retain the existing placement. The required topology migration then becomes a **Deferred Structural Obligation**. The Package MUST NOT create a Breaking Release solely to normalize source topology, and this deferral MUST NOT be treated as cancellation of the canonical requirement.
+
+A Deferred Structural Obligation becomes mandatory at the next Owner-approved release boundary that independently permits the compatibility break required by the migration. The trigger is the approved boundary that actually permits the required contract break, not a major-number increase by itself. When that boundary occurs, every applicable deferred topology obligation MUST be re-evaluated and closed when migration is safe. It MUST NOT be carried automatically to a later Breaking or Major line without a documented reason or an explicit Standards-Adopting Repository exception under this section.
+
+#### Existing Legacy Structure and New Code
+
+The following limits apply while a Deferred Structural Obligation exists:
+
+1. Existing published paths may remain only within the explicitly identified deferred structural scope needed to preserve Compatibility.
+2. New responsibilities and new code MUST follow the canonical `Domain → Capability → Responsibility` topology whenever this can be done without breaking an existing contract, creating duplicate competing ownership, or creating an unsound hybrid topology because of the deferred boundary.
+3. If placing new code directly in the canonical path would create competing or hybrid ownership because the same deferred namespace boundary has not yet migrated, that code MAY remain temporarily inside the same explicitly bounded and documented legacy structural envelope until the migration trigger.
+4. This allowance MUST NOT create new legacy roots or taxonomies for convenience. The legacy envelope MUST be the existing one identified by the proven compatibility boundary.
+5. The allowance MUST NOT extend to Domains, Capabilities, Responsibilities, paths, or namespaces that are not affected by the proven compatibility boundary. An independent new capability MUST use the canonical topology.
+
+Compatibility preservation, supported by specific contract or architecture evidence, MUST be the actual reason for retaining legacy placement. Labels such as `legacy project`, `existing structure`, `too much work`, `not worth changing`, or `keep current src` are not sufficient by themselves.
+
+#### Standards-Adopting Repository Exception
+
+The Consumer Repository adopting this Standard MAY request continued deviation after the migration trigger only through the existing `Explicit Exceptions/Overrides` mechanism in `STANDARDS_ADOPTION_STANDARD_AR.md`. This section does not create a second exception system. The exception MUST be Owner-approved, explicit, adopting-repository-specific, scope-bounded, documented, and auditable, and the Consumer Repository MUST record it in:
+
+```text
+docs/php-engineering-standards/STANDARDS_MANIFEST.md
+→ Explicit Exceptions/Overrides
+```
+
+The Consumer Repository MUST also retain durable repository-owned rationale in the appropriate existing document, such as its Package Reference or an ADR, without creating a new document when an existing canonical owner is sufficient. The exception record MUST identify, at minimum:
+
+- the Standard ID and Section;
+- affected paths and namespaces;
+- the affected release line;
+- the exact deviation allowed;
+- the compatibility or architectural evidence and reason;
+- the scope boundary;
+- the Owner approval; and
+- the migration or review trigger.
+
+An unscoped entry such as `legacy structure — exempt` is invalid. A generic legacy label, project age, implementation effort, or organizational preference is not sufficient evidence.
+
+An approved exception MAY permit the specified deviation to continue after its migration trigger, but only within the exact recorded scope. It is not a permanent global waiver, does not renew automatically, does not extend to new paths or namespaces, does not transfer to another Package or release line, and does not exempt unrelated independent responsibilities from canonical placement. It does not make the Package compliant outside the recorded scope and cannot cure Structural Invalidity in Standards Adoption. The exception MUST be re-evaluated at its recorded review or migration trigger; continued deviation after that trigger requires the same still-valid exception or a new or updated Owner decision. There is no automatic renewal or inheritance.
+
+A **Deferred Structural Obligation** is the automatic result of a proven compatibility-breaking migration. An approved adopting-repository exception is a separate, explicit Owner decision that permits a recorded deviation. Neither term may be used as a synonym for the other, and a non-breaking topology remediation MUST NOT be deferred under the exception mechanism.
 
 ---
 
 ## 6. Schema Rules
 
-These rules, including `schema/`, database structure, database tests, and migrations, are conditionally applicable **only** when the package has persistence or database behavior.
+These rules, including `schema/`, database structure, database tests, and migrations, are conditionally applicable **only** when the package has SQL persistence or SQL database behavior.
 
 - Table prefix: `maa_{package_short_name}_` (e.g. `maa_library_example_`)
 - Every table needs: `PRIMARY KEY (id)`, proper indexes, meaningful COMMENTs on columns.
 - All policies (soft delete, display order, FK behavior, uniqueness) documented in the SQL header.
-- Domain-local schema files are allowed (e.g. `src/{Domain}/Database/`).
-- Package-level `schema/README.md` may index domain-local SQL files.
+- The canonical location for SQL, schema, migration, and install assets is the Package-root `/schema/` directory, outside `src/`.
+- `schema/README.md` MAY index the SQL and install assets stored under `/schema/`.
+- PHP persistence and query runtime code remains under the applicable source topology, normally under `Repository/` or another responsibility that owns it.
+- `src/{Domain}/Database/` is not an alternate canonical location for SQL or schema assets.
 - **No generic shared `logs` or `event_logs` tables**; use strict domain-isolated tables.
 - No FK constraints or JOINs to host app tables — use `COMMENT 'Host-provided ID. No FK.'`.
 
@@ -297,20 +532,22 @@ In any method that uses `beginTransaction()`:
             // ...
             $this->pdo->commit();
         } catch (\Throwable $e) {
-            if ($this->pdo->inTransaction()) {
-                $this->pdo->rollBack();
+            try {
+                if ($this->pdo->inTransaction()) {
+                    $this->pdo->rollBack();
+                }
+            } finally {
+                // Cleanup failure must not replace the original throwable.
+                // Optional documented semantic conversion may occur here.
+                throw $e;
             }
-
-            // Optional documented semantic conversion may occur here.
-
-            throw $e;
         }
 ```
 
 Only package-owned transactions are rolled back by this pattern.
 Rollback must be attempted only while the transaction is active.
-The original throwable is rethrown unless an explicitly documented semantic conversion is performed.
-Swallowing the throwable is forbidden.
+The original throwable is rethrown unless an explicitly documented semantic conversion is performed, even if checking transaction activity or attempting rollback throws.
+Swallowing the original throwable is forbidden.
 If a semantic conversion wraps the original throwable, the original should be retained as `previous` where supported.
 
 ## 8. Command Rules
@@ -402,15 +639,23 @@ final readonly class SomethingCollectionDTO implements \IteratorAggregate, \Json
 | Operation | Returns | Why |
 |---|---|---|
 | `create()` | `int` | `lastInsertId()` |
-| `update()` | `bool` | `rowCount() > 0` |
-| `updateStatus()` | `bool` | `rowCount() > 0` |
-| `updateDisplayOrder()` | `bool` | delegated to `Maatify\Persistence\Pdo\Ordering\ScopedOrderingManager` from `maatify/persistence` |
-| `updateImage()` | `bool` | `rowCount() > 0` |
-| `softDelete()` | `bool` | `rowCount() > 0` |
+| `update()` | `bool` | Documented mutation outcome; changed rows alone do not establish target absence |
+| `updateStatus()` | `bool` | Documented mutation outcome; changed rows alone do not establish target absence |
+| `updateDisplayOrder()` | `bool` | delegated to `Maatify\PhpPersistence\Ordering\Repository\ScopedOrderingManager` from `maatify/php-persistence` |
+| `updateImage()` | `bool` | Documented mutation outcome; changed rows alone do not establish target absence |
+| `softDelete()` | `bool` | Documented deletion/lifecycle outcome, including any already-deleted condition |
 | `hardDelete()` | `bool` | `rowCount() > 0` after transaction |
 | `findById()` | `?DTO` | `null` if not found — Service decides whether to throw |
 
-This table defines Repository-level return contracts. A Service MAY expose `updateDisplayOrder(...): void`, call the Repository operation, and convert `false` into the approved not-found exception according to Section 13. The Repository and Service signatures belong to different layers and MUST NOT be treated as competing alternatives.
+This table defines Repository-level return contracts. A Service MAY expose `updateDisplayOrder(...): void`, call the Repository operation, and convert `false` into the approved not-found exception only when the Repository contract establishes that `false` means the target is missing, as required below and in Section 13. The Repository and Service signatures belong to different layers and MUST NOT be treated as competing alternatives.
+
+### Mutation Outcomes and Missing Targets
+
+A boolean mutation result MUST document whether it reports changed state, a matched target, or another domain-specific outcome. A changed-row contract MAY return `false` for an unchanged existing target; that result MUST NOT be interpreted as proof that the target is missing. Zero affected rows alone cannot distinguish an unchanged existing target from a missing target. A failed conditional update or compare-and-swap condition likewise MUST NOT automatically be classified as target absence.
+
+A Service MUST convert a Repository `false` result to a not-found exception only when the documented Repository contract and its implementation establish that `false` means the target is missing. Otherwise it MUST handle the result according to its actual mutation contract. This does not mandate success for every no-op or redefine domain-specific lifecycle, conditional-update, or conflict outcomes.
+
+The implementation's evidence of absence MUST remain valid within the operation's documented concurrency and transaction boundary. An unprotected existence precheck followed by a separate write is not sufficient proof of the write outcome. This Standard does not prescribe a universal SQL algorithm, connection option such as `ATTR_FOUND_ROWS`, or new public result type.
 
 ### `findById` Pattern
 
@@ -468,19 +713,19 @@ This section governs how standalone Maatify packages consume shared PDO ordering
 The authoritative owner is:
 
 ```text
-Package:    maatify/persistence
-Repository: https://github.com/Maatify/persistence
+Package:    maatify/php-persistence
+Repository: https://github.com/Maatify-ltd/php-persistence
 ```
 
 ### Domain Query and Pagination Ownership
 
-The Package owns its domain query semantics, including searchable fields, filters, matching and escaping behavior, count semantics, and the public result contract. `maatify/persistence` owns only the reusable pagination and ordering mechanics exposed by its stable public API, as detailed below.
+The Package owns its domain query semantics, including searchable fields, filters, matching and escaping behavior, count semantics, and the public result contract. `maatify/php-persistence` owns only the reusable pagination and ordering mechanics exposed by the eligible published public API defined below.
 
-Management list/search collections that do not have a clearly bounded small maximum MUST provide pagination from the start. A Host MUST NOT load an unbounded result set and paginate it after retrieval. The Package owns the alignment of count and data queries and the meaning of each page; shared mechanics remain delegated to the stable `maatify/persistence` API.
+Management list/search collections that do not have a clearly bounded small maximum MUST provide pagination from the start. A Host MUST NOT load an unbounded result set and paginate it after retrieval. The Package owns the alignment of count and data queries and the meaning of each page; shared mechanics remain delegated to the eligible published `maatify/php-persistence` API.
 
 ### Non-Duplication Rule
 
-A consumer package MUST NOT create a local replacement for stable ordering or pagination behavior provided by `maatify/persistence`.
+A consumer package MUST NOT create a local replacement for ordering or pagination behavior provided by `maatify/php-persistence`.
 
 Forbidden duplication includes:
 
@@ -492,29 +737,31 @@ Forbidden duplication includes:
 - canonical pagination result objects and metadata
 - package-local copies of persistence exceptions or public value objects
 
-A consumer package MUST NOT copy Runtime code, tests, internal algorithms, or documentation-only contracts from `maatify/persistence`.
+A consumer package MUST NOT copy Runtime code, tests, internal algorithms, or documentation-only contracts from `maatify/php-persistence`.
 
 ### Capability Availability and Composer Dependency
 
-A package may consume only an API that exists in a stable published release of `maatify/persistence`.
+Stable releases of consuming packages MUST use a published stable release of `maatify/php-persistence` that contains the required capability.
 
 The consumer MUST:
 
-- declare `maatify/persistence` as a direct Composer dependency when its public API is referenced
-- require the minimum stable version that contains the needed capability
-- confirm availability from the published package reference and stable release documentation
+- declare `maatify/php-persistence` as a direct Composer dependency when its public API is referenced
+- set the dependency floor at the first compatible stable version that contains the needed capability, except for the trial below
+- confirm availability from the package reference and release metadata for the selected published version
 - avoid depending on an unreleased branch, commit, proposed contract, or target version as though it were an available Runtime API
 
-A documentation-only architecture contract inside `maatify/persistence` establishes ownership and future implementation rules. It does not authorize another package to implement or consume the proposed API before a stable release publishes it.
+**Temporary trial exception:** While `maatify/php-persistence` has no published stable release, a trial MAY use its latest published release candidate by SemVer precedence. Verify that the release tag and published Composer metadata identify the same version and source revision, and confirm the needed capability in that revision's package reference. Pin the selected RC exactly in the trial's Composer constraint and record its resolved version and revision in the trial lock or verification evidence. Keep `minimum-stability: stable` and `prefer-stable: true`, and follow the [Composer Package Standard](./COMPOSER_PACKAGE_STANDARD.md) for pre-release dependency work. The exception ends when a stable release is published. Selecting a stable replacement requires review of the needed capability and integration. This trial exception does not authorize a stable consumer release.
+
+A proposed or documentation-only API does not qualify until it is published in an eligible release.
 
 ### Ordering Integration
 
-In this section, `Ordering` means reusable row-position and display-order management exposed by `Maatify\Persistence\Pdo\Ordering`. It does not include ordinary consumer-owned read-query sorting expressed through `ORDER BY`.
+In this section, `Ordering` means reusable row-position and display-order management exposed by `Maatify\PhpPersistence\Ordering`. It does not include ordinary consumer-owned read-query sorting expressed through `ORDER BY`.
 
-Reusable row-position and display-order operations covered by the stable `maatify/persistence` Ordering API MUST use:
+Reusable row-position and display-order operations covered by the eligible published `maatify/php-persistence` Ordering API MUST use:
 
 ```text
-Maatify\Persistence\Pdo\Ordering
+Maatify\PhpPersistence\Ordering
 ```
 
 The consumer Repository / Service may:
@@ -522,23 +769,23 @@ The consumer Repository / Service may:
 - provide the PDO connection
 - construct trusted ordering configuration from its own table and column identifiers
 - pass domain ids, scope values, and requested positions
-- translate the stable persistence result into its own existing public contract through a thin adapter
+- translate the persistence result into its own existing public contract through a thin adapter
 
 The consumer MUST NOT reproduce ordering SQL shifts, transaction ownership, scope locking, identifier validation, or persistence exception behavior locally.
 
 **Integration Boundaries:**
-- `getNextPosition()` does not start a transaction or acquire a lock. When concurrency correctness is required, the caller owns both the transaction and the appropriate locking strategy. It alone returns `MAX + 1`.
-- `moveWithinScope()` owns a transaction and refuses to run in an active PDO transaction.
+- `getNextPosition()` is a plain non-locking read that returns `MAX + 1`: it does not start a transaction, acquire a lock, or serialize concurrent allocations. When concurrency correctness is required, the caller MUST own the transaction and a serialization lock that every competing writer takes first (for example on a parent row). Under `REPEATABLE READ`, that lock MUST be taken before the transaction's first non-locking read: a lock taken after the snapshot exists does not refresh it, so the plain read can return a stale value, and repeating the call in the same transaction does not correct it.
+- `moveWithinScope()` owns a transaction only when the PDO connection has no active transaction. When the caller already owns an active PDO transaction, the caller retains final commit and rollback ownership. The operation opens a savepoint only for a move that will write, after finding the target and excluding a no-op. The savepoint protects the operation’s writes while the caller’s transaction remains active.
 - Non-positive movement values are rejected before clamping. Clamping is to the maximum existing position.
 - Soft-delete filtering is supported when `deletedAtColumn` is configured and disabled when it is `null`.
-- Do not duplicate full public signatures; refer to `maatify/persistence`.
+- Do not duplicate full public signatures; refer to `maatify/php-persistence`.
 
 ### Pagination Integration
 
-Paginated Repository / QueryReader operations MUST delegate reusable pagination mechanics to the stable public API under:
+Paginated Repository / QueryReader operations MUST delegate reusable pagination mechanics to the eligible published public API under:
 
 ```text
-Maatify\Persistence\Pdo\Pagination
+Maatify\PhpPersistence\Pagination
 ```
 
 `PdoPaginator` does not own a transaction and can run inside a caller-owned transaction without modifying its state.
@@ -553,7 +800,7 @@ The consumer remains responsible for domain-owned concerns:
 - row mapping into the consumer's array or DTO
 - preserving its own existing public response contract
 
-`maatify/persistence` owns the reusable mechanics exposed by its stable API, including normalization, count execution, deterministic sorting, limit/offset handling, mapper invocation, and canonical pagination metadata.
+`maatify/php-persistence` owns the reusable mechanics exposed by its eligible published API, including normalization, count execution, deterministic sorting, limit/offset handling, mapper invocation, and canonical pagination metadata.
 
 Adopting the shared paginator MUST NOT silently change an existing endpoint, DTO, or package return shape. A thin consumer-owned adapter MAY preserve an established public contract.
 
@@ -561,7 +808,7 @@ Adopting the shared paginator MUST NOT silently change an existing endpoint, DTO
 
 A consumer-owned adapter is permitted only when it:
 
-- translates domain inputs into the stable `maatify/persistence` API
+- translates domain inputs into the eligible published `maatify/php-persistence` API
 - delegates the shared operation without reimplementing its algorithms
 - maps the returned result into an already approved consumer contract
 - adds no competing exception hierarchy, pagination engine, or ordering engine
@@ -570,7 +817,7 @@ An adapter MUST NOT become a fork of the shared capability.
 
 ### Missing Capability
 
-When a required reusable behavior is absent from the stable public API, the default action is to propose and review the capability in `maatify/persistence`.
+When a required reusable behavior is absent from the eligible published public API, the default action is to propose and review the capability in `maatify/php-persistence`.
 
 A package-local alternative is forbidden unless an explicit owner-approved architectural decision proves that the behavior is domain-specific and outside the shared package's scope.
 
@@ -578,7 +825,7 @@ Temporary copying of an unpublished persistence contract is not an acceptable wo
 
 ### Source of Truth
 
-Consumer packages MUST follow the stable public API, package reference, and published integration documentation in `maatify/persistence`.
+Consumer packages MUST follow the public API, package reference, and published integration documentation for the selected eligible release of `maatify/php-persistence`.
 
 Exact class signatures, internal formulas, SQL assembly rules, exception classifications, and verification requirements belong in the owning repository. They MUST NOT be duplicated in this general package-building standard or independently redefined by consumer packages.
 
@@ -643,12 +890,14 @@ Responsibility:
 - **SQL** lives in Repositories or package-local/domain-local SQL support builders
 - **Display formatting** does not belong in Repositories or query layers; those layers return raw domain/database values for the Host's presentation layer.
 
+The mutation example below assumes a documented Repository contract in which `false` means a missing target and `true` includes an accepted unchanged update. The Repository implementation must establish that meaning under Section 10; a boolean meaning only "rows changed" does not satisfy this example's precondition. Other mutation contracts retain their own documented outcome handling.
+
 ```php
-// Command service — throws NotFoundException when repo returns false
+// Command service — Repository false is proven to mean a missing target.
 public function update(UpdateSomethingCommand $command): void
 {
-    $updated = $this->commandRepo->update($command);
-    if (! $updated) {
+    $targetFound = $this->commandRepo->update($command);
+    if (! $targetFound) {
         throw SomethingNotFoundException::withId($command->id);
     }
 }
@@ -679,19 +928,29 @@ However, infrastructure packages such as `{PACKAGE_SLUG}` should use their actua
 
 ---
 
-## 15. Read / Admin Query API Rules
+## 15. Operational Read / Reporting and Admin Query API Rules
 
-Packages that have persisted data intended to be viewed, searched, audited, monitored, or reported by host applications should expose framework-agnostic PHP read/query contracts where applicable.
+Operational Read / Reporting applicability is determined by package ownership, not by the mere use of SQL or a database. A Package that owns persisted domain or operational state — such as orders, balances, subscriptions, jobs, statuses, events, assignments, or equivalent package-owned records — is automatically **In Scope** for Operational Read / Reporting. Once a Package is In Scope, it MUST NOT classify this capability as Not Applicable. A Package that uses persistence only as an infrastructure mechanism and owns no persisted domain or operational semantics of its own is **Out of Scope** and is not required to invent metrics or a reporting API. The Package Reference or Architecture MUST document the classification and its reason.
+
+Every In-Scope Package MUST expose stable, meaningful, framework-agnostic PHP Operational Read / Reporting contracts that let the Host understand, manage, or monitor the state owned by the Package without direct coupling to the Package's tables. The capability is domain-specific and may provide listing, search, status summaries, counts, aggregates, grouped results, time-window summaries, audit reads, or monitoring reads when those semantics are meaningful and stable for that domain. A generic `dashboard()` method, `ReportService`, `Dashboard/` namespace, or generic metrics DTO MUST NOT be added merely for compliance.
+
+Operational Read / Reporting queries MUST be read-only: they MUST NOT change Package state or become an alternate mutation path. Query filters and result snapshots MUST use the canonical `Criteria/`, `DTO/`, `Service/`, `Repository/`, and `Contract/` responsibilities from this Standard only when those responsibilities genuinely apply. This requirement does not create a separate Reporting source taxonomy, shared Reporting Standard, reusable cross-package reporting abstraction, or universal metric/result shape.
 
 When management and consumption are distinct domain use cases, the Package MUST expose a Management API and a Consumer API with separate contracts. Management APIs may support administrative search, filters, statuses, deleted-state visibility, and pagination. Consumer APIs expose only records valid under the Package's domain visibility invariants; the Host MUST NOT be left to reproduce those invariants through generic filters. If the two uses are not meaningfully distinct, a Package MUST NOT create duplicate APIs merely to satisfy this pattern.
 
+Operational or management reporting that is not consumer-facing belongs on the management/operational read side. Existing Management or Consumer read/query contracts MUST be reused when they can clearly carry the capability; a third duplicate API layer MUST NOT be created merely because the capability is called reporting.
+
 **Important:** This refers strictly to **PHP-level APIs** (e.g., PHP interfaces and DTOs), not HTTP APIs.
 
-These contracts may cover (where applicable and appropriate for the package's domain):
+These contracts may cover, when meaningful and appropriate for the package's domain:
 - Admin listing
 - Search
-- Dashboard summaries
-- Reporting summaries
+- Status summaries, counts, aggregates, or grouped results
+- Time-window, audit, or monitoring reads
+
+The public read/reporting surface MUST be sufficient to prevent the Host from querying Package tables directly to reconstruct Package-owned semantics, reimplement Package invariants, or interpret Package-owned status/lifecycle from internal storage. This is not a blanket prohibition on persistence ownership outside this context.
+
+Operational Read / Reporting inside a reusable Package is limited to data and meanings owned by that Package. It MUST NOT join Host tables, use Host foreign-key coupling, resolve Host actors or names, interpret Host-owned lifecycle/status, read another Package's internal storage instead of its public API, or duplicate reporting semantics owned by another Package. Cross-Package and Host-specific aggregation belongs to Project-Aware or Host scope.
 
 **Explicitly forbidden inside the package:**
 - HTTP controllers
@@ -703,38 +962,29 @@ These contracts may cover (where applicable and appropriate for the package's do
 - Host-specific actor/name resolution
 - JOINs/FKs on host tables
 
-Remember to uphold the core principles: maintain a standalone, framework-agnostic, and host-agnostic architecture, prioritize domain boundaries over mandatory Admin/Customer folder structures, and ensure all public query capabilities have matching PHP contracts/interfaces.
+Transport, presentation, permissions, and export concerns remain at the Host/Slim/Project-Aware layer. `Dashboard` describes a consumer use case; it is not a canonical Package architecture name.
+
+For an In-Scope Package, the Package Reference or Architecture MUST document, as applicable: persisted domain/operational ownership and the applicability reason; persisted concepts with operational/reporting value; stable public read/reporting contracts; meaningful aggregate, filter, or time-window semantics; ownership boundaries and non-goals; and intentionally unsupported reporting dimensions that matter to consumers. This requirement does not redefine the Documentation Lifecycle or create a second documentation owner.
+
+When a reporting result depends on persisted state, the aggregate, count, filter, and time-window semantics that actually exist MUST have Integration evidence on the actual supported persistence engine. Unit mocks alone are insufficient to prove persisted result semantics. System/E2E applicability remains owned by `TESTING_STANDARD.md`, and provisioning and service lifecycle remain governed by `CI_WORKFLOW_STANDARD.md` §11.
 
 ---
 
 ## 16. display_order Rules
 
-When persisted entities expose mutable row-position or display-order behavior, the package MUST consume the stable public Ordering API from `maatify/persistence`.
+When persisted entities expose mutable row-position or display-order behavior, the package MUST consume the public Ordering API from `maatify/php-persistence` under the release eligibility rules in Section 11.
 
 The package-level integration contract is:
 
 - `display_order` MUST NOT be accepted by `CreateCommand` or `UpdateCommand`
-- creation-time position assignment MUST delegate to the stable Ordering API when automatic assignment applies
+- creation-time position assignment MUST delegate to that Ordering API when automatic assignment applies
 - movement MUST be exposed through a dedicated package operation rather than a generic update command
-- the Command Repository operation MUST return `bool` to report whether the target row existed and was moved
-- a Service MAY expose a `void` operation and convert a Repository `false` result into the approved not-found exception
-- shifting, clamping, scope locking, transaction ownership, identifier validation, and persistence exception behavior MUST remain delegated to `maatify/persistence`
+- the Command Repository operation MUST return `bool` with documented semantics. When it exposes `moveWithinScope()` directly, `true` includes a successful no-op, and `false` can mean a missing target or a zero-row target update
+- a Service MAY expose a `void` operation and convert a Repository `false` result into the approved not-found exception only when the Repository contract establishes that `false` means a missing target, under Section 10
+- shifting, clamping, scope locking, transaction ownership, identifier validation, and persistence exception behavior MUST remain delegated to `maatify/php-persistence`
 - a consumer MUST NOT reproduce or fork the Ordering engine locally
 
-Exact class names, method signatures, transaction behavior, and Runtime semantics are owned by the stable `maatify/persistence` public API and [PERSISTENCE_PACKAGE_REFERENCE.md](https://github.com/Maatify/persistence/blob/main/PERSISTENCE_PACKAGE_REFERENCE.md).
-
-### Deferred Hard-Delete Ordering Compaction
-
-The stable `maatify/persistence` Ordering API currently does not expose a hard-delete compaction operation.
-
-The package-specific decision to preserve scoped ordering compaction as a future candidate is recorded in [ADR 0002 — Ordering Hard-Delete Compaction](https://github.com/Maatify/persistence/blob/main/docs/adr/0002-ordering-hard-delete-compaction.md). Its status is `Accepted — Deferred`. Compaction is not implemented, has no stable API or release target, and is not part of Pagination `v1.1.0`.
-
-Until a stable Runtime API is separately approved, implemented, released, and recorded in [PERSISTENCE_PACKAGE_REFERENCE.md](https://github.com/Maatify/persistence/blob/main/PERSISTENCE_PACKAGE_REFERENCE.md):
-
-- consuming projects retain ownership of entity deletion and project-specific hard-delete orchestration
-- consumers MUST NOT claim or depend on an unreleased Persistence compaction API
-- this Standard does not prescribe a method signature, locking strategy, transaction-participation contract, or release target for the deferred capability
-- the deferred decision MUST NOT be treated as an expansion of the `v1.1.0` Pagination scope
+Exact class names, method signatures, transaction behavior, and Runtime semantics are owned by the selected release’s public API and Package Reference as described in Section 11.
 
 ---
 
@@ -774,7 +1024,7 @@ Rules:
 - Validate decimal format **before** any `bcmath` call:
 
 ```php
-if (! preg_match('/^\d+(?:\.\d{1,4})?$/', $value)) {
+if (! preg_match('/\A\d+(?:\.\d{1,4})?\z/', $value)) {
     throw SomethingInvalidArgumentException::invalidDecimal($field, $value);
 }
 ```
@@ -915,18 +1165,23 @@ Compliance requires the repository's CI to pass the current Compliance Checklist
 
 ## 23. The Package Is NOT Done Until
 
+- [ ] Package-owned persisted domain/operational state and the resulting Operational Read / Reporting classification are documented; Out-of-Scope is used only when no such state is owned.
+- [ ] Every In-Scope Package exposes a stable, meaningful, framework-agnostic PHP Operational Read / Reporting surface, and the Host does not need direct Package-table coupling to reconstruct Package-owned semantics.
+- [ ] Persisted aggregate, count, filter, or time-window result semantics that exist have Integration evidence on the actual supported persistence engine, under the ownership of the Testing and CI standards.
 - [ ] CI workflows exist, pass, and satisfy the current Compliance Checklist in `CI_WORKFLOW_STANDARD.md`
 - [ ] Package-owned runtime and test architecture is represented in CI where applicable
 - [ ] `README.md`, `CHANGELOG.md`, and other release-facing files comply with `LIBRARY_PRESENTATION_STANDARD.md`.
+- [ ] Where the artifact is a reusable Package or applicable Base Artifact, `docs/guides/USAGE_GUIDE.md`, root `examples/`, and the required consumer-facing links are present and accurate under `LIBRARY_PRESENTATION_STANDARD.md`.
 - [ ] `{PACKAGE}_PACKAGE_REFERENCE.md` complete — full API, design rules, extension guide
 - [ ] `composer.json` complies with [COMPOSER_PACKAGE_STANDARD.md](COMPOSER_PACKAGE_STANDARD.md).
-- [ ] The consumer workflow and examples meet the requirements in Section 25.
+- [ ] The technical consumer workflow and examples meet the requirements in Section 25; their required presentation, navigation, and discoverability follow `LIBRARY_PRESENTATION_STANDARD.md`.
 - [ ] The standalone Package has the reproducible Consumer Verification Harness required by [TESTING_STANDARD.md](../testing/TESTING_STANDARD.md).
 - [ ] Every public service/repository capability intended for infrastructure substitution has a matching contract (interface)
 - [ ] Domain-specific failure semantics are documented
+- [ ] Boolean mutation meanings distinguish changed, unchanged, missing, and conditional outcomes where applicable; not-found mapping follows Section 10 and is not inferred from zero changed rows alone.
 - [ ] Transaction catch blocks rethrow the original `\Throwable` after rollback — never swallow
 - [ ] Business orchestration lives in Services, validation in Commands/filters, SQL in Repositories
-- [ ] Schema docs align with MySQL/domain-owned tables, no generic `logs` or `event_logs` tables
+- [ ] Schema/persistence documentation aligns with the package's declared persistence backend and domain-owned storage structures, with no generic `logs` or `event_logs` storage
 - [ ] Framework-agnostic boundaries preserved: no host app namespaces, no framework bindings required
 - [ ] No generic logger, recorder, or repository
 - [ ] Docs reflect current exception rules, package-defined exceptions use `maatify/exceptions`, and any clock/date-time contract uses `maatify/shared-common` instead of a local duplicate
@@ -950,13 +1205,13 @@ For each entity or assignment, the Package Reference MUST distinguish stable ide
 
 ## 25. Runtime Workflow, Transactions, Concurrency, and Clock
 
-Each reusable Package MUST document a realistic consumer workflow in its Package Reference, Architecture, or practical Usage Guide. The documented workflow MUST show the consumer path:
+Each reusable Package MUST define a realistic technical consumer workflow in its Package Reference or another canonical technical contract document. A Usage Guide MAY present that contract for consumers, but it MUST NOT create a competing technical contract. The documented workflow MUST show the consumer path:
 
 ```text
 Host Input → Public API → Domain Service → Integration Boundary → Observable Result
 ```
 
-Examples MUST demonstrate supported construction/wiring, a basic workflow, public API use, and the applicable integration boundaries. They illustrate the contract; the Package Reference and this Standard remain the sources of normative rules.
+Examples MUST demonstrate supported construction/wiring, a basic workflow, public API use, and the applicable integration boundaries. They illustrate the technical contract; the Package Reference and this Standard remain the sources of normative rules. `LIBRARY_PRESENTATION_STANDARD.md` owns whether the Usage Guide and examples artifacts exist, their navigation/discoverability, and their consumer-facing presentation; it does not replace this technical workflow contract.
 
 When a domain invariant spans multiple operations, the Package MUST identify the transaction owner and the required transaction, locking, and concurrency boundaries. It MUST state whether an outer transaction is supported when that affects callers. Race-prone invariants—such as ordering, hierarchy, unique defaults, or lifecycle transitions—require concurrency verification when concurrent access is realistic for the domain. The Testing Standard owns the general testing evidence model.
 
@@ -969,3 +1224,14 @@ Extensible content fields are conditional and are appropriate only when a domain
 When this pattern applies, the domain contract may define a stable `field_key`, a value and typed format, exact optional scopes, deterministic ordering, lifecycle, and uniqueness according to actual domain invariants. Identity fields and scopes that define assignment identity MUST remain stable under generic updates.
 
 The Host owns the meaning and administration of `field_key`, including editor configuration, sanitization, rendering, and fallback, unless the Package's own domain explicitly owns those semantics. The Package MUST NOT create a Field Definition Registry solely because it stores a `field_key`; the Registry rule in Section 24 still applies.
+
+## Version History
+
+### `4.0.0`
+
+- Issues #188 and #189: correct the transaction example to preserve the original throwable when cleanup fails, and anchor decimal validation to the whole string. `CLARIFICATION / NO_CONTRACT_CHANGE` (Patch class): both examples now fulfill the existing original-error and pre-bcmath validation contracts; no new exception, logging, retry, decimal-format, or precision policy. This correction is absorbed in the existing Mutable Candidate `4.0.0` under the cumulative Major calculation below.
+
+- Latest qualified Frozen Version Baseline: `3.0.2`, artifact blob `1475bb006eefe9e1ef9a6973f6664c3d0690dc2c`, at upstream Adoption Commit `ebcf55b0591db61d18a1407bc3effef0197b388f`. The completed VALID consumer Upgrade and exact artifact identity were qualified in [PR #148 post-merge reconciliation](https://github.com/Maatify/php-engineering-standards/pull/148#issuecomment-6302878287); the existing Mutable Candidate `4.0.0` already includes the normative breaking Ordering integration corrections from Issue #150.
+- Issue #183 (central upstream `DEC-048` of `Maatify/php-engineering-standards`, not a consumer-local decision): `NORMATIVE / BREAKING_CONTRACT_CHANGE`. Remove changed-row count as a universal mutation-outcome explanation and require a proven missing-target contract before converting Repository `false` to not-found. Existing implementations following the former unconditional mapping may need correction. Preserve boolean signatures and domain-specific no-op/conditional outcomes; no mandatory SQL algorithm, Host connection option, or new public result type.
+- Central upstream `DEC-049` of `Maatify/php-engineering-standards`: `NORMATIVE / BREAKING_CONTRACT_CHANGE`. Move shared Ordering and Pagination integration to `maatify/php-persistence` and permit only the latest verified published RC for temporary trials while no stable release exists. Preserve the `DEC-048` missing-target boundary.
+- The cumulative highest impact since Frozen Baseline `3.0.2` remains Major, so the Mutable Candidate remains `4.0.0`, calculated once from that baseline rather than from an earlier candidate. No Version Finalization, Freeze, release, consumer Adoption/Upgrade, or consumer runtime correction is claimed.
