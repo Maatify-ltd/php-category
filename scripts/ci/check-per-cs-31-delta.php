@@ -556,7 +556,7 @@ final class PerCs31DeltaVerifier
         $hedge = '(?:maybe|perhaps|possibly|may|might|should)';
         $intent = '(?:intentionally|deliberately|purposely)';
 
-        return self::hasUnquotedQuestionMark($comment) || preg_match(
+        return self::hasQuestionMarkOutsideQuotedToken($comment) || preg_match(
             '~\A(?:if|unless|whether|' . $hedge . '|(?:check|consider|decide)\s+whether)\b'
             . '|\b(?:we|execution|the\s+case)\s+' . $hedge . '\s+(?:' . $intent . '\s+)?' . $action . '\b'
             . '|\bso\s+(?:maybe|perhaps|possibly)\b|\bif\s+(?:needed|required|necessary)\b'
@@ -567,19 +567,19 @@ final class PerCs31DeltaVerifier
         ) === 1;
     }
 
-    private static function hasUnquotedQuestionMark(string $comment): bool
+    private static function hasQuestionMarkOutsideQuotedToken(string $comment): bool
     {
         if (!str_contains($comment, '?')) {
             return false;
         }
 
-        // A word-adjacent apostrophe can be part of a contraction, not a quote.
-        $quotedLiteral = <<<'REGEX'
-            ~(?<![\\\p{L}\p{N}_])(?:'(?:\\.|[^'\\])*'|"(?:\\.|[^"\\])*"|`(?:\\.|[^`\\])*`)(?![\p{L}\p{N}_])~u
+        // Ignore only the quoted token; a complete quoted question still counts.
+        $quotedToken = <<<'REGEX'
+            ~(?<![\\\p{L}\p{N}_])(?:'\?'|"\?"|`\?`|“\?”|‘\?’)(?![\p{L}\p{N}_])~u
             REGEX;
-        $unquoted = preg_replace($quotedLiteral, '', $comment);
+        $withoutTokens = preg_replace($quotedToken, '', $comment);
 
-        return $unquoted === null || str_contains($unquoted, '?');
+        return $withoutTokens === null || str_contains($withoutTokens, '?');
     }
 
     private static function declaresFallthrough(string $comment): bool
