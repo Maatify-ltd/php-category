@@ -37,8 +37,8 @@ use Maatify\Category\ImageRole\Infrastructure\PdoCategoryImageRoleCommandReposit
 use Maatify\Category\ContentField\Infrastructure\PdoCategoryContentFieldCommandRepository;
 use Maatify\Category\Tests\Integration\Support\CategoryMySqlIntegrationTestCase;
 use Maatify\Category\Tests\Integration\Support\FixedCategoryClock;
-use Maatify\Persistence\Pdo\Ordering\ScopedOrderingManager;
-use Maatify\Persistence\Pdo\Transaction\PdoTransactionRunner;
+use Maatify\PhpPersistence\Ordering\Repository\ScopedOrderingManager;
+use Maatify\PhpPersistence\Transaction\Repository\PdoTransactionRunner;
 use PDO;
 use PDOException;
 use Throwable;
@@ -480,7 +480,6 @@ final class CategoryConcurrencyIntegrationTest extends CategoryMySqlIntegrationT
 
         $blockedConnection = $this->newConnection();
         $this->setLockWaitTimeout($blockedConnection);
-        $blockedService = $this->service($blockedConnection);
         $blockedContentService = $this->contentService($blockedConnection);
 
         try {
@@ -544,7 +543,6 @@ final class CategoryConcurrencyIntegrationTest extends CategoryMySqlIntegrationT
 
         $blockedConnection = $this->newConnection();
         $this->setLockWaitTimeout($blockedConnection);
-        $blockedService = $this->service($blockedConnection);
         $blockedImageService = $this->imageService($blockedConnection);
 
         try {
@@ -1061,7 +1059,6 @@ final class CategoryConcurrencyIntegrationTest extends CategoryMySqlIntegrationT
 
         $blockedConnection = $this->newConnection();
         $this->setLockWaitTimeout($blockedConnection);
-        $blockedService = $this->service($blockedConnection);
         $blockedImageService = $this->imageService($blockedConnection);
 
         try {
@@ -1186,22 +1183,11 @@ final class CategoryConcurrencyIntegrationTest extends CategoryMySqlIntegrationT
 
         /** @var array<int, int|null> $parents */
         $parents = [];
-        while (($row = $statement->fetch(PDO::FETCH_ASSOC)) !== false) {
-            if (!is_array($row)) {
-                self::fail('Category row must be an associative array.');
-            }
-
-            $idValue = $row['id'] ?? null;
-            if (!is_int($idValue) && !is_string($idValue)) {
-                self::fail('Category id must be an integer value.');
-            }
-            $id = (int) $idValue;
-
-            $parentId = $row['parent_id'] ?? null;
+        foreach ($statement->fetchAll(PDO::FETCH_KEY_PAIR) as $id => $parentId) {
             if ($parentId !== null && !is_int($parentId) && !is_string($parentId)) {
                 self::fail('Category parent_id must be an integer or null.');
             }
-            $parents[$id] = $parentId === null ? null : (int) $parentId;
+            $parents[(int) $id] = $parentId === null ? null : (int) $parentId;
         }
 
         return $parents;

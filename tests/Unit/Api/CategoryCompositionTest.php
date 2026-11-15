@@ -40,9 +40,9 @@ use Maatify\Category\ImageAssignment\Ordering\Command\UpdateCategoryImageAssignm
 use Maatify\Category\ImageRole\Lifecycle\Command\CreateCategoryImageRoleCommand;
 use Maatify\SharedCommon\Contracts\ClockInterface;
 use PHPUnit\Framework\TestCase;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
-use Maatify\Persistence\Pdo\Pagination\SortDirectionEnum;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
+use Maatify\PhpPersistence\Pagination\Enum\SortDirectionEnum;
 use ReflectionClass;
 use ReflectionNamedType;
 use ReflectionMethod;
@@ -123,7 +123,7 @@ final class CategoryCompositionTest extends TestCase
         $service = $this->createMock(CategoryServiceInterface::class);
         $criteria = new \Maatify\Category\Query\DTO\CategoryListCriteriaDTO(search: 'category');
         $pageRequest = new PageRequest(page: 1, perPage: 10, sortBy: 'code', sortDirection: 'ASC');
-        $page = new PageResult(
+        $page = new PageResultDTO(
             data: [],
             page: 1,
             perPage: 10,

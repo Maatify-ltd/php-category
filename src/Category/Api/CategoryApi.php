@@ -16,8 +16,8 @@ use Maatify\Category\Query\DTO\CategoryCollectionDTO;
 use Maatify\Category\Query\DTO\CategoryDTO;
 use Maatify\Category\Query\DTO\CategoryListCriteriaDTO;
 use Maatify\Category\Query\DTO\CategoryVisibleListCriteriaDTO;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 
 /** Public Category domain API; all orchestration remains in CategoryService. */
 final readonly class CategoryApi implements CategoryApiInterface
@@ -101,7 +101,7 @@ final readonly class CategoryApi implements CategoryApiInterface
         return $this->service->listChildrenForManagement($parentId, $criteria);
     }
 
-    public function paginateForManagement(CategoryListCriteriaDTO $criteria, PageRequest $pageRequest): PageResult
+    public function paginateForManagement(CategoryListCriteriaDTO $criteria, PageRequest $pageRequest): PageResultDTO
     {
         return $this->service->paginateForManagement($criteria, $pageRequest);
     }
@@ -109,7 +109,7 @@ final readonly class CategoryApi implements CategoryApiInterface
     public function paginateRootCategoriesForManagement(
         CategoryListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         return $this->service->paginateRootCategoriesForManagement($criteria, $pageRequest);
     }
 
@@ -117,7 +117,7 @@ final readonly class CategoryApi implements CategoryApiInterface
         int $parentId,
         CategoryListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         return $this->service->paginateChildrenForManagement($parentId, $criteria, $pageRequest);
     }
 }

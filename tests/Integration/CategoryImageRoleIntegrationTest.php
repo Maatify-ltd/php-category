@@ -26,7 +26,7 @@ use Maatify\Category\ImageRole\Exception\CategoryImageRoleNotFoundException;
 use Maatify\Category\ImageRole\Lifecycle\Exception\CategoryImageRoleUnavailableException;
 use Maatify\Category\Tests\Integration\Support\CategoryMySqlIntegrationTestCase;
 use Maatify\Category\Tests\Integration\Support\FixedCategoryClock;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
 use PDO;
 
 final class CategoryImageRoleIntegrationTest extends CategoryMySqlIntegrationTestCase
@@ -34,7 +34,6 @@ final class CategoryImageRoleIntegrationTest extends CategoryMySqlIntegrationTes
     public function testRoleLifecycleIdentityAndManagementFilters(): void
     {
         $connection = $this->connection();
-        $service = $this->commandService($connection);
         $management = $this->roleService($connection);
 
         $galleryId = $management->create(new CreateCategoryImageRoleCommand('gallery'));
@@ -111,7 +110,6 @@ final class CategoryImageRoleIntegrationTest extends CategoryMySqlIntegrationTes
     {
         $connection = $this->connection();
         $service = $this->commandService($connection);
-        $clock = new FixedCategoryClock();
         $consumer = $this->imageService($connection);
         $management = $this->imageService($connection);
         $roles = $this->roleService($connection);

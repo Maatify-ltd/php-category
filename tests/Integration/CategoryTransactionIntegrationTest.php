@@ -166,6 +166,73 @@ final class CategoryTransactionIntegrationTest extends CategoryMySqlIntegrationT
         self::assertSame(CategoryStatusEnum::INACTIVE, $updated->status);
     }
 
+    public function testOrderedCreatesUseCurrentScopeInsideAnOlderHostSnapshot(): void
+    {
+        $writer = $this->connection();
+        $categoryId = $this->service($writer)->create(new CreateCategoryCommand('snapshot-parent'));
+        $host = $this->newConnection();
+        $host->exec('SET TRANSACTION ISOLATION LEVEL REPEATABLE READ');
+        $host->beginTransaction();
+
+        try {
+            // A consistent read establishes the snapshot before another writer inserts into each scope.
+            $snapshot = $host->query('SELECT COUNT(*) FROM `maa_category_categories`');
+            self::assertNotFalse($snapshot);
+            self::assertSame(1, (int) $snapshot->fetchColumn());
+
+            $this->service($writer)->create(new CreateCategoryCommand('first-child', $categoryId));
+            $this->imageService($writer)->assign(new CreateCategoryImageAssignmentCommand($categoryId, 1101));
+            $this->fieldService($writer)->create(new CreateCategoryContentFieldCommand(
+                $categoryId,
+                'first-field',
+                null,
+                null,
+                CategoryContentFieldFormatEnum::TEXT,
+                'first',
+            ));
+
+            $childId = $this->service($host)->create(new CreateCategoryCommand('second-child', $categoryId));
+            $assignmentId = $this->imageService($host)->assign(
+                new CreateCategoryImageAssignmentCommand($categoryId, 1102),
+            );
+            $fieldId = $this->fieldService($host)->create(new CreateCategoryContentFieldCommand(
+                $categoryId,
+                'second-field',
+                null,
+                null,
+                CategoryContentFieldFormatEnum::TEXT,
+                'second',
+            ));
+
+            self::assertTrue($host->inTransaction());
+            $host->commit();
+        } finally {
+            if ($host->inTransaction()) {
+                $host->rollBack();
+            }
+        }
+
+        self::assertSame([
+            'categories' => 2,
+            'assignments' => 2,
+            'fields' => 2,
+        ], [
+            'categories' => $this->displayOrderForId($writer, 'maa_category_categories', $childId),
+            'assignments' => $this->displayOrderForId($writer, 'maa_category_category_image_assignments', $assignmentId),
+            'fields' => $this->displayOrderForId($writer, 'maa_category_category_content_fields', $fieldId),
+        ]);
+    }
+
+    private function displayOrderForId(PDO $connection, string $table, int $id): int
+    {
+        $statement = $connection->prepare('SELECT `display_order` FROM `' . $table . '` WHERE `id` = :id');
+        $statement->execute(['id' => $id]);
+        $displayOrder = $statement->fetchColumn();
+        self::assertTrue(is_int($displayOrder) || is_string($displayOrder));
+
+        return (int) $displayOrder;
+    }
+
     public function testAllThreeOrderingMutationsParticipateInTheCallerOwnedTransaction(): void
     {
         $connection = $this->connection();

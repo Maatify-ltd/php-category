@@ -105,7 +105,7 @@ final class DomainRoleAndFieldMutationServiceTest extends TestCase
         $transaction = new InMemoryCategoryTransaction();
         $service = new ImageRoleService(
             $repository,
-            $reader = new InMemoryCategoryQueryReader([], roles: [$role]),
+            new InMemoryCategoryQueryReader([], roles: [$role]),
             $this->createStub(CategoryImageRoleManagementReadQueryInterface::class),
             $transaction,
             new FixedClock(),

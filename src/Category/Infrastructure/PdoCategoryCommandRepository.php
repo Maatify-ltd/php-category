@@ -14,8 +14,8 @@ use Maatify\Category\Ordering\Command\UpdateCategoryDisplayOrderCommand;
 use Maatify\Category\Lifecycle\Command\UpdateCategoryStatusCommand;
 use Maatify\Category\Lifecycle\Exception\CategoryCodeAlreadyExistsException;
 use Maatify\Category\Common\Exception\CategoryPersistenceException;
-use Maatify\Persistence\Pdo\Ordering\ScopedOrderingConfig;
-use Maatify\Persistence\Pdo\Ordering\ScopedOrderingManager;
+use Maatify\PhpPersistence\Ordering\Config\ScopedOrderingConfig;
+use Maatify\PhpPersistence\Ordering\Repository\ScopedOrderingManager;
 use PDO;
 use PDOException;
 
@@ -32,11 +32,10 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
     public function create(CreateCategoryCommand $command, DateTimeImmutable $occurredAt): int
     {
         $this->lockCreationScope($command->parentId);
-        $displayOrder = $this->orderingManager->getNextPosition(
-            $this->pdo,
-            $this->orderingConfig(),
-            $command->parentId,
-        );
+        $orderingConfig = $this->orderingConfig();
+        $displayOrder = $this->pdo->inTransaction()
+            ? $this->orderingManager->getNextPositionForUpdate($this->pdo, $orderingConfig, $command->parentId)
+            : $this->orderingManager->getNextPosition($this->pdo, $orderingConfig, $command->parentId);
 
         $statement = $this->pdo->prepare(
             'INSERT INTO `' . self::CATEGORY_TABLE . '` '

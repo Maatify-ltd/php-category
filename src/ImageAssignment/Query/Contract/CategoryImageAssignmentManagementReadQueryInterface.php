@@ -8,8 +8,8 @@ use Maatify\Category\Common\Enum\CategoryDeletedStateEnum;
 use Maatify\Category\ImageAssignment\Query\DTO\CategoryImageAssignmentCollectionDTO;
 use Maatify\Category\ImageAssignment\Query\DTO\CategoryImageAssignmentDTO;
 use Maatify\Category\ImageAssignment\Query\DTO\CategoryImageAssignmentListCriteriaDTO;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 
 /** Dedicated management read port for Image Assignments. */
 interface CategoryImageAssignmentManagementReadQueryInterface
@@ -23,9 +23,9 @@ interface CategoryImageAssignmentManagementReadQueryInterface
         CategoryImageAssignmentListCriteriaDTO $criteria,
     ): CategoryImageAssignmentCollectionDTO;
 
-    /** @return PageResult<CategoryImageAssignmentDTO> */
+    /** @return PageResultDTO<CategoryImageAssignmentDTO> */
     public function paginateImageAssignments(
         CategoryImageAssignmentListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult;
+    ): PageResultDTO;
 }

@@ -8,8 +8,8 @@ use Maatify\Category\Common\Enum\CategoryDeletedStateEnum;
 use Maatify\Category\ContentField\Query\DTO\CategoryContentFieldCollectionDTO;
 use Maatify\Category\ContentField\Query\DTO\CategoryContentFieldDTO;
 use Maatify\Category\ContentField\Query\DTO\CategoryContentFieldListCriteriaDTO;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 
 /** Dedicated management read port for Content Fields. */
 interface CategoryContentFieldManagementReadQueryInterface
@@ -23,9 +23,9 @@ interface CategoryContentFieldManagementReadQueryInterface
         CategoryContentFieldListCriteriaDTO $criteria,
     ): CategoryContentFieldCollectionDTO;
 
-    /** @return PageResult<CategoryContentFieldDTO> */
+    /** @return PageResultDTO<CategoryContentFieldDTO> */
     public function paginateContentFields(
         CategoryContentFieldListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult;
+    ): PageResultDTO;
 }

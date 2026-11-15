@@ -35,8 +35,8 @@ use Maatify\Category\Query\Infrastructure\PdoCategoryManagementReadQuery;
 use Maatify\Category\Query\Infrastructure\PdoCategoryQueryReader;
 use Maatify\Category\Query\Infrastructure\PdoCategoryReadQuery;
 use Maatify\Category\Service\CategoryService;
-use Maatify\Persistence\Pdo\Ordering\ScopedOrderingManager;
-use Maatify\Persistence\Pdo\Transaction\PdoTransactionRunner;
+use Maatify\PhpPersistence\Ordering\Repository\ScopedOrderingManager;
+use Maatify\PhpPersistence\Transaction\Repository\PdoTransactionRunner;
 use Maatify\SharedCommon\Contracts\ClockInterface;
 use PDO;
 

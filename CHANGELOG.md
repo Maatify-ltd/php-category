@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ## [Unreleased]
 
+### Changed
+
+- Use `maatify/php-persistence 1.0.0-rc.1` for shared Ordering, Pagination, and
+  Transactions. Consumers using shared request/result types or explicit
+  transaction wiring must update their imports.
+- Allocate display order from current MySQL state inside a Host transaction
+  for Category, Image Assignment, and Content Field creation.
+
 ## [1.0.0-rc.1] - 2026-09-15
 
 ### Added

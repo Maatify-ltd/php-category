@@ -18,8 +18,8 @@ use Maatify\Category\ContentField\Query\DTO\CategoryContentFieldCollectionDTO;
 use Maatify\Category\ContentField\Query\DTO\CategoryContentFieldDTO;
 use Maatify\Category\ContentField\Query\DTO\CategoryContentFieldListCriteriaDTO;
 use Maatify\Category\Query\DTO\CategoryVisibleListCriteriaDTO;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 
 /** Public Category Content Field domain API. */
 final readonly class ContentFieldApi implements ContentFieldApiInterface
@@ -79,7 +79,7 @@ final readonly class ContentFieldApi implements ContentFieldApiInterface
     public function paginateForManagement(
         CategoryContentFieldListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         return $this->service->paginateForManagement($criteria, $pageRequest);
     }
 }

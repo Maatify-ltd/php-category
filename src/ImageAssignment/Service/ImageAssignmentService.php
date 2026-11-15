@@ -30,9 +30,9 @@ use Maatify\Category\ImageRole\Lifecycle\Exception\CategoryImageRoleUnavailableE
 use Maatify\Category\ImageRole\Query\Contract\CategoryImageRoleQueryReaderInterface;
 use Maatify\Category\Query\Contract\CategoryQueryReaderInterface;
 use Maatify\Category\Query\DTO\CategoryVisibleListCriteriaDTO;
-use Maatify\Persistence\Pdo\Transaction\TransactionRunnerInterface;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Transaction\Repository\TransactionRunnerInterface;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 use Maatify\SharedCommon\Contracts\ClockInterface;
 
 /** Owns Category Image Assignment lifecycle, defaults, and exact-scope ordering only. */
@@ -143,7 +143,7 @@ final readonly class ImageAssignmentService implements ImageAssignmentServiceInt
     public function paginateForManagement(
         CategoryImageAssignmentListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         return $this->managementReader->paginateImageAssignments($criteria, $pageRequest);
     }
 

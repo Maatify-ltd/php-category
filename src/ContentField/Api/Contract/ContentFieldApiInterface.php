@@ -16,8 +16,8 @@ use Maatify\Category\ContentField\Query\DTO\CategoryContentFieldCollectionDTO;
 use Maatify\Category\ContentField\Query\DTO\CategoryContentFieldDTO;
 use Maatify\Category\ContentField\Query\DTO\CategoryContentFieldListCriteriaDTO;
 use Maatify\Category\Query\DTO\CategoryVisibleListCriteriaDTO;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 
 /** Public application contract for ContentField business mutations and visible/management reads and lists. */
 interface ContentFieldApiInterface
@@ -48,9 +48,9 @@ interface ContentFieldApiInterface
 
     public function listForManagement(CategoryContentFieldListCriteriaDTO $criteria): CategoryContentFieldCollectionDTO;
 
-    /** @return PageResult<CategoryContentFieldDTO> */
+    /** @return PageResultDTO<CategoryContentFieldDTO> */
     public function paginateForManagement(
         CategoryContentFieldListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult;
+    ): PageResultDTO;
 }

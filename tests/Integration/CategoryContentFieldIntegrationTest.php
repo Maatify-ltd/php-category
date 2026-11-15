@@ -25,7 +25,7 @@ use Maatify\Category\Common\Exception\CategoryInvalidArgumentException;
 use Maatify\Category\ContentField\Api\Contract\ContentFieldApiInterface;
 use Maatify\Category\Tests\Integration\Support\CategoryMySqlIntegrationTestCase;
 use Maatify\Category\Tests\Integration\Support\FixedCategoryClock;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
 use PDO;
 
 final class CategoryContentFieldIntegrationTest extends CategoryMySqlIntegrationTestCase

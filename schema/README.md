@@ -31,7 +31,7 @@ Clock provides; Category does not choose or normalize a timezone. Soft deletion
 uses nullable `deleted_at`. Internal foreign keys use `RESTRICT` for
 delete and update operations. Category creation obtains the next positive
 `display_order` for the nullable `parent_id` scope through the shared
-`maatify/persistence` Ordering API inside the application transaction.
+`maatify/php-persistence` Ordering API inside the application transaction.
 
 Category Image Roles are package-owned registry records with immutable,
 globally unique `role_key` values and typed exact-lowercase `active`/`inactive`
@@ -80,5 +80,5 @@ collation; values use `LONGTEXT`, JSON syntax is enforced for exact lowercase
 `json` fields, and
 Category does not sanitize, render, or interpret Host-defined keys. Field
 ordering is independent per Category and exact scope through the shared
-`maatify/persistence` Ordering API. The generated NULL-safe identity remains
+`maatify/php-persistence` Ordering API. The generated NULL-safe identity remains
 unique across soft deletion.

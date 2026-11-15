@@ -255,6 +255,16 @@ jobs:
           composer check-platform-reqs --working-dir="$consumer_dir"
           composer audit --no-interaction --abandoned=fail --working-dir="$consumer_dir"
           jq -e '.packages[] | select(.name == "maatify/php-category" and .source.type == "git")' "$consumer_dir/composer.lock"
+          jq -e '
+            .packages
+            | select(all(.[]; .name != "maatify/persistence"))
+            | .[]
+            | select(.name == "maatify/php-persistence"
+                and .version == "v1.0.0-rc.1"
+                and ."installation-source" == "dist"
+                and .dist.reference == "34c3b874525d36ae064c162cdd553bc75d18772b")
+            | {name, version, "installation-source", "dist-reference": .dist.reference}
+          ' "$consumer_dir/vendor/composer/installed.json"
           if composer show --tree --working-dir="$consumer_dir" | grep -E -i '(^|[^[:alnum:]_])(adminkernel|admin-control-panel|catalog|slim|php-di)([^[:alnum:]_]|$)'; then
             echo "The clean consumer resolved a forbidden host dependency."
             exit 1

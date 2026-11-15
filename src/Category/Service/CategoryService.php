@@ -26,10 +26,10 @@ use Maatify\Category\Query\DTO\CategoryCollectionDTO;
 use Maatify\Category\Query\DTO\CategoryDTO;
 use Maatify\Category\Query\DTO\CategoryListCriteriaDTO;
 use Maatify\Category\Query\DTO\CategoryVisibleListCriteriaDTO;
-use Maatify\Persistence\Pdo\Transaction\TransactionRunnerInterface;
+use Maatify\PhpPersistence\Transaction\Repository\TransactionRunnerInterface;
 use Maatify\SharedCommon\Contracts\ClockInterface;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 
 /**
  * Coordinates Category business rules and consumes Host-provided mutation time.
@@ -208,14 +208,14 @@ final readonly class CategoryService implements CategoryServiceInterface
     public function paginateForManagement(
         CategoryListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         return $this->managementReader->paginateCategories($criteria, $pageRequest);
     }
 
     public function paginateRootCategoriesForManagement(
         CategoryListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         return $this->managementReader->paginateRootCategories($criteria, $pageRequest);
     }
 
@@ -223,7 +223,7 @@ final readonly class CategoryService implements CategoryServiceInterface
         int $parentId,
         CategoryListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         $id = (new CategoryIdDTO($parentId, 'parentId'))->value;
 
         return $this->managementReader->paginateChildren($id, $criteria, $pageRequest);
