@@ -255,8 +255,14 @@ final class PerCs31DeltaVerifier
                 continue;
             }
 
-            $open = self::findSwitchOpeningBrace($tokens, $index);
-            if ($open === null) {
+            $condition = self::nextMeaningful($tokens, $index + 1);
+            if ($condition === null || $tokens[$condition]['text'] !== '(') {
+                continue;
+            }
+            $conditionEnd = self::matching($tokens, $condition, '(', ')');
+            $open = $conditionEnd === null ? null : self::nextMeaningful($tokens, $conditionEnd + 1);
+            if ($open === null || $tokens[$open]['text'] !== '{') {
+                self::addViolation($violations, $file, $token['line'], 'switch-body', 'A switch body MUST be enclosed by braces.');
                 continue;
             }
             $close = self::matching($tokens, $open, '{', '}');
@@ -307,31 +313,6 @@ final class PerCs31DeltaVerifier
                 }
             }
         }
-    }
-
-    /**
-     * @param list<array{id: int|null, text: string, line: int, offset: int, end: int}> $tokens
-     * @return ?int
-     */
-    private static function findSwitchOpeningBrace(array $tokens, int $switchIndex): ?int
-    {
-        $parentheses = 0;
-        for ($index = $switchIndex + 1, $count = count($tokens); $index < $count; $index++) {
-            $text = $tokens[$index]['text'];
-            if ($text === '(') {
-                $parentheses++;
-                continue;
-            }
-            if ($text === ')') {
-                $parentheses--;
-                continue;
-            }
-            if ($text === '{' && $parentheses === 0) {
-                return $index;
-            }
-        }
-
-        return null;
     }
 
     /**
@@ -494,7 +475,8 @@ final class PerCs31DeltaVerifier
             if (preg_match(
                 '/\A(?:no\s+break|(?:deliberate|intentional)\s+fall[- ]?through|'
                 . '(?:(?:deliberately|intentionally)\s+)?falls?[- ]?through'
-                . '(?:\s+(?:intentionally|deliberately))?(?:\s+(?:into|to)\s+(?:the\s+)?next\s+case)?)'
+                . '(?:\s+(?:intentionally|deliberately))?(?:\s+(?:into\s+(?:the\s+)?next\s+case|to\s+[^.!?]+))?'
+                . '|(?:intentionally|deliberately)\s+continue\s+(?:into|to)\s+(?:the\s+)?next\s+case)'
                 . '(?:[.!]|\s*[:;—-]\s+.+)?\z/iu',
                 $normalized,
             ) === 1) {

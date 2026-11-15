@@ -18,20 +18,8 @@ final class PerCs31DeltaVerifierTest extends TestCase
         try {
             self::assertNotFalse(file_put_contents($fixture, "<?php\n\n" . $source . "\n"));
 
-            $log = tmpfile();
-            self::assertIsResource($log);
-            try {
-                $script = dirname(__DIR__, 3) . '/scripts/ci/check-per-cs-31-delta.php';
-                $process = proc_open([PHP_BINARY, $script, $fixture], [1 => $log, 2 => $log], $pipes);
-                self::assertIsResource($process);
-                $exitCode = proc_close($process);
-                rewind($log);
-                $output = stream_get_contents($log);
-            } finally {
-                fclose($log);
-            }
-
-            self::assertIsString($output);
+            $script = dirname(__DIR__, 3) . '/scripts/ci/check-per-cs-31-delta.php';
+            [$exitCode, $output] = self::runCommand([PHP_BINARY, $script, $fixture]);
             if ($rule === null) {
                 self::assertSame(0, $exitCode, $output);
                 self::assertStringContainsString('verification passed', $output);
@@ -41,6 +29,93 @@ final class PerCs31DeltaVerifierTest extends TestCase
             }
         } finally {
             unlink($fixture);
+        }
+    }
+
+    public function testCompositeStyleCommandAcceptsClearFallthroughComments(): void
+    {
+        $root = dirname(__DIR__, 3);
+        $scratch = tempnam(sys_get_temp_dir(), 'category-style-composite-');
+        self::assertNotFalse($scratch);
+        self::assertTrue(unlink($scratch));
+        self::assertTrue(mkdir($scratch));
+
+        $directories = ['src', 'tests', 'scripts', 'scripts/ci'];
+        $configuration = ['composer.json', '.php-cs-fixer.dist.php', 'scripts/ci/check-per-cs-31-delta.php'];
+        $fixture = 'src/Fallthrough.php';
+        try {
+            foreach ($directories as $directory) {
+                self::assertTrue(mkdir($scratch . '/' . $directory));
+            }
+            foreach ($configuration as $file) {
+                self::assertTrue(copy($root . '/' . $file, $scratch . '/' . $file));
+            }
+            self::assertTrue(symlink($root . '/vendor', $scratch . '/vendor'));
+
+            $source = <<<'FIXTURE'
+                <?php
+
+                declare(strict_types=1);
+
+                switch ($value) {
+                    case 1:
+                        record($value);
+                        // Falls through intentionally.
+                    case 2:
+                        record($value);
+                        // Fall through to share the next case handler.
+                    case 3:
+                        record($value);
+                        // Intentionally continue into the next case.
+                    default:
+                        break;
+                }
+                FIXTURE;
+            self::assertNotFalse(file_put_contents($scratch . '/' . $fixture, $source . "\n"));
+            [$exitCode, $output] = self::runCommand(['composer', 'check:style'], $scratch);
+            self::assertSame(0, $exitCode, $output);
+            self::assertStringContainsString('PER-CS 3.1 delta verification passed', $output);
+
+            $invalid = str_replace('Falls through intentionally.', 'Check whether this should fall through.', $source);
+            self::assertNotFalse(file_put_contents($scratch . '/' . $fixture, $invalid . "\n"));
+            [$exitCode, $output] = self::runCommand(['composer', 'check:style'], $scratch);
+            self::assertSame(1, $exitCode, $output);
+            self::assertStringContainsString('[switch-case-termination]', $output);
+            self::assertSame($invalid . "\n", file_get_contents($scratch . '/' . $fixture));
+        } finally {
+            foreach ([$fixture, ...$configuration, 'vendor'] as $file) {
+                if (file_exists($scratch . '/' . $file) || is_link($scratch . '/' . $file)) {
+                    unlink($scratch . '/' . $file);
+                }
+            }
+            foreach (array_reverse($directories) as $directory) {
+                if (is_dir($scratch . '/' . $directory)) {
+                    rmdir($scratch . '/' . $directory);
+                }
+            }
+            rmdir($scratch);
+        }
+    }
+
+    /**
+     * @param non-empty-list<string> $command
+     * @return array{int, string}
+     */
+    private static function runCommand(array $command, ?string $workingDirectory = null): array
+    {
+        $log = tmpfile();
+        self::assertIsResource($log);
+        try {
+            $process = proc_open($command, [1 => $log, 2 => $log], $pipes, $workingDirectory);
+            self::assertIsResource($process);
+            $exitCode = proc_close($process);
+            rewind($log);
+            $output = stream_get_contents($log);
+            self::assertIsString($output);
+
+            return [$exitCode, $output];
+        } finally {
+            fclose($log);
         }
     }
 
@@ -61,6 +136,9 @@ final class PerCs31DeltaVerifierTest extends TestCase
             'Deliberate fall-through.' => null,
             'Falls through intentionally.' => null,
             'Intentional fallthrough: share the next case.' => null,
+            'Fall through to share the next case handler.' => null,
+            'Intentionally continue into the next case.' => null,
+            'Fall through to the next case?' => 'switch-case-termination',
             'This is not an intentional fall-through.' => 'switch-case-termination',
             'Check whether this should fall through.' => 'switch-case-termination',
         ];
@@ -68,6 +146,17 @@ final class PerCs31DeltaVerifierTest extends TestCase
             $body = 'record($value);' . "\n        // " . $comment;
             yield $comment => [str_replace(['CONDITION', 'BODY'], ['1', $body], $switch), $rule];
         }
+
+        yield 'alternative switch syntax requires braces' => [<<<'FIXTURE'
+            switch (choose($value)):
+                case 1:
+                    if ($flag) {
+                        record($value);
+                    }
+                default:
+                    break;
+            endswitch;
+            FIXTURE, 'switch-body'];
 
         yield 'a final case still needs termination' => [<<<'FIXTURE'
             switch ($value) {

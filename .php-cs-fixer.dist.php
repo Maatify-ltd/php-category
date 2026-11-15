@@ -18,6 +18,8 @@ return (new Config())
     ->setRiskyAllowed(false)
     ->setRules([
         '@PER-CS3x0' => true,
+        // The 3.1 verifier checks intent and final-case termination.
+        'no_break_comment' => false,
     ])
     ->setFinder($finder)
     ->setUsingCache(false);
