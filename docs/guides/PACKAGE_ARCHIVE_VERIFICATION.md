@@ -45,6 +45,13 @@ support statements, and Composer requirements against the intended exact
 version. Perform that review on the same SHA and record the outcome
 separately.
 
+The current CI matrix verifies Stable PHP 8.4 and 8.5. Before qualifying a
+release that admits a later PHP 8 minor that has reached Stable, verify the
+actual Stable patch against [official PHP release and security evidence](https://www.php.net/releases/),
+run the applicable compatibility matrix, and record the PHP version, official
+evidence, and test results on the candidate SHA. Simulated Composer probes cover
+the eligibility range. A PHP prerelease can provide exploratory results.
+
 ## Published artifact verification
 
 After `v1.0.0-rc.2` is published, run this verification in Bash with

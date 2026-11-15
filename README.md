@@ -12,7 +12,7 @@
 
 [![Status](https://img.shields.io/badge/Status-Release%20Candidate-blue)](CHANGELOG.md)
 [![Version](https://img.shields.io/badge/Version-v1.0.0--rc.2-blue)](CHANGELOG.md#100-rc2)
-[![PHP](https://img.shields.io/badge/PHP-8.4.27%E2%80%938.4.x%20%2F%208.5.12%E2%80%938.5.x-8892BF)](composer.json)
+[![PHP](https://img.shields.io/badge/PHP-%3E%3D8.4.27%20%3C8.5%20%7C%7C%20%3E%3D8.5.12%20%3C9.0-8892BF)](composer.json)
 [![License](https://img.shields.io/badge/License-Proprietary-green)](LICENSE)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%20max-2F9E44.svg)](CONTRIBUTING.md#local-verification)
 
@@ -55,11 +55,15 @@ APIs for managing a Category tree and its related content.
 
 ## Requirements
 
-The RC.2 artifact requires PHP 8.4.27 or later in the 8.4 series, or
-PHP 8.5.12 or later in the 8.5 series, plus `ext-mbstring`, `ext-pdo`, and
-`ext-pdo_mysql`. It uses MySQL 8.0.16+ with InnoDB and enforced `CHECK`
-constraints. Runtime dependencies are `maatify/exceptions`, `maatify/shared-common`,
-and the exact `maatify/php-persistence 1.0.0-rc.1` trial. See [composer.json](composer.json)
+Composer admits PHP `>=8.4.27 <8.5 || >=8.5.12 <9.0`. The CI compatibility
+matrix covers Stable PHP 8.4 and 8.5 at or above their approved patch floors.
+Later PHP 8 minors have forward Composer eligibility and require separate Stable
+qualification before support is claimed.
+
+The package requires `ext-mbstring`, `ext-pdo`, and `ext-pdo_mysql`. It uses
+MySQL 8.0.16+ with InnoDB and enforced `CHECK` constraints. Runtime dependencies
+are `maatify/exceptions`, `maatify/shared-common`, and the exact
+`maatify/php-persistence 1.0.0-rc.1` trial. See [composer.json](composer.json)
 for the declared constraints and [local verification](CONTRIBUTING.md#local-verification)
 for the Composer and runtime checks.
 

@@ -57,6 +57,7 @@ probe_php_version 8.4.28 accepted
 probe_php_version 8.5.11 rejected
 probe_php_version 8.5.12 accepted
 probe_php_version 8.5.13 accepted
-probe_php_version 8.6.0 rejected
+probe_php_version 8.6.0 accepted
+probe_php_version 8.7.0 accepted
 probe_php_version 9.0.0 rejected
 printf 'Composer PHP boundary verification: PASS\n'

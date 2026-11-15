@@ -48,10 +48,12 @@ bash scripts/ci/with-category-mysql.sh composer test:integration
 bash scripts/ci/with-category-mysql.sh composer test
 ```
 
-The patch-floor check logs and verifies the actual interpreter. The boundary
-probe uses Composer to enforce what the checkout admits through `require.php`.
-It checks both approved patch floors and rejects older patches and unsupported
-PHP series.
+The patch-floor check logs the actual interpreter and verifies Stable PHP 8.4
+or 8.5 against its approved floor. The boundary probe reads `require.php` and
+uses Composer to check both patch floors, simulated forward PHP 8.6 and 8.7
+eligibility, and rejection outside the range. See
+[release qualification](docs/guides/PACKAGE_ARCHIVE_VERIFICATION.md#prepared-rc2-verification)
+for the checks required when a forward-eligible PHP minor reaches Stable.
 
 `composer check:style` checks package-owned PHP against PHP-FIG PER-CS 3.1
 using the PHP CS Fixer 3.0 rule set and a verifier for the 3.1 changes.

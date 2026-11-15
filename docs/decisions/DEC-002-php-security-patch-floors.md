@@ -6,7 +6,8 @@
 |---|---|
 | Decision ID | DEC-002 |
 | Title | Enforce the approved PHP security patch floors in Composer |
-| Status | ACTIVE |
+| Status | SUPERSEDED |
+| Superseded By | [DEC-006](DEC-006-php-forward-eligibility.md) |
 | Scope / Concern | PHP runtime compatibility and dependency resolution |
 | Decision Authority / Deciders | Project Owner, authorizing the approved PHP series and patch floors |
 | Canonical Contract / Current Owner | [Composer manifest](../../composer.json) and [Category Package Reference](../../CATEGORY_PACKAGE_REFERENCE.md#composer-and-platform-contract) |

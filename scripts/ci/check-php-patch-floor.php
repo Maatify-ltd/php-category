@@ -18,7 +18,8 @@ if ($floor === null) {
 }
 
 $actualMinor = PHP_MAJOR_VERSION . '.' . PHP_MINOR_VERSION;
-if ($actualMinor !== $expectedMinor || PHP_VERSION_ID < $floor) {
-    fprintf(STDERR, "Expected PHP %s.%d or newer within PHP %s.\n", $expectedMinor, $floor % 100, $expectedMinor);
+$stable = preg_match('/\A[0-9]+\.[0-9]+\.[0-9]+\z/', PHP_VERSION) === 1;
+if (!$stable || $actualMinor !== $expectedMinor || PHP_VERSION_ID < $floor) {
+    fprintf(STDERR, "Expected Stable PHP %s.%d or newer within PHP %s.\n", $expectedMinor, $floor % 100, $expectedMinor);
     exit(1);
 }
