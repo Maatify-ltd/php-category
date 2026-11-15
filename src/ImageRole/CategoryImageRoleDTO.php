@@ -29,6 +29,11 @@ final readonly class CategoryImageRoleDTO implements \JsonSerializable
         self::assertValidRoleKey($roleKey);
     }
 
+    /**
+     * Checks that a Role key is nonblank and at most 100 characters without changing it.
+     *
+     * @throws CategoryInvalidArgumentException When the key is blank or exceeds the length limit.
+     */
     public static function assertValidRoleKey(string $roleKey): void
     {
         if (trim($roleKey) === '') {

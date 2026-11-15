@@ -17,6 +17,7 @@ final readonly class CreateCategoryImageAssignmentCommand implements \JsonSerial
     public ?string $platform;
     public ?int $roleId;
 
+    /** Accepts a Host-owned Media Asset ID. An omitted scope selects null language, platform, and Role. */
     public function __construct(
         int|string $categoryId,
         int|string $mediaAssetId,

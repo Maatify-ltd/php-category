@@ -18,6 +18,7 @@ final readonly class CreateCategoryContentFieldCommand implements \JsonSerializa
     public ?string $languageCode;
     public ?string $platform;
 
+    /** Requires a nonblank bounded field key and a value matching the format in the exact nullable scope. */
     public function __construct(
         int|string $categoryId,
         string $fieldKey,

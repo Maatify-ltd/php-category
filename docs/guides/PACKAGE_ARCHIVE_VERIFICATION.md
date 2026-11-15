@@ -26,22 +26,77 @@ separately.
 
 ## Published artifact verification
 
-Once published, install the exact target through its approved distribution
-source in a clean Composer project. For the currently published
-RC, run these commands in a new empty directory:
+After publication, run the verification in Bash with Composer, curl and jq
+available. Set the exact version and the immutable SHA from the approved
+release evidence. This example uses the published RC.1. For a release that
+requires a pre-release dependency, explicitly allow its approved exact
+version in the temporary project's root requirements.
 
 ```bash
-composer require --prefer-dist maatify/php-category:1.0.0-rc.1
-composer show maatify/php-category
+workspace=$(mktemp -d) || exit 1
+(
+    set -eu
+    version=v1.0.0-rc.1
+    reference=57d160f7850a21b6908f343085e7dac644b87e86
+    mkdir -p "$workspace"/{project,home,composer,cache}
+    cd "$workspace/project"
+
+    clean_run() {
+        env -i PATH="$PATH" HOME="$workspace/home" \
+            COMPOSER_HOME="$workspace/composer" COMPOSER_CACHE_DIR="$workspace/cache" "$@"
+    }
+    verify_composer() {
+        clean_run composer --no-interaction --no-plugins --no-scripts "$@"
+    }
+
+    cat > composer.json <<'JSON'
+{"minimum-stability":"stable","config":{"preferred-install":"dist"}}
+JSON
+    verify_composer --version
+    verify_composer config preferred-install
+    verify_composer config repositories
+
+    clean_run curl -q --fail --silent --show-error \
+        https://repo.packagist.org/p2/maatify/php-category.json > "$workspace/registry.json"
+    jq -e --arg version "$version" --arg reference "$reference" '
+        .packages["maatify/php-category"][] | select(.version == $version)
+        | select(.dist.reference == $reference) | {version, dist, source}
+    ' "$workspace/registry.json"
+
+    verify_composer require --prefer-install=dist "maatify/php-category:$version"
+    jq -e --arg version "$version" --arg reference "$reference" '
+        .packages[]
+        | select(.name == "maatify/php-category" and .version == $version)
+        | select(."installation-source" == "dist" and .dist.reference == $reference)
+        | {name, version, "installation-source", "install-path", dist, source}
+    ' vendor/composer/installed.json
+    test -d vendor/maatify/php-category
+    printf 'Installed package directory: %s\n' "$PWD/vendor/maatify/php-category"
+
+    find vendor/maatify/php-category -type f | LC_ALL=C sort
+
+    audit_status=0
+    verify_composer audit --abandoned=fail || audit_status=$?
+    printf 'Strict Composer audit exit status: %s\n' "$audit_status"
+    exit "$audit_status"
+)
 ```
 
-In the external project's `vendor/composer/installed.json`, record Category's
-exact version, installation mode, `dist` type, URL and reference, and
-installation path. Compare the installed files and release presentation to
-the tag and qualification evidence. Run the appropriate Consumer Verification
-Harness against that installed version. The structural check above covers
-checkout archives. The standalone CI harness installs the checkout from a
-temporary VCS repository, so its result covers the checkout.
+Save the output with the publication evidence. The isolated home and cache
+start empty, and the clean environment clears inherited repository,
+authentication, platform, install-mode, and security-policy overrides. The
+project uses the public Packagist configuration and verifies the observed
+installation mode against the intended SHA. Stop on missing or ambiguous
+resolution evidence or a source fallback.
+
+Inspect the installed directory in `"$workspace/project/vendor/maatify/php-category"`
+against the exact tag and qualification evidence. Check its `composer.json`,
+runtime tree, schema, README, CHANGELOG, SECURITY, Package Reference, Usage Guide,
+examples, and other required files. Record the content and release presentation
+result separately from the strict Composer audit. Run the appropriate
+published Consumer Verification Harness and record its result separately.
+The standalone CI harness verifies the checkout installed from a temporary VCS
+repository. Remove the temporary workspace once all evidence has been recorded.
 
 ### Published v1.0.0-rc.1
 
