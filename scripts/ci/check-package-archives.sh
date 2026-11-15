@@ -2,10 +2,25 @@
 
 set -euo pipefail
 
-if [[ $# != 1 ]]; then
-    printf 'Usage: %s <candidate-commit>\n' "$0" >&2
+usage() {
+    printf 'Usage: %s <candidate-commit> [--release-candidate <version>|--verify-prepared]\n' "$0" >&2
     exit 2
-fi
+}
+
+release_target=''
+verify_prepared=0
+case "${2:-}" in
+    '') [[ $# == 1 ]] || usage ;;
+    --release-candidate)
+        [[ $# == 3 && "$3" =~ ^[0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+$ ]] || usage
+        release_target="$3"
+        ;;
+    --verify-prepared)
+        [[ $# == 2 ]] || usage
+        verify_prepared=1
+        ;;
+    *) usage ;;
+esac
 
 repository=$(git rev-parse --show-toplevel)
 candidate=$(git -C "$repository" rev-parse --verify --end-of-options "$1^{commit}")
@@ -52,6 +67,14 @@ for file in "${required_files[@]}"; do
     }
 done
 
+if [[ "$verify_prepared" == 1 ]]; then
+    release_target="$(sed -nE 's/^## \[([0-9]+\.[0-9]+\.[0-9]+-rc\.[0-9]+)\]$/\1/p' "$work/expected/CHANGELOG.md")"
+    if [[ "$release_target" == *$'\n'* ]]; then
+        printf 'Multiple undated release candidate targets in %s.\n' "$candidate" >&2
+        exit 1
+    fi
+fi
+
 git -C "$repository" archive --format=tar --output="$work/git.tar" "$candidate"
 tar -xf "$work/git.tar" -C "$work/git"
 
@@ -61,7 +84,7 @@ touch "$work/source/vendor/autoload.php" "$work/source/.env"
 printf '%s\n' '{"packages":[],"packages-dev":[]}' > "$work/source/composer.lock"
 (
     cd "$work/source"
-    COMPOSER_ROOT_VERSION=dev-main composer --no-interaction --no-plugins --no-scripts archive \
+    COMPOSER_ROOT_VERSION="${release_target:-dev-main}" composer --no-interaction --no-plugins --no-scripts archive \
         --format=tar --dir="$work" --file=composer
 )
 tar -xf "$work/composer.tar" -C "$work/composer"
@@ -74,3 +97,9 @@ for format in git composer; do
     fi
     printf '%s archive matches the complete distribution tree of %s\n' "$format" "$candidate"
 done
+
+if [[ -n "$release_target" ]]; then
+    printf 'Verifying prepared Category %s at %s.\n' "$release_target" "$candidate"
+    bash "$repository/scripts/ci/check-prepared-category-release.sh" \
+        "$candidate" "$release_target" "$work"
+fi

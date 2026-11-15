@@ -72,7 +72,7 @@ jobs:
         run: composer test:unit
 
       - name: Verify Git and Composer package archives
-        run: bash scripts/ci/check-package-archives.sh HEAD
+        run: bash scripts/ci/check-package-archives.sh HEAD --verify-prepared
 
       - name: Verify public example with PHPStan
         run: vendor/bin/phpstan analyse examples --level=max --memory-limit=256M
