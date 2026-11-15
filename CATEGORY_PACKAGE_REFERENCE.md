@@ -945,8 +945,8 @@ The package is `maatify/php-category`, type `library`, under the
 `Maatify\Category\` PSR-4 namespace. Its direct runtime requirements are PHP
 `>=8.4.27 <8.5 || >=8.5.12 <8.6`, `ext-mbstring`, `ext-pdo`, `ext-pdo_mysql`,
 `maatify/exceptions:^1.0`, `maatify/php-persistence:1.0.0-rc.1`, and
-`maatify/shared-common:^1.0`. These requirements describe the checkout.
-The [published Category RC.1](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.1)
+`maatify/shared-common:^1.0`. These requirements describe the `v1.0.0-rc.2` artifact.
+The [previously published Category RC.1](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.1)
 retains the PHP constraint and Persistence dependency recorded at its tag.
 Development tools are declared separately in `require-dev`. The reusable
 library does not commit `composer.lock`.

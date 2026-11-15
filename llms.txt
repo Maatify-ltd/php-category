@@ -7,8 +7,9 @@ Use the Package Reference as the authority for the supported public runtime
 contract. Use the guide and examples for installation and integration decisions.
 Repository internals, tests, fixtures, contributor instructions, and engineering
 standards are outside the supported consumer surface. Match the documentation
-to the installed version. The README identifies the published RC and explains
-how its dependency contract differs from the current checkout.
+to the installed version. This artifact targets `v1.0.0-rc.2`. The README
+describes the exact installation command and the publication state recorded
+during preparation.
 
 ## Consumer documentation
 
@@ -20,5 +21,5 @@ how its dependency contract differs from the current checkout.
 
 ## Release and support
 
-- [Changelog](CHANGELOG.md): Published changes and current checkout changes.
+- [Changelog](CHANGELOG.md): Changes allocated to this artifact and past releases.
 - [Security Policy](SECURITY.md): Support state and private reporting.

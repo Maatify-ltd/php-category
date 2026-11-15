@@ -5,7 +5,10 @@
 
 ## Scope
 
-**Published release candidate:** [`v1.0.0-rc.1`](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.1)
+**Release artifact target** · `v1.0.0-rc.2`
+
+**Publication state at preparation** · RC.2 was unpublished. The previously
+published candidate was [RC.1](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.1).
 
 This policy covers package-owned runtime contracts, Composer metadata, schema,
 and CI configuration. Host applications and their integrations remain outside
@@ -13,12 +16,13 @@ package support.
 
 ## Supported Versions
 
-No Stable release line is currently supported. The Release Candidate does not
-create a Stable support commitment.
+There was no published Stable support line at preparation. Neither release
+candidate establishes a Stable support commitment.
 
 | Version | Support status |
 |---------|-----------------|
-| `v1.0.0-rc.1` | Published Release Candidate; no Stable support commitment |
+| `v1.0.0-rc.2` | Prepared Release Candidate artifact |
+| `v1.0.0-rc.1` | Previously published Release Candidate |
 | Stable release lines | None |
 
 ## Reporting a Vulnerability

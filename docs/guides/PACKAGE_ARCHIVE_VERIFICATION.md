@@ -26,23 +26,24 @@ separately.
 
 ## Published artifact verification
 
-After publication, run the verification in Bash with Composer, curl and jq
-available. Set the exact version and the immutable SHA from the approved
-release evidence. This example uses the published RC.1. For a release that
-requires a pre-release dependency, explicitly allow its approved exact
-version in the temporary project's root requirements.
+After `v1.0.0-rc.2` is published, run this verification in Bash with
+Composer, curl, and jq available. Set `CATEGORY_RC2_RELEASE_SHA` to the
+full immutable commit SHA from the approved release evidence before running
+the command. The temporary Composer root keeps `minimum-stability: stable`
+and explicitly allows the required exact Persistence release candidate.
 
 ```bash
-workspace=$(mktemp -d) || exit 1
 (
     set -eu
-    version=v1.0.0-rc.1
-    reference=57d160f7850a21b6908f343085e7dac644b87e86
-    mkdir -p "$workspace"/{project,home,composer,cache}
+    version=v1.0.0-rc.2
+    reference=${CATEGORY_RC2_RELEASE_SHA:?Set the exact qualified RC.2 SHA}
+    workspace=$(mktemp -d) || exit 1
+    mkdir -p "$workspace"/{project,home,composer,cache,tmp}
+    printf 'Verification workspace: %s\n' "$workspace"
     cd "$workspace/project"
 
     clean_run() {
-        env -i PATH="$PATH" HOME="$workspace/home" \
+        env -i PATH="$PATH" HOME="$workspace/home" TMPDIR="$workspace/tmp" \
             COMPOSER_HOME="$workspace/composer" COMPOSER_CACHE_DIR="$workspace/cache" "$@"
     }
     verify_composer() {
@@ -63,11 +64,19 @@ JSON
         | select(.dist.reference == $reference) | {version, dist, source}
     ' "$workspace/registry.json"
 
-    verify_composer require --prefer-install=dist "maatify/php-category:$version"
+    verify_composer require --prefer-install=dist "maatify/php-category:$version" \
+        maatify/php-persistence:1.0.0-rc.1@RC
     jq -e --arg version "$version" --arg reference "$reference" '
         .packages[]
         | select(.name == "maatify/php-category" and .version == $version)
         | select(."installation-source" == "dist" and .dist.reference == $reference)
+        | {name, version, "installation-source", "install-path", dist, source}
+    ' vendor/composer/installed.json
+    jq -e '
+        .packages[]
+        | select(.name == "maatify/php-persistence" and .version == "v1.0.0-rc.1")
+        | select(."installation-source" == "dist"
+            and .dist.reference == "34c3b874525d36ae064c162cdd553bc75d18772b")
         | {name, version, "installation-source", "install-path", dist, source}
     ' vendor/composer/installed.json
     test -d vendor/maatify/php-category
@@ -89,7 +98,7 @@ project uses the public Packagist configuration and verifies the observed
 installation mode against the intended SHA. Stop on missing or ambiguous
 resolution evidence or a source fallback.
 
-Inspect the installed directory in `"$workspace/project/vendor/maatify/php-category"`
+Use the printed workspace and installed directory paths to inspect the package
 against the exact tag and qualification evidence. Check its `composer.json`,
 runtime tree, schema, README, CHANGELOG, SECURITY, Package Reference, Usage Guide,
 examples, and other required files. Record the content and release presentation

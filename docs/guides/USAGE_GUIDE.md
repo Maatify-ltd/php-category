@@ -22,22 +22,18 @@ application layer.
 
 ## Installation and prerequisites
 
-Install the published Category RC.1 using its exact Composer version:
+This guide describes the `v1.0.0-rc.2` artifact. After that exact version
+is published on Packagist, run the installation command in the
+[README](../../README.md#installation). It keeps the root stability policy
+at `stable` and explicitly allows the required Persistence RC. For the
+previously published RC.1, see its
+[tagged guide](https://github.com/Maatify-ltd/php-category/blob/v1.0.0-rc.1/docs/USAGE_GUIDE.md).
 
-```bash
-composer require maatify/php-category:1.0.0-rc.1
-```
-
-For the published release contract, use the [RC.1 guide](https://github.com/Maatify-ltd/php-category/blob/v1.0.0-rc.1/docs/USAGE_GUIDE.md).
-
-The examples below describe the current checkout. A consumer installing that
-checkout must explicitly allow `maatify/php-persistence:1.0.0-rc.1@RC` in its
-root Composer configuration. The runtime contract requires PHP
-`>=8.4.27 <8.5 || >=8.5.12 <8.6`, `ext-mbstring`, `ext-pdo`,
+RC.2 requires PHP `>=8.4.27 <8.5 || >=8.5.12 <8.6`, `ext-mbstring`, `ext-pdo`,
 `ext-pdo_mysql`, MySQL `8.0.16+`, `maatify/exceptions:^1.0`,
-`maatify/php-persistence:1.0.0-rc.1`, and `maatify/shared-common:^1.0`. Install and run
-the package-owned MySQL schema using the Host's deployment process before
-calling the factory.
+`maatify/php-persistence:1.0.0-rc.1`, and `maatify/shared-common:^1.0`.
+Install the [package-owned MySQL schema](../../schema/README.md) through
+the Host's deployment process before calling the factory.
 
 The Host supplies:
 

@@ -11,18 +11,14 @@
 **Package Status**
 
 [![Status](https://img.shields.io/badge/Status-Release%20Candidate-blue)](CHANGELOG.md)
-[![Version](https://img.shields.io/badge/Version-v1.0.0--rc.1-blue)](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.1)
+[![Version](https://img.shields.io/badge/Version-v1.0.0--rc.2-blue)](CHANGELOG.md#100-rc2)
 [![PHP](https://img.shields.io/badge/PHP-8.4.27%E2%80%938.4.x%20%2F%208.5.12%E2%80%938.5.x-8892BF)](composer.json)
-[![Checkout License](https://img.shields.io/badge/License-Proprietary-green)](LICENSE)
+[![License](https://img.shields.io/badge/License-Proprietary-green)](LICENSE)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%20max-2F9E44.svg)](CONTRIBUTING.md#local-verification)
 
 **Ecosystem / Adoption**
 
-[![Packagist](https://img.shields.io/badge/Packagist-maatify%2Fphp--category-F28D1A)](https://packagist.org/packages/maatify/php-category)
-[![Monthly Downloads](https://img.shields.io/packagist/dm/maatify/php-category)](https://packagist.org/packages/maatify/php-category)
-[![Total Downloads](https://img.shields.io/packagist/dt/maatify/php-category)](https://packagist.org/packages/maatify/php-category)
 [![Maatify Ecosystem](https://img.shields.io/badge/Maatify-Ecosystem-blueviolet)](https://github.com/Maatify-ltd)
-[![Install](https://img.shields.io/badge/Install-maatify%2Fphp--category%3A1.0.0--rc.1-blue)](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.1)
 
 **Documentation**
 
@@ -36,7 +32,10 @@
 Framework-neutral PHP contracts and MySQL storage for hierarchical categories,
 content, extensible fields, image roles, and assignments to Host-owned media.
 
-**Install the published RC.1:** `composer require maatify/php-category:1.0.0-rc.1`
+**Release artifact target** · `v1.0.0-rc.2`
+
+**Publication state at preparation** · RC.2 was unpublished. The previously
+published candidate was [RC.1](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.1).
 
 </div>
 
@@ -56,7 +55,7 @@ APIs for managing a Category tree and its related content.
 
 ## Requirements
 
-The current checkout requires PHP 8.4.27 or later in the 8.4 series, or
+The RC.2 artifact requires PHP 8.4.27 or later in the 8.4 series, or
 PHP 8.5.12 or later in the 8.5 series, plus `ext-mbstring`, `ext-pdo`, and
 `ext-pdo_mysql`. It uses MySQL 8.0.16+ with InnoDB and enforced `CHECK`
 constraints. Runtime dependencies are `maatify/exceptions`, `maatify/shared-common`,
@@ -66,20 +65,18 @@ for the Composer and runtime checks.
 
 ## Installation
 
-The published Category RC.1 retains its original PHP constraint, Persistence
-dependency, and [MIT license](https://github.com/Maatify-ltd/php-category/blob/v1.0.0-rc.1/LICENSE).
-Use the [published tag documentation](https://github.com/Maatify-ltd/php-category/tree/v1.0.0-rc.1)
-when installing that exact version.
+After RC.2 is published on Packagist, run this command from your Composer
+project. Keep `minimum-stability: stable` and explicitly allow the exact
+Persistence release candidate required by Category.
 
 ```bash
-composer require maatify/php-category:1.0.0-rc.1
+composer require maatify/php-category:1.0.0-rc.2 maatify/php-persistence:1.0.0-rc.1@RC
 ```
 
-The current checkout uses the replacement Persistence RC for Ordering,
-Pagination, and Transactions. A Composer root consuming the checkout must
-explicitly allow `maatify/php-persistence:1.0.0-rc.1@RC` while retaining
-`minimum-stability: stable`. See [DEC-001](docs/decisions/DEC-001-persistence-rc-migration.md)
-for the migration context.
+For the previously published RC.1, use its
+[tag documentation](https://github.com/Maatify-ltd/php-category/tree/v1.0.0-rc.1)
+and [MIT license](https://github.com/Maatify-ltd/php-category/blob/v1.0.0-rc.1/LICENSE).
+That artifact has different PHP and Persistence requirements.
 
 ## Quick Usage
 
@@ -139,7 +136,7 @@ for support status.
 
 ## License
 
-This checkout is proprietary to Maatify Ltd. Obtain written authorization
+The RC.2 artifact is proprietary to Maatify Ltd. Obtain written authorization
 before use by requesting a free license from
 [support@maatify.dev](mailto:support@maatify.dev). Include your organization
 name, if applicable, and an email address for the person who should receive
