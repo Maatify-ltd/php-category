@@ -8,7 +8,8 @@ single stable contract reference. Detailed implementation notes belong under
 `docs/` and must link back here.
 
 For the practical Host workflow through `CategoryFactory`, the facade, and its
-five Domain APIs, see the [Consumer Usage Guide](docs/USAGE_GUIDE.md).
+five Domain APIs, see the [Consumer Usage Guide](docs/guides/USAGE_GUIDE.md)
+and [runnable examples](examples/).
 
 ## Scope and boundaries
 
@@ -38,12 +39,6 @@ The package is host-agnostic:
   is supported or known, together with fallback and locale policy.
 - Public read contracts use typed DTOs and collections, while mutation
   contracts use typed Commands; neither uses associative arrays.
-
-## Current standards provenance
-
-[`STANDARDS_MANIFEST.md`](docs/php-engineering-standards/STANDARDS_MANIFEST.md)
-is the authoritative local resolver and provenance record for the selective
-pinned standards adoption.
 
 ## Domain Content model
 
@@ -109,6 +104,16 @@ when the declared format is `json`; HTML sanitization/rendering and JSON schema
 validation remain Host responsibilities. Display order is independent for each
 Category and exact scope, with deterministic `display_order, id` reads and
 explicit reorder commands.
+
+Image Assignment and Content Field language/platform scope equality is shared
+by reads, identity, ordering, and default selection. It follows MySQL
+`utf8mb4_unicode_ci`; original spelling is retained and SQL `NULL` is a
+separate scope. Management lists and their default pagination order group by
+Category, language, platform, and Role for Image Assignments. Non-null
+language and platform values precede NULL. The generic NULL Role precedes
+concrete Roles. Rows within one scope sort by display order and identity. Existing installations with the length-prefixed scope columns
+must follow the [schema upgrade](schema/README.md#upgrade-an-existing-image-assignment-or-content-field-schema)
+before using the updated application.
 
 ## Runtime API
 
@@ -219,6 +224,13 @@ atomic update. No generic or string-based field update exists.
   CategoryFacadeInterface` is the framework-neutral host-wiring entry point.
   It builds all PDO adapters, one shared transaction runner, and one shared
   ordering manager around the supplied primitives.
+- `CategoryFactory::forHost(PDO $pdo, ClockInterface $clock, callable $openScopeLookup)`
+  returns the same facade with optional lazy scope discovery for Image Assignment
+  defaults. Use it when a Host transaction may have an older MySQL
+  `REPEATABLE READ` snapshot. The callback provides a dedicated autocommit MySQL
+  PDO connected to the same primary and schema, with exception mode enabled.
+  Only scope discovery uses this connection. All locks and writes stay on the
+  supplied Host PDO.
 - `CategoryServiceInterface`/`CategoryService` own Category mutation
   orchestration and Category consumer/management reads only.
 - `ContentServiceInterface`/`ContentService` own Category Content mutation
@@ -591,6 +603,7 @@ include-deleted, and deleted-only semantics as management get-by-ID.
 
 ```text
 CategoryFactory::create(PDO $pdo, ClockInterface $clock): CategoryFacadeInterface
+CategoryFactory::forHost(PDO $pdo, ClockInterface $clock, callable $openScopeLookup): CategoryFacadeInterface
 CategoryService(CategoryCommandRepositoryInterface,
                 CategoryQueryReaderInterface,
                 CategoryReadQueryInterface,
@@ -913,10 +926,11 @@ concurrent default changes.
 
 Each domain service wraps its orchestrated mutations with the shared
 `TransactionRunnerInterface`. `CategoryFactory` provides
-`PdoTransactionRunner` using the same PDO instance supplied to every Category
-repository and Ordering operation. When the Host already owns a transaction on
-that PDO, the shared runner participates without committing or rolling it back;
-outer transaction ownership remains with the Host. Category does not provide a
+`PdoTransactionRunner` using the Host's PDO for Category writes, locking reads,
+and Ordering operations. The optional lookup in `forHost()` is a non-locking
+read for Image Assignment defaults. When the Host already owns a transaction
+on the main PDO, the shared runner participates and the Host retains commit
+and rollback ownership. Category does not provide a
 local transaction implementation.
 
 Repository adapters classify selected database failures. Known duplicate-key
@@ -929,12 +943,15 @@ appropriate `CategoryPersistenceException` hierarchy.
 
 The package is `maatify/php-category`, type `library`, under the
 `Maatify\Category\` PSR-4 namespace. Its direct runtime requirements are PHP
-`^8.4`, `ext-mbstring`, `ext-pdo`, `ext-pdo_mysql`, `maatify/exceptions:^1.0`,
-`maatify/php-persistence:1.0.0-rc.1`, and `maatify/shared-common:^1.0`. These
-requirements describe the checkout. Published Category RC.1 retains the
-dependency recorded at its tag. Development
-tools are declared separately in `require-dev`; the reusable library does not
-commit `composer.lock`.
+`>=8.4.27 <8.5 || >=8.5.12 <9.0`, `ext-mbstring`, `ext-pdo`, `ext-pdo_mysql`,
+`maatify/exceptions:^1.0`, `maatify/php-persistence:1.0.0-rc.1`, and
+`maatify/shared-common:^1.0`. These requirements describe the `v1.0.0-rc.2` artifact.
+The [previously published Category RC.1](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.1)
+retains the PHP constraint and Persistence dependency recorded at its tag.
+The compatibility matrix covers Stable PHP 8.4 and 8.5. Later PHP 8 minors
+are forward-eligible in Composer and require Stable qualification before
+support is claimed. Development tools are declared separately in `require-dev`. The reusable
+library does not commit `composer.lock`.
 
 The package's storage contract is MySQL `8.0.16+` with InnoDB, `utf8mb4`, and
 enforced `CHECK` constraints.
@@ -953,6 +970,11 @@ for distinct failure semantics:
 - `CategoryCodeAlreadyExistsException`
 - `CategoryCycleException`
 - `CategoryHasNonDeletedChildrenException`
+- `CategoryImageRoleNotFoundException`
+- `CategoryImageRoleAlreadyExistsException`
+- `CategoryImageRoleUnavailableException`
+- `CategoryImageAssignmentNotFoundException`
+- `CategoryImageAssignmentAlreadyExistsException`
 - `CategoryPersistenceException`
 
 They use the stable hierarchy from `maatify/exceptions`.
@@ -962,7 +984,7 @@ Named factories exposed by the package are:
 - `CategoryInvalidArgumentException::emptyField()`, `fieldTooLong()`,
   `invalidId()`, `nonPositiveId()`, `invalidDisplayOrder()`, `selfParent()`,
   `invalidListLimit()`, and `invalidJsonValue()`.
-- `CategoryNotFoundException::withId()` and
+- `CategoryNotFoundException::withId()` and `withCode()`, and
   `CategoryContentNotFoundException::withId()`.
 - `CategoryCodeAlreadyExistsException::withCode()` and
   `CategoryContentAlreadyExistsException::withIdentity()`.
@@ -970,9 +992,18 @@ Named factories exposed by the package are:
   `CategoryContentFieldAlreadyExistsException::withIdentity()`.
 - `CategoryCycleException::forMove()` and
   `CategoryHasNonDeletedChildrenException::withId()`.
+- `CategoryImageRoleNotFoundException::withId()` and `withKey()`,
+  `CategoryImageRoleAlreadyExistsException::withKey()`, and
+  `CategoryImageRoleUnavailableException::withId()`.
+- `CategoryImageAssignmentNotFoundException::withId()` and
+  `CategoryImageAssignmentAlreadyExistsException::withIdentity()`.
 - `CategoryPersistenceException::queryFailed()`,
   `invalidAutoIncrementIdentity()`, `invalidContentAutoIncrementIdentity()`,
-  `invalidStorageValue()`, and `unexpectedColumnType()`.
+  `invalidContentFieldAutoIncrementIdentity()`,
+  `invalidImageAssignmentAutoIncrementIdentity()`,
+  `invalidImageRoleAutoIncrementIdentity()`,
+  `imageRoleRepositoryNotConfigured()`, `invalidStorageValue()`, and
+  `unexpectedColumnType()`.
 
 ## Verification contract
 

@@ -34,6 +34,7 @@ final readonly class ImageRoleService implements ImageRoleServiceInterface
         private ClockInterface $clock,
     ) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryImageRoleCommand $command): int
     {
         return $this->transaction->run(
@@ -41,6 +42,7 @@ final readonly class ImageRoleService implements ImageRoleServiceInterface
         );
     }
 
+    /** {@inheritDoc} */
     public function updateStatus(UpdateCategoryImageRoleStatusCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -55,6 +57,7 @@ final readonly class ImageRoleService implements ImageRoleServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function softDelete(SoftDeleteCategoryImageRoleCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -69,6 +72,7 @@ final readonly class ImageRoleService implements ImageRoleServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function restore(RestoreCategoryImageRoleCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -80,6 +84,7 @@ final readonly class ImageRoleService implements ImageRoleServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function getByIdForManagement(
         int $roleId,
         CategoryDeletedStateEnum $deletedState = CategoryDeletedStateEnum::NON_DELETED,
@@ -94,6 +99,7 @@ final readonly class ImageRoleService implements ImageRoleServiceInterface
         return $role;
     }
 
+    /** {@inheritDoc} */
     public function getByKeyForManagement(
         string $roleKey,
         CategoryDeletedStateEnum $deletedState = CategoryDeletedStateEnum::NON_DELETED,
@@ -108,11 +114,13 @@ final readonly class ImageRoleService implements ImageRoleServiceInterface
         return $role;
     }
 
+    /** {@inheritDoc} */
     public function listForManagement(CategoryImageRoleListCriteriaDTO $criteria): CategoryImageRoleCollectionDTO
     {
         return $this->managementReader->listImageRoles($criteria);
     }
 
+    /** {@inheritDoc} */
     public function paginateForManagement(
         CategoryImageRoleListCriteriaDTO $criteria,
         PageRequest $pageRequest,

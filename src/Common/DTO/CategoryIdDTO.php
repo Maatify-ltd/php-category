@@ -17,6 +17,7 @@ final readonly class CategoryIdDTO implements \JsonSerializable
 {
     public int $value;
 
+    /** Normalizes a positive identity within PHP integer range. The field label identifies validation failures. */
     public function __construct(int|string $value, string $field = 'id')
     {
         if (is_int($value)) {

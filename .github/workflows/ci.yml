@@ -16,11 +16,6 @@ concurrency:
   group: category-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
-env:
-  CATEGORY_TEST_DSN: mysql:host=127.0.0.1;port=3306;dbname=category_ci;charset=utf8mb4
-  CATEGORY_TEST_DB_USER: category_test
-  CATEGORY_TEST_DB_PASSWORD: category_test
-
 jobs:
   category-latest:
     name: Category latest dependencies (PHP ${{ matrix.php }})
@@ -31,46 +26,29 @@ jobs:
       matrix:
         php: ["8.4", "8.5"]
 
-    services:
-      mysql:
-        image: mysql:8.0.16
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: category_ci
-          MYSQL_USER: category_test
-          MYSQL_PASSWORD: category_test
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=20
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: ${{ matrix.php }}
           extensions: mbstring, pdo, pdo_mysql
-          tools: composer
+          tools: composer:2.11.2@sha256:dd158c0afd41d15fac89e1b4e47b5d42911fe316c3687cd5edac98319b25d028
           coverage: none
 
-      - name: Enable MySQL trigger creation
-        run: |
-          set -euo pipefail
-          mysql_container="$(docker ps --filter ancestor=mysql:8.0.16 --format '{{.ID}}' | head -n 1)"
-          test -n "$mysql_container"
-          docker exec "$mysql_container" mysql -uroot -proot -e "SET GLOBAL log_bin_trust_function_creators = 1"
+      - name: Verify actual PHP security patch floor
+        run: php scripts/ci/check-php-patch-floor.php "${{ matrix.php }}"
+
+      - name: Verify Composer PHP compatibility boundaries
+        run: bash scripts/ci/check-composer-php-boundaries.sh
 
       - name: Validate composer.json
         run: composer validate --strict
 
       - name: PHP syntax
-        run: find src tests -type f -name '*.php' -print0 | xargs -0 -r -n1 php -l
+        run: bash scripts/ci/check-package-php-syntax.sh
 
       - name: Resolve latest compatible dependencies
         run: composer update --no-interaction --prefer-dist --no-progress --prefer-stable
@@ -93,57 +71,53 @@ jobs:
       - name: Unit tests
         run: composer test:unit
 
+      - name: Verify Git and Composer package archives
+        run: bash scripts/ci/check-package-archives.sh HEAD --verify-prepared
+
+      - name: Verify public example with PHPStan
+        run: vendor/bin/phpstan analyse examples --level=max --memory-limit=256M
+
+      - name: Run public example on MySQL
+        run: bash scripts/ci/with-category-mysql.sh --install-schema php examples/category-workflow.php
+
+      - name: Verify RC.1 scope migration on MySQL 8.0.16
+        if: matrix.php == '8.4'
+        env:
+          CATEGORY_MYSQL_VERSION: "8.0.16"
+          CATEGORY_MIGRATION_EXPECTED_MYSQL_VERSION: "8.0.16"
+        run: bash scripts/ci/with-category-mysql.sh bash scripts/ci/check-scope-equality-migration.sh
+
       - name: MySQL Integration tests
-        run: composer test:integration
+        run: bash scripts/ci/with-category-mysql.sh composer test:integration
 
       - name: Full Category suite
-        run: composer test
+        run: bash scripts/ci/with-category-mysql.sh composer test
 
   category-lowest:
     name: Category lowest dependencies (PHP 8.4)
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    services:
-      mysql:
-        image: mysql:8.0.16
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: category_ci
-          MYSQL_USER: category_test
-          MYSQL_PASSWORD: category_test
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=20
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: "8.4"
           extensions: mbstring, pdo, pdo_mysql
-          tools: composer
+          tools: composer:2.11.2@sha256:dd158c0afd41d15fac89e1b4e47b5d42911fe316c3687cd5edac98319b25d028
           coverage: none
 
-      - name: Enable MySQL trigger creation
-        run: |
-          set -euo pipefail
-          mysql_container="$(docker ps --filter ancestor=mysql:8.0.16 --format '{{.ID}}' | head -n 1)"
-          test -n "$mysql_container"
-          docker exec "$mysql_container" mysql -uroot -proot -e "SET GLOBAL log_bin_trust_function_creators = 1"
+      - name: Verify actual PHP security patch floor
+        run: php scripts/ci/check-php-patch-floor.php "8.4"
 
       - name: Validate composer.json
         run: composer validate --strict
 
       - name: PHP syntax
-        run: find src tests -type f -name '*.php' -print0 | xargs -0 -r -n1 php -l
+        run: bash scripts/ci/check-package-php-syntax.sh
 
       - name: Resolve lowest supported dependencies
         run: composer update --prefer-lowest --prefer-stable --no-interaction --prefer-dist --no-progress
@@ -167,132 +141,37 @@ jobs:
         run: composer test:unit
 
       - name: MySQL Integration tests
-        run: composer test:integration
+        run: bash scripts/ci/with-category-mysql.sh composer test:integration
 
       - name: Full Category suite
-        run: composer test
+        run: bash scripts/ci/with-category-mysql.sh composer test
 
   standalone-consumer:
     name: Standalone external Composer consumer (PHP 8.4)
     runs-on: ubuntu-latest
     timeout-minutes: 30
 
-    services:
-      mysql:
-        image: mysql:8.0.16
-        env:
-          MYSQL_ROOT_PASSWORD: root
-          MYSQL_DATABASE: category_standalone
-          MYSQL_USER: category_test
-          MYSQL_PASSWORD: category_test
-        ports:
-          - 3306:3306
-        options: >-
-          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -proot"
-          --health-interval=10s
-          --health-timeout=5s
-          --health-retries=20
-
-    env:
-      CATEGORY_STANDALONE_DSN: mysql:host=127.0.0.1;port=3306;dbname=category_standalone;charset=utf8mb4
-      CATEGORY_STANDALONE_DB_USER: category_test
-      CATEGORY_STANDALONE_DB_PASSWORD: category_test
-
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Setup PHP
-        uses: shivammathur/setup-php@bf6b4fbd49ca58e4608c9c89fba0b8d90bd2a39f
+        uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: "8.4"
           extensions: mbstring, pdo, pdo_mysql
-          tools: composer
+          tools: composer:2.11.2@sha256:dd158c0afd41d15fac89e1b4e47b5d42911fe316c3687cd5edac98319b25d028
           coverage: none
 
-      - name: Enable MySQL trigger creation
-        run: |
-          set -euo pipefail
-          mysql_container="$(docker ps --filter ancestor=mysql:8.0.16 --format '{{.ID}}' | head -n 1)"
-          test -n "$mysql_container"
-          docker exec "$mysql_container" mysql -uroot -proot -e "SET GLOBAL log_bin_trust_function_creators = 1"
+      - name: Verify actual PHP security patch floor
+        run: php scripts/ci/check-php-patch-floor.php "8.4"
 
-      - name: Reject host-coupled runtime declarations
+      - name: Run external Composer consumer twice from clean states
         run: |
-          set -euo pipefail
-          if jq -r '.require | keys[]' composer.json | grep -E -i 'adminkernel|admin-control-panel|catalog|slim|php-di'; then
-            echo "A forbidden host/runtime Composer dependency is declared."
-            exit 1
-          fi
-          if grep -R -E -n -i 'adminkernel|admin-control-panel|(^|[^[:alnum:]_])catalog([^[:alnum:]_]|$)|(^|[^[:alnum:]_])slim([^[:alnum:]_]|$)|php-di' composer.json src; then
-            echo "A forbidden host/runtime symbol is referenced by the package."
-            exit 1
-          fi
-          if grep -R -E -n '^(namespace|use)[[:space:]]+(App|Host|Admin|Catalog|Slim|DI)(\\|[[:space:]]|;)' src; then
-            echo "A forbidden host namespace is referenced by package runtime code."
-            exit 1
-          fi
-          if grep -R -E -n '(^|[^[:alnum:]_])(require|require_once|include|include_once)([^[:alnum:]_]|$)' src; then
-            echo "Package runtime code includes a host-owned file."
-            exit 1
-          fi
-          if grep -R -E -n -i 'CREATE TABLE.*(admin|catalog|host)|REFERENCES.*(admin|catalog|host)' schema; then
-            echo "The package schema references a forbidden host-owned table."
-            exit 1
-          fi
-
-      - name: Create clean external consumer and local VCS source
-        run: |
-          set -euo pipefail
-          consumer_dir="$(mktemp -d)"
-          echo "CATEGORY_CONSUMER_DIR=$consumer_dir" >> "$GITHUB_ENV"
-          vcs_dir="$RUNNER_TEMP/category-vcs.git"
-          source_branch="${GITHUB_HEAD_REF:-main}"
-          source_sha="$(git rev-parse HEAD)"
-          git clone --bare "$GITHUB_WORKSPACE" "$vcs_dir"
-          git --git-dir="$vcs_dir" update-ref "refs/heads/$source_branch" "$source_sha"
-          cp tests/StandaloneConsumer/composer.json "$consumer_dir/composer.json"
-          cp tests/StandaloneConsumer/consumer.php "$consumer_dir/consumer.php"
-          composer config repositories.category vcs "$vcs_dir" --working-dir="$consumer_dir"
-          composer require --no-interaction --prefer-dist --no-progress --working-dir="$consumer_dir" "maatify/php-category:dev-$source_branch"
-          composer validate --strict --working-dir="$consumer_dir"
-          composer install --no-interaction --prefer-dist --no-progress --working-dir="$consumer_dir"
-          composer dump-autoload --optimize --strict-psr --working-dir="$consumer_dir"
-          composer check-platform-reqs --working-dir="$consumer_dir"
-          composer audit --no-interaction --abandoned=fail --working-dir="$consumer_dir"
-          jq -e '.packages[] | select(.name == "maatify/php-category" and .source.type == "git")' "$consumer_dir/composer.lock"
-          jq -e '
-            .packages
-            | select(all(.[]; .name != "maatify/persistence"))
-            | .[]
-            | select(.name == "maatify/php-persistence"
-                and .version == "v1.0.0-rc.1"
-                and ."installation-source" == "dist"
-                and .dist.reference == "34c3b874525d36ae064c162cdd553bc75d18772b")
-            | {name, version, "installation-source", "dist-reference": .dist.reference}
-          ' "$consumer_dir/vendor/composer/installed.json"
-          if composer show --tree --working-dir="$consumer_dir" | grep -E -i '(^|[^[:alnum:]_])(adminkernel|admin-control-panel|catalog|slim|php-di)([^[:alnum:]_]|$)'; then
-            echo "The clean consumer resolved a forbidden host dependency."
-            exit 1
-          fi
-          (cd "$consumer_dir" && php consumer.php)
-
-      - name: Verify the clean consumer has no host files
-        run: |
-          set -euo pipefail
-          for expected_file in composer.json composer.lock consumer.php vendor; do
-            test -e "$CATEGORY_CONSUMER_DIR/$expected_file"
+          for run in 1 2; do
+            printf 'Clean consumer run %s\n' "$run"
+            bash scripts/ci/with-category-mysql.sh bash scripts/ci/run-standalone-consumer.sh
           done
-          unexpected_file="$(find "$CATEGORY_CONSUMER_DIR" -mindepth 1 -maxdepth 1 ! -name composer.json ! -name composer.lock ! -name consumer.php ! -name vendor -print -quit)"
-          if [ -n "$unexpected_file" ]; then
-            echo "The clean consumer contains an unexpected host file: $unexpected_file"
-            exit 1
-          fi
-          host_file="$(find "$CATEGORY_CONSUMER_DIR" -maxdepth 1 -type f \( -name '*Host*' -o -name '*Admin*' -o -name '*Catalog*' \) -print -quit)"
-          if [ -n "$host_file" ]; then
-            echo "The clean consumer contains a host-owned file: $host_file"
-            exit 1
-          fi
 
   workflow-lint:
     name: Workflow syntax lint
@@ -301,7 +180,7 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
       - name: Validate GitHub Actions workflows
         run: docker run --rm -v "$GITHUB_WORKSPACE:/repo" -w /repo rhysd/actionlint@sha256:887a259a5a534f3c4f36cb02dca341673c6089431057242cdc931e9f133147e9
@@ -313,7 +192,7 @@ jobs:
 
     steps:
       - name: Checkout repository history
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
 

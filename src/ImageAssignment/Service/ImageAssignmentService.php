@@ -49,6 +49,7 @@ final readonly class ImageAssignmentService implements ImageAssignmentServiceInt
         private ClockInterface $clock,
     ) {}
 
+    /** {@inheritDoc} */
     public function assign(CreateCategoryImageAssignmentCommand $command): int
     {
         return $this->transaction->run(function () use ($command): int {
@@ -59,6 +60,7 @@ final readonly class ImageAssignmentService implements ImageAssignmentServiceInt
         });
     }
 
+    /** {@inheritDoc} */
     public function reorder(UpdateCategoryImageAssignmentDisplayOrderCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -70,6 +72,7 @@ final readonly class ImageAssignmentService implements ImageAssignmentServiceInt
         });
     }
 
+    /** {@inheritDoc} */
     public function setDefault(SetCategoryImageAssignmentDefaultCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -79,6 +82,7 @@ final readonly class ImageAssignmentService implements ImageAssignmentServiceInt
         });
     }
 
+    /** {@inheritDoc} */
     public function clearDefault(ClearCategoryImageAssignmentDefaultCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -88,6 +92,7 @@ final readonly class ImageAssignmentService implements ImageAssignmentServiceInt
         });
     }
 
+    /** {@inheritDoc} */
     public function remove(SoftDeleteCategoryImageAssignmentCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -99,6 +104,7 @@ final readonly class ImageAssignmentService implements ImageAssignmentServiceInt
         });
     }
 
+    /** {@inheritDoc} */
     public function restore(RestoreCategoryImageAssignmentCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -110,6 +116,7 @@ final readonly class ImageAssignmentService implements ImageAssignmentServiceInt
         });
     }
 
+    /** {@inheritDoc} */
     public function listVisibleForCategory(
         int $categoryId,
         CategoryImageAssignmentScopeDTO $scope,
@@ -120,6 +127,7 @@ final readonly class ImageAssignmentService implements ImageAssignmentServiceInt
         return $this->visibleReader->listVisibleImageAssignments($id, $scope, $criteria);
     }
 
+    /** {@inheritDoc} */
     public function getByIdForManagement(
         int $assignmentId,
         CategoryDeletedStateEnum $deletedState = CategoryDeletedStateEnum::NON_DELETED,
@@ -134,12 +142,14 @@ final readonly class ImageAssignmentService implements ImageAssignmentServiceInt
         return $assignment;
     }
 
+    /** {@inheritDoc} */
     public function listForManagement(
         CategoryImageAssignmentListCriteriaDTO $criteria,
     ): CategoryImageAssignmentCollectionDTO {
         return $this->managementReader->listImageAssignments($criteria);
     }
 
+    /** {@inheritDoc} */
     public function paginateForManagement(
         CategoryImageAssignmentListCriteriaDTO $criteria,
         PageRequest $pageRequest,

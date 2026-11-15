@@ -36,6 +36,7 @@ final readonly class PdoCategoryImageAssignmentManagementReadQuery extends PdoRe
         $this->paginator = new PdoPaginator();
     }
 
+    /** {@inheritDoc} */
     public function findImageAssignmentById(
         int $assignmentId,
         CategoryDeletedStateEnum $deletedState,
@@ -54,6 +55,7 @@ final readonly class PdoCategoryImageAssignmentManagementReadQuery extends PdoRe
         return is_array($row) ? $this->hydrateAssignment($row) : null;
     }
 
+    /** {@inheritDoc} */
     public function listImageAssignments(
         CategoryImageAssignmentListCriteriaDTO $criteria,
     ): CategoryImageAssignmentCollectionDTO {
@@ -100,8 +102,7 @@ final readonly class PdoCategoryImageAssignmentManagementReadQuery extends PdoRe
         $statement = $this->pdo->prepare(
             $this->imageAssignmentSelect()
             . ($where === [] ? '' : ' WHERE ' . implode(' AND ', $where))
-            . ' ORDER BY `assignment`.`category_id` ASC, `assignment`.`ordering_scope` ASC, '
-            . '`assignment`.`display_order` ASC, `assignment`.`id` ASC LIMIT :max_results',
+            . ' ORDER BY ' . $this->managementOrderBy() . ' LIMIT :max_results',
         );
         $this->executeBounded($statement, $params, $criteria->maxResults);
         /** @var list<array<string, mixed>> $rows */
@@ -235,18 +236,26 @@ final readonly class PdoCategoryImageAssignmentManagementReadQuery extends PdoRe
         return 'FROM `' . self::IMAGE_ASSIGNMENT_TABLE . '` AS `assignment`';
     }
 
+    /** Groups collation-equivalent scopes and uses a deterministic order within each group. */
+    private function managementOrderBy(): string
+    {
+        return '`assignment`.`category_id` ASC, '
+            . '`assignment`.`language_code` IS NULL ASC, `assignment`.`language_code` ASC, '
+            . '`assignment`.`platform` IS NULL ASC, `assignment`.`platform` ASC, '
+            . '`assignment`.`role_id` ASC, '
+            . '`assignment`.`display_order` ASC, `assignment`.`id` ASC';
+    }
+
     private function imageAssignmentPaginationSelect(): string
     {
-        // The paginator's single default key is backed by the complete four-column business ordering.
+        // The paginator exposes the same order as the bounded management list.
         return 'SELECT `assignment`.`id`, `assignment`.`category_id`, '
             . '`assignment`.`media_asset_id`, `assignment`.`role_id`, '
             . '`assignment`.`language_code`, `assignment`.`platform`, '
             . '`assignment`.`is_default`, `assignment`.`display_order`, '
             . '`assignment`.`created_at`, `assignment`.`updated_at`, '
             . '`assignment`.`deleted_at`, `assignment`.`ordering_scope`, '
-            . 'ROW_NUMBER() OVER (ORDER BY `assignment`.`category_id` ASC, '
-            . '`assignment`.`ordering_scope` ASC, `assignment`.`display_order` ASC, '
-            . '`assignment`.`id` ASC) AS `management_order` '
+            . 'ROW_NUMBER() OVER (ORDER BY ' . $this->managementOrderBy() . ') AS `management_order` '
             . 'FROM `' . self::IMAGE_ASSIGNMENT_TABLE . '` AS `assignment`';
     }
 

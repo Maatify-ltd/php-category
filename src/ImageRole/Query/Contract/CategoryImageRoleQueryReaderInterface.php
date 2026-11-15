@@ -9,5 +9,6 @@ use Maatify\Category\ImageRole\CategoryImageRoleDTO;
 /** Read port consumed by Image Role mutation orchestration. */
 interface CategoryImageRoleQueryReaderInterface
 {
+    /** Reads current data and locks the row within the caller’s transaction, including deleted rows. */
     public function findImageRoleByIdForUpdate(int $roleId): ?CategoryImageRoleDTO;
 }

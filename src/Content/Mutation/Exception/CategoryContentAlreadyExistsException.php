@@ -8,6 +8,7 @@ use Maatify\Category\Exception\CategoryExceptionInterface;
 use Maatify\Exceptions\Exception\Conflict\GenericConflictMaatifyException;
 use Throwable;
 
+/** The exact Category and language slot is reserved by an existing Content row. */
 final class CategoryContentAlreadyExistsException extends GenericConflictMaatifyException implements CategoryExceptionInterface
 {
     public static function withIdentity(

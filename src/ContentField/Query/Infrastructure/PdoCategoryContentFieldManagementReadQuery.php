@@ -36,6 +36,7 @@ final readonly class PdoCategoryContentFieldManagementReadQuery extends PdoReadQ
         $this->paginator = new PdoPaginator();
     }
 
+    /** {@inheritDoc} */
     public function findContentFieldById(
         int $fieldId,
         CategoryDeletedStateEnum $deletedState,
@@ -54,6 +55,7 @@ final readonly class PdoCategoryContentFieldManagementReadQuery extends PdoReadQ
         return is_array($row) ? $this->hydrateField($row) : null;
     }
 
+    /** {@inheritDoc} */
     public function listContentFields(
         CategoryContentFieldListCriteriaDTO $criteria,
     ): CategoryContentFieldCollectionDTO {
@@ -74,8 +76,7 @@ final readonly class PdoCategoryContentFieldManagementReadQuery extends PdoReadQ
         $statement = $this->pdo->prepare(
             $this->contentFieldSelect()
             . ($where === [] ? '' : ' WHERE ' . implode(' AND ', $where))
-            . ' ORDER BY `field`.`category_id` ASC, `field`.`ordering_scope` ASC, '
-            . '`field`.`display_order` ASC, `field`.`id` ASC LIMIT :max_results',
+            . ' ORDER BY ' . $this->managementOrderBy() . ' LIMIT :max_results',
         );
         $this->executeBounded($statement, $params, $criteria->maxResults);
         /** @var list<array<string, mixed>> $rows */
@@ -160,15 +161,23 @@ final readonly class PdoCategoryContentFieldManagementReadQuery extends PdoReadQ
         return 'FROM `' . self::CONTENT_FIELD_TABLE . '` AS `field`';
     }
 
+    /** Groups collation-equivalent scopes and uses a deterministic order within each group. */
+    private function managementOrderBy(): string
+    {
+        return '`field`.`category_id` ASC, '
+            . '`field`.`language_code` IS NULL ASC, `field`.`language_code` ASC, '
+            . '`field`.`platform` IS NULL ASC, `field`.`platform` ASC, '
+            . '`field`.`display_order` ASC, `field`.`id` ASC';
+    }
+
     private function contentFieldPaginationSelect(): string
     {
-        // The paginator's single default key is backed by the complete four-column business ordering.
+        // The paginator exposes the same order as the bounded management list.
         return 'SELECT `field`.`id`, `field`.`category_id`, `field`.`field_key`, '
             . '`field`.`language_code`, `field`.`platform`, `field`.`format`, `field`.`value`, '
             . '`field`.`display_order`, `field`.`ordering_scope`, `field`.`created_at`, '
             . '`field`.`updated_at`, `field`.`deleted_at`, '
-            . 'ROW_NUMBER() OVER (ORDER BY `field`.`category_id` ASC, `field`.`ordering_scope` ASC, '
-            . '`field`.`display_order` ASC, `field`.`id` ASC) AS `management_order` '
+            . 'ROW_NUMBER() OVER (ORDER BY ' . $this->managementOrderBy() . ') AS `management_order` '
             . 'FROM `' . self::CONTENT_FIELD_TABLE . '` AS `field`';
     }
 

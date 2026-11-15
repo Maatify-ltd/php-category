@@ -48,6 +48,7 @@ final readonly class CategoryService implements CategoryServiceInterface
         private ClockInterface $clock,
     ) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryCommand $command): int
     {
         return $this->transaction->run(function () use ($command): int {
@@ -65,6 +66,7 @@ final readonly class CategoryService implements CategoryServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function move(MoveCategoryCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -80,6 +82,7 @@ final readonly class CategoryService implements CategoryServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function softDelete(SoftDeleteCategoryCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -95,6 +98,7 @@ final readonly class CategoryService implements CategoryServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function restore(RestoreCategoryCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -106,6 +110,7 @@ final readonly class CategoryService implements CategoryServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function updateStatus(UpdateCategoryStatusCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -117,6 +122,7 @@ final readonly class CategoryService implements CategoryServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function updateDisplayOrder(UpdateCategoryDisplayOrderCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -128,6 +134,7 @@ final readonly class CategoryService implements CategoryServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function getById(int $categoryId): CategoryDTO
     {
         $id = (new CategoryIdDTO($categoryId, 'categoryId'))->value;
@@ -140,12 +147,14 @@ final readonly class CategoryService implements CategoryServiceInterface
         return $category;
     }
 
+    /** {@inheritDoc} */
     public function listRootCategories(
         CategoryVisibleListCriteriaDTO $criteria = new CategoryVisibleListCriteriaDTO(),
     ): CategoryCollectionDTO {
         return $this->visibleReader->listVisibleRootCategories($criteria);
     }
 
+    /** {@inheritDoc} */
     public function listChildren(
         int $parentId,
         CategoryVisibleListCriteriaDTO $criteria = new CategoryVisibleListCriteriaDTO(),
@@ -155,6 +164,7 @@ final readonly class CategoryService implements CategoryServiceInterface
         return $this->visibleReader->listVisibleChildren($id, $criteria);
     }
 
+    /** {@inheritDoc} */
     public function getByIdForManagement(
         int $categoryId,
         CategoryDeletedStateEnum $deletedState = CategoryDeletedStateEnum::NON_DELETED,
@@ -169,6 +179,7 @@ final readonly class CategoryService implements CategoryServiceInterface
         return $category;
     }
 
+    /** {@inheritDoc} */
     public function getByCode(
         string $code,
         CategoryDeletedStateEnum $deletedState = CategoryDeletedStateEnum::NON_DELETED,
@@ -188,16 +199,19 @@ final readonly class CategoryService implements CategoryServiceInterface
         return $category;
     }
 
+    /** {@inheritDoc} */
     public function listForManagement(CategoryListCriteriaDTO $criteria): CategoryCollectionDTO
     {
         return $this->managementReader->listCategories($criteria);
     }
 
+    /** {@inheritDoc} */
     public function listRootCategoriesForManagement(CategoryListCriteriaDTO $criteria): CategoryCollectionDTO
     {
         return $this->managementReader->listRootCategories($criteria);
     }
 
+    /** {@inheritDoc} */
     public function listChildrenForManagement(int $parentId, CategoryListCriteriaDTO $criteria): CategoryCollectionDTO
     {
         $id = (new CategoryIdDTO($parentId, 'parentId'))->value;
@@ -205,6 +219,7 @@ final readonly class CategoryService implements CategoryServiceInterface
         return $this->managementReader->listChildren($id, $criteria);
     }
 
+    /** {@inheritDoc} */
     public function paginateForManagement(
         CategoryListCriteriaDTO $criteria,
         PageRequest $pageRequest,
@@ -212,6 +227,7 @@ final readonly class CategoryService implements CategoryServiceInterface
         return $this->managementReader->paginateCategories($criteria, $pageRequest);
     }
 
+    /** {@inheritDoc} */
     public function paginateRootCategoriesForManagement(
         CategoryListCriteriaDTO $criteria,
         PageRequest $pageRequest,
@@ -219,6 +235,7 @@ final readonly class CategoryService implements CategoryServiceInterface
         return $this->managementReader->paginateRootCategories($criteria, $pageRequest);
     }
 
+    /** {@inheritDoc} */
     public function paginateChildrenForManagement(
         int $parentId,
         CategoryListCriteriaDTO $criteria,

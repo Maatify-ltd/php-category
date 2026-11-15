@@ -12,6 +12,7 @@ final readonly class CategoryImageAssignmentScopeDTO implements \JsonSerializabl
 {
     public ?int $roleId;
 
+    /** Builds an exact scope from bounded nullable language and platform values and an optional positive Role identity. */
     public function __construct(
         public ?string $languageCode = null,
         public ?string $platform = null,

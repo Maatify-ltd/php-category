@@ -7,6 +7,7 @@ namespace Maatify\Category\Content\Exception;
 use Maatify\Category\Exception\CategoryExceptionInterface;
 use Maatify\Exceptions\Exception\NotFound\ResourceNotFoundMaatifyException;
 
+/** No Content row matches the operation’s identity and deletion requirements. */
 final class CategoryContentNotFoundException extends ResourceNotFoundMaatifyException implements CategoryExceptionInterface
 {
     public static function withId(int $contentId): self

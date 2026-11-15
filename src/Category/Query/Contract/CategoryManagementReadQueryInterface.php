@@ -29,13 +29,25 @@ interface CategoryManagementReadQueryInterface
     /** Lists direct children in display-order/id order, bounded by the criteria. */
     public function listChildren(int $parentId, CategoryListCriteriaDTO $criteria): CategoryCollectionDTO;
 
-    /** @return PageResultDTO<CategoryDTO> */
+    /**
+     * Returns the management page, base total, and filtered count for the requested scope.
+     *
+     * @return PageResultDTO<CategoryDTO>
+     */
     public function paginateCategories(CategoryListCriteriaDTO $criteria, PageRequest $pageRequest): PageResultDTO;
 
-    /** @return PageResultDTO<CategoryDTO> */
+    /**
+     * Returns the management page, base total, and filtered count for the requested scope.
+     *
+     * @return PageResultDTO<CategoryDTO>
+     */
     public function paginateRootCategories(CategoryListCriteriaDTO $criteria, PageRequest $pageRequest): PageResultDTO;
 
-    /** @return PageResultDTO<CategoryDTO> */
+    /**
+     * Returns the management page, base total, and filtered count for the requested scope.
+     *
+     * @return PageResultDTO<CategoryDTO>
+     */
     public function paginateChildren(
         int $parentId,
         CategoryListCriteriaDTO $criteria,

@@ -82,3 +82,40 @@ Category does not sanitize, render, or interpret Host-defined keys. Field
 ordering is independent per Category and exact scope through the shared
 `maatify/php-persistence` Ordering API. The generated NULL-safe identity remains
 unique across soft deletion.
+
+## Upgrade an existing Image Assignment or Content Field schema
+
+Language and platform scopes use MySQL `utf8mb4_unicode_ci` equality for
+selection, identity, ordering, and Image Assignment defaults. Case, accents,
+and trailing space weights compare as MySQL defines. SQL `NULL` remains its own
+scope, including when a non-null spelling has zero collation weight. The schema
+keeps the original spellings in `language_code` and `platform`.
+
+For an installation with the former length-prefixed `ordering_scope` columns:
+
+1. Take a verified backup, test the migration on a copy, and stop every writer
+   to the Category tables. Keep writers stopped until the schema and application
+   have both been updated. Use an account with SELECT, CREATE, INSERT, ALTER, and CREATE TEMPORARY
+   TABLES access for the target database.
+2. Apply [001-scope-equality.sql](migrations/001-scope-equality.sql) to that
+   database in a dedicated MySQL batch session using input redirection and
+   without `--force`. The file reports collisions and checks both tables before
+   the first permanent DDL. It stops on multiple active defaults in a shared
+   scope or an active position shared by previously separate scopes. Legacy
+   same-scope position ties retain the normal identity tie-break.
+3. If preflight reports collisions, use the reported scope, row IDs and counts
+   to inspect the records. Have the Host choose the default and positions for
+   the combined scope. Apply those explicit corrections under the old schema
+   and rerun the migration. The migration itself preserves all business rows,
+   identities, original spellings, status, position, and timestamps.
+4. MySQL commits each `ALTER TABLE` independently. If one ALTER succeeded before
+   a later error, keep writers stopped and inspect both table definitions with
+   `SHOW CREATE TABLE`. Correct the cause and rerun the complete file in a new
+   session. Reapplying its column definitions is safe on the already-upgraded
+   table. If abandoning the upgrade, restore and verify the pre-upgrade backup
+   before resuming the old application. Start the updated application only
+   after both tables match the canonical schema. A clean installation uses
+   [category.sql](category.sql).
+
+The application and schema must be deployed together because each computes the
+same generated scope key.

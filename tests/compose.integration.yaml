@@ -1,0 +1,18 @@
+services:
+  mysql:
+    image: mysql:${CATEGORY_MYSQL_VERSION:-8.0.16}
+    platform: ${CATEGORY_MYSQL_PLATFORM:-linux/amd64}
+    command: --log-bin-trust-function-creators=ON
+    environment:
+      MYSQL_DATABASE: category_verification
+      MYSQL_USER: category_test
+      MYSQL_PASSWORD: ${CATEGORY_MYSQL_PASSWORD:?Run the repository MySQL orchestration script}
+      MYSQL_ROOT_PASSWORD: ${CATEGORY_MYSQL_ROOT_PASSWORD:?Run the repository MySQL orchestration script}
+    ports:
+      - "127.0.0.1::3306"
+    healthcheck:
+      test: ["CMD-SHELL", "MYSQL_PWD=\"$$MYSQL_PASSWORD\" mysql --protocol=TCP -h 127.0.0.1 -u \"$$MYSQL_USER\" -D \"$$MYSQL_DATABASE\" -Nse 'SELECT 1'"]
+      interval: 2s
+      timeout: 5s
+      retries: 45
+      start_period: 10s

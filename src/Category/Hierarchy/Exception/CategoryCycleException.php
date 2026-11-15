@@ -7,6 +7,7 @@ namespace Maatify\Category\Hierarchy\Exception;
 use Maatify\Category\Exception\CategoryExceptionInterface;
 use Maatify\Exceptions\Exception\BusinessRule\BusinessRuleMaatifyException;
 
+/** A Category move would make the Category one of its own ancestors. */
 final class CategoryCycleException extends BusinessRuleMaatifyException implements CategoryExceptionInterface
 {
     public static function forMove(int $categoryId, int $newParentId): self

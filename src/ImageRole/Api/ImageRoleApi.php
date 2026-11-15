@@ -22,26 +22,31 @@ final readonly class ImageRoleApi implements ImageRoleApiInterface
 {
     public function __construct(private ImageRoleServiceInterface $service) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryImageRoleCommand $command): int
     {
         return $this->service->create($command);
     }
 
+    /** {@inheritDoc} */
     public function updateStatus(UpdateCategoryImageRoleStatusCommand $command): void
     {
         $this->service->updateStatus($command);
     }
 
+    /** {@inheritDoc} */
     public function softDelete(SoftDeleteCategoryImageRoleCommand $command): void
     {
         $this->service->softDelete($command);
     }
 
+    /** {@inheritDoc} */
     public function restore(RestoreCategoryImageRoleCommand $command): void
     {
         $this->service->restore($command);
     }
 
+    /** {@inheritDoc} */
     public function getByIdForManagement(
         int $roleId,
         CategoryDeletedStateEnum $deletedState = CategoryDeletedStateEnum::NON_DELETED,
@@ -49,6 +54,7 @@ final readonly class ImageRoleApi implements ImageRoleApiInterface
         return $this->service->getByIdForManagement($roleId, $deletedState);
     }
 
+    /** {@inheritDoc} */
     public function getByKeyForManagement(
         string $roleKey,
         CategoryDeletedStateEnum $deletedState = CategoryDeletedStateEnum::NON_DELETED,
@@ -56,11 +62,13 @@ final readonly class ImageRoleApi implements ImageRoleApiInterface
         return $this->service->getByKeyForManagement($roleKey, $deletedState);
     }
 
+    /** {@inheritDoc} */
     public function listForManagement(CategoryImageRoleListCriteriaDTO $criteria): CategoryImageRoleCollectionDTO
     {
         return $this->service->listForManagement($criteria);
     }
 
+    /** {@inheritDoc} */
     public function paginateForManagement(CategoryImageRoleListCriteriaDTO $criteria, PageRequest $pageRequest): PageResultDTO
     {
         return $this->service->paginateForManagement($criteria, $pageRequest);

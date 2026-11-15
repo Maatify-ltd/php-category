@@ -1,6 +1,6 @@
 {
   "name": "maatify/php-category",
-  "description": "Framework-neutral hierarchical category and content domain with PDO persistence.",
+  "description": "Framework-agnostic PHP library for hierarchical category management, localized content, custom fields, image roles and media assignments, with MySQL/PDO persistence and typed domain APIs.",
   "keywords": [
     "category",
     "taxonomy",
@@ -11,9 +11,9 @@
     "php",
     "maatify"
   ],
-  "homepage": "https://github.com/Maatify/php-category",
+  "homepage": "https://github.com/Maatify-ltd/php-category",
   "type": "library",
-  "license": "MIT",
+  "license": "proprietary",
   "authors": [
     {
       "name": "Maatify",
@@ -22,9 +22,23 @@
     }
   ],
   "support": {
-    "issues": "https://github.com/Maatify/php-category/issues",
-    "source": "https://github.com/Maatify/php-category",
-    "security": "https://github.com/Maatify/php-category/security/policy"
+    "issues": "https://github.com/Maatify-ltd/php-category/issues",
+    "source": "https://github.com/Maatify-ltd/php-category",
+    "security": "https://github.com/Maatify-ltd/php-category/security/policy"
+  },
+  "archive": {
+    "exclude": [
+      "/.env",
+      "/.env.*",
+      "/.idea",
+      "/.phpunit.cache",
+      "/.phpunit.result.cache",
+      "/.php-cs-fixer.cache",
+      "/composer.lock",
+      "/env.testing",
+      "/vendor",
+      ".DS_Store"
+    ]
   },
   "autoload": {
     "psr-4": {
@@ -50,7 +64,7 @@
     "maatify/exceptions": "^1.0",
     "maatify/php-persistence": ">=1.0.0-rc.1 <=1.0.0-rc.1",
     "maatify/shared-common": "^1.0",
-    "php": "^8.4"
+    "php": ">=8.4.27 <8.5 || >=8.5.12 <9.0"
   },
   "require-dev": {
     "php-cs-fixer/shim": "^3.95",
@@ -61,7 +75,7 @@
     "analyse": "phpstan analyse src tests --level=max --memory-limit=256M",
     "check:style": [
       "php-cs-fixer check --config=.php-cs-fixer.dist.php",
-      "@php scripts/ci/check-per-cs-31-delta.php .php-cs-fixer.dist.php src tests scripts/ci"
+      "@php scripts/ci/check-per-cs-31-delta.php .php-cs-fixer.dist.php src tests scripts/ci examples"
     ],
     "format": "php-cs-fixer fix --config=.php-cs-fixer.dist.php",
     "test": "phpunit",
@@ -72,7 +86,7 @@
     "optimize-autoloader": true,
     "sort-packages": true,
     "platform": {
-      "php": "8.4.0"
+      "php": "8.4.27"
     }
   },
   "minimum-stability": "stable",

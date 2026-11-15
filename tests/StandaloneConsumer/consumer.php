@@ -2,7 +2,9 @@
 
 declare(strict_types=1);
 
+use Maatify\Category\Exception\CategoryNotFoundException;
 use Maatify\Category\Lifecycle\Command\CreateCategoryCommand;
+use Maatify\Category\Lifecycle\Exception\CategoryCodeAlreadyExistsException;
 use Maatify\Category\Hierarchy\Command\MoveCategoryCommand;
 use Maatify\Category\Lifecycle\Command\RestoreCategoryCommand;
 use Maatify\Category\Lifecycle\Command\SoftDeleteCategoryCommand;
@@ -58,6 +60,25 @@ function standalone_consumer_require(bool $condition, string $message): void
     if (!$condition) {
         standalone_consumer_fail($message);
     }
+}
+
+/**
+ * @param class-string<\Throwable> $expected
+ * @param callable(): mixed $operation
+ */
+function standalone_consumer_expect_exception(string $expected, callable $operation, string $message): void
+{
+    try {
+        $operation();
+    } catch (\Throwable $exception) {
+        if (!$exception instanceof $expected) {
+            throw $exception;
+        }
+
+        return;
+    }
+
+    standalone_consumer_fail($message);
 }
 
 /**
@@ -795,7 +816,60 @@ try {
         && $storedUpdatedAt === $updatedCategory->updatedAt->format('Y-m-d H:i:s'),
         'Standalone update did not preserve Host timezone semantics.',
     );
+
+    $observerPdo = new \PDO($dsn, $username, $password, [
+        \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+        \PDO::ATTR_EMULATE_PREPARES => false,
+    ]);
+    $observerPdo->exec('SET SESSION innodb_lock_wait_timeout = 1');
+    $observer = CategoryFactory::create($observerPdo, $clock)->categories();
+
+    $rollbackCode = 'standalone-host-rollback';
+    $pdo->beginTransaction();
+    $rollbackId = $category->categories()->create(new CreateCategoryCommand($rollbackCode));
+    standalone_consumer_require($pdo->inTransaction(), 'Category committed a Host-owned transaction.');
+    standalone_consumer_require(
+        $category->categories()->getByCode($rollbackCode)->id === $rollbackId,
+        'The Host transaction cannot read its own Category write.',
+    );
+    $pdo->rollBack();
+    standalone_consumer_expect_exception(
+        CategoryNotFoundException::class,
+        static fn() => $observer->getByCode($rollbackCode),
+        'A Host rollback must remove the Category write for another connection.',
+    );
+    fwrite(STDOUT, "Host-owned Category rollback verified.\n");
+
+    $raceCode = 'standalone-racing-category';
+    $pdo->beginTransaction();
+    $winnerId = $category->categories()->create(new CreateCategoryCommand($raceCode));
+    standalone_consumer_require($pdo->inTransaction(), 'The first race participant lost its transaction.');
+    try {
+        $observer->create(new CreateCategoryCommand($raceCode));
+        standalone_consumer_fail('The second creation completed while the winner still held its write locks.');
+    } catch (\PDOException $exception) {
+        $driverCode = $exception->errorInfo[1] ?? null;
+        standalone_consumer_require(
+            $driverCode === 1205 || $driverCode === '1205',
+            'Expected MySQL lock wait timeout from the second creation.',
+        );
+    }
+    standalone_consumer_require(!$observerPdo->inTransaction(), 'The failed contender left a transaction open.');
+    $pdo->commit();
+    standalone_consumer_expect_exception(
+        CategoryCodeAlreadyExistsException::class,
+        static fn() => $observer->create(new CreateCategoryCommand($raceCode)),
+        'The contender must receive the documented duplicate-code exception after the winner commits.',
+    );
+    standalone_consumer_require(
+        $observer->getByCode($raceCode)->id === $winnerId,
+        'Concurrent Category creation did not preserve the committed winner.',
+    );
+    fwrite(STDOUT, "Concurrent Category creation and typed duplicate rejection verified.\n");
 } finally {
+    if ($pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
     standalone_consumer_drop_schema($pdo);
 }
 

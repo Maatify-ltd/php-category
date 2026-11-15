@@ -24,47 +24,56 @@ final readonly class CategoryApi implements CategoryApiInterface
 {
     public function __construct(private CategoryServiceInterface $service) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryCommand $command): int
     {
         return $this->service->create($command);
     }
 
+    /** {@inheritDoc} */
     public function move(MoveCategoryCommand $command): void
     {
         $this->service->move($command);
     }
 
+    /** {@inheritDoc} */
     public function softDelete(SoftDeleteCategoryCommand $command): void
     {
         $this->service->softDelete($command);
     }
 
+    /** {@inheritDoc} */
     public function restore(RestoreCategoryCommand $command): void
     {
         $this->service->restore($command);
     }
 
+    /** {@inheritDoc} */
     public function updateStatus(UpdateCategoryStatusCommand $command): void
     {
         $this->service->updateStatus($command);
     }
 
+    /** {@inheritDoc} */
     public function updateDisplayOrder(UpdateCategoryDisplayOrderCommand $command): void
     {
         $this->service->updateDisplayOrder($command);
     }
 
+    /** {@inheritDoc} */
     public function getById(int $categoryId): CategoryDTO
     {
         return $this->service->getById($categoryId);
     }
 
+    /** {@inheritDoc} */
     public function listRootCategories(
         CategoryVisibleListCriteriaDTO $criteria = new CategoryVisibleListCriteriaDTO(),
     ): CategoryCollectionDTO {
         return $this->service->listRootCategories($criteria);
     }
 
+    /** {@inheritDoc} */
     public function listChildren(
         int $parentId,
         CategoryVisibleListCriteriaDTO $criteria = new CategoryVisibleListCriteriaDTO(),
@@ -72,6 +81,7 @@ final readonly class CategoryApi implements CategoryApiInterface
         return $this->service->listChildren($parentId, $criteria);
     }
 
+    /** {@inheritDoc} */
     public function getByIdForManagement(
         int $categoryId,
         CategoryDeletedStateEnum $deletedState = CategoryDeletedStateEnum::NON_DELETED,
@@ -79,6 +89,7 @@ final readonly class CategoryApi implements CategoryApiInterface
         return $this->service->getByIdForManagement($categoryId, $deletedState);
     }
 
+    /** {@inheritDoc} */
     public function getByCode(
         string $code,
         CategoryDeletedStateEnum $deletedState = CategoryDeletedStateEnum::NON_DELETED,
@@ -86,26 +97,31 @@ final readonly class CategoryApi implements CategoryApiInterface
         return $this->service->getByCode($code, $deletedState);
     }
 
+    /** {@inheritDoc} */
     public function listForManagement(CategoryListCriteriaDTO $criteria): CategoryCollectionDTO
     {
         return $this->service->listForManagement($criteria);
     }
 
+    /** {@inheritDoc} */
     public function listRootCategoriesForManagement(CategoryListCriteriaDTO $criteria): CategoryCollectionDTO
     {
         return $this->service->listRootCategoriesForManagement($criteria);
     }
 
+    /** {@inheritDoc} */
     public function listChildrenForManagement(int $parentId, CategoryListCriteriaDTO $criteria): CategoryCollectionDTO
     {
         return $this->service->listChildrenForManagement($parentId, $criteria);
     }
 
+    /** {@inheritDoc} */
     public function paginateForManagement(CategoryListCriteriaDTO $criteria, PageRequest $pageRequest): PageResultDTO
     {
         return $this->service->paginateForManagement($criteria, $pageRequest);
     }
 
+    /** {@inheritDoc} */
     public function paginateRootCategoriesForManagement(
         CategoryListCriteriaDTO $criteria,
         PageRequest $pageRequest,
@@ -113,6 +129,7 @@ final readonly class CategoryApi implements CategoryApiInterface
         return $this->service->paginateRootCategoriesForManagement($criteria, $pageRequest);
     }
 
+    /** {@inheritDoc} */
     public function paginateChildrenForManagement(
         int $parentId,
         CategoryListCriteriaDTO $criteria,

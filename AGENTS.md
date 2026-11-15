@@ -1,4 +1,4 @@
-# تعليمات الوكلاء — Maatify/php-category
+# تعليمات الوكلاء — Maatify-ltd/php-category
 
 ## 1. نطاق المشروع
 

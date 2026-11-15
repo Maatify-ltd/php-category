@@ -14,6 +14,11 @@ enum CategoryContentFieldFormatEnum: string
     case HTML = 'html';
     case JSON = 'json';
 
+    /**
+     * Checks JSON syntax when the format is JSON. Text and HTML are stored as supplied.
+     *
+     * @throws CategoryInvalidArgumentException When a JSON value cannot be decoded.
+     */
     public function assertValue(string $value): void
     {
         if ($this !== self::JSON) {

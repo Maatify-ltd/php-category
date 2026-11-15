@@ -15,16 +15,19 @@ final readonly class CategoryImageAssignmentRoleFilterDTO implements \JsonSerial
         public ?int $roleId,
     ) {}
 
+    /** Leaves the management query unrestricted by Role. */
     public static function omitted(): self
     {
         return new self(CategoryImageAssignmentRoleFilterModeEnum::OMITTED, null);
     }
 
+    /** Matches generic assignments without a Role. */
     public static function exactNull(): self
     {
         return new self(CategoryImageAssignmentRoleFilterModeEnum::EXACT_NULL, null);
     }
 
+    /** Matches one Role identified by a positive integer or an accepted decimal string. */
     public static function forRole(int|string $roleId): self
     {
         return new self(

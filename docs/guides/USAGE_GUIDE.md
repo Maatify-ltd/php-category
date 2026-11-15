@@ -1,7 +1,7 @@
 # Category Consumer Usage Guide
 
 This guide is for a Host application consuming `maatify/php-category` through its
-public PHP API. It complements the [Category Package Reference](../CATEGORY_PACKAGE_REFERENCE.md):
+public PHP API. It complements the [Category Package Reference](../../CATEGORY_PACKAGE_REFERENCE.md):
 the reference is the complete contract inventory, while this guide shows the
 normal Host workflow and the decisions that must remain explicit.
 
@@ -22,21 +22,20 @@ application layer.
 
 ## Installation and prerequisites
 
-Install the published Category RC.1 using its exact Composer version:
+This guide describes the `v1.0.0-rc.2` artifact. After that exact version
+is published on Packagist, run the installation command in the
+[README](../../README.md#installation). It keeps the root stability policy
+at `stable` and explicitly allows the required Persistence RC. For the
+previously published RC.1, see its
+[tagged guide](https://github.com/Maatify-ltd/php-category/blob/v1.0.0-rc.1/docs/USAGE_GUIDE.md).
 
-```bash
-composer require maatify/php-category:1.0.0-rc.1
-```
-
-For the published release contract, use the [RC.1 guide](https://github.com/Maatify-ltd/php-category/blob/v1.0.0-rc.1/docs/USAGE_GUIDE.md).
-
-The examples below describe the current checkout. A consumer installing that
-checkout must explicitly allow `maatify/php-persistence:1.0.0-rc.1@RC` in its
-root Composer configuration. The runtime contract requires PHP `^8.4`, `ext-mbstring`, `ext-pdo`,
+RC.2 requires PHP `>=8.4.27 <8.5 || >=8.5.12 <9.0`, `ext-mbstring`, `ext-pdo`,
 `ext-pdo_mysql`, MySQL `8.0.16+`, `maatify/exceptions:^1.0`,
-`maatify/php-persistence:1.0.0-rc.1`, and `maatify/shared-common:^1.0`. Install and run
-the package-owned MySQL schema using the Host's deployment process before
-calling the factory.
+`maatify/php-persistence:1.0.0-rc.1`, and `maatify/shared-common:^1.0`.
+The compatibility matrix covers Stable PHP 8.4 and 8.5. Later PHP 8 minors
+are eligible in Composer, with Stable support subject to separate
+qualification. Install the [package-owned MySQL schema](../../schema/README.md) through
+the Host's deployment process before calling the factory.
 
 The Host supplies:
 
@@ -49,6 +48,22 @@ The Host supplies:
 The package validates IDs, required strings, lengths, formats, exact nullable
 scope values, and its own database invariants. It does not validate whether a
 language or platform is meaningful to the Host.
+
+## Capability map
+
+The [runnable Category workflow](../../examples/category-workflow.php) uses
+the production Composer autoloader and an already-installed Category schema.
+It exercises all five domain APIs in one Host-owned transaction.
+
+| Capability | Walkthrough | Example step |
+| --- | --- | --- |
+| Category hierarchy, lifecycle, and visibility | [Categories](#categories) | Create a parent and a child, change the child's status, and read the management view |
+| Localized Category Content | [Category Content](#category-content) | Write and read a localized name |
+| Exact-scope structured fields | [Content Fields](#content-fields) | Write JSON and read it in the same language and platform scope |
+| Image Roles | [Image Roles](#image-roles) | Create and look up a Host-defined role |
+| Image Assignments and default selection | [Image Assignments](#image-assignments-and-the-external-media-workflow) | Assign an existing Media Asset ID, set a default, and read the exact scope |
+| Management pagination | [Management pagination](#management-pagination) | Page through children using typed criteria and the shared page request |
+| Host transaction and clock | [Transactions and the Host clock](#transactions-and-the-host-clock) | Pass a Host clock and roll back the example writes |
 
 ## Factory and facade
 
@@ -689,6 +704,21 @@ runner participates without committing or rolling back the outer transaction.
 The Host remains responsible for the outer `beginTransaction()`, commit, and
 rollback decisions.
 
+Category, Content Field, and Image Assignment reorders resolve the current
+scope on the Host PDO after the service takes its existing target lock.
+Image Assignment `setDefault()` and `clearDefault()` discover the scope first,
+then lock that scope and verify the assignment on the Host PDO. With
+`CategoryFactory::create()`, discovery uses the Host's snapshot. An older
+`REPEATABLE READ` snapshot can miss an assignment committed by another connection.
+
+When these default operations can run inside an older snapshot, compose the
+facade with `CategoryFactory::forHost($pdo, $clock, $openScopeLookup)`.
+`$openScopeLookup` is a zero-argument callback that opens a distinct MySQL PDO
+on the same primary and database, with autocommit and exception mode enabled.
+The factory opens and validates it only when an assignment is absent from the
+Host read and reuses a valid connection thereafter. The Host read comes first
+so its own uncommitted assignments remain visible.
+
 Every mutation receives its timestamp from the supplied
 `ClockInterface`. Category does not call a global clock, normalize values to
 UTC, or choose a timezone. Reads hydrate stored timestamps using the timezone
@@ -849,4 +879,4 @@ The facade's five APIs are deliberately small and explicit:
 | `images()` | `ImageAssignmentApiInterface` | exact-scope `listVisibleForCategory` | assign/order/default/lifecycle, lookup, lists, pagination |
 
 For the exact Commands, DTO constructors, criteria fields, exception hierarchy,
-and complete method signatures, use the [Category Package Reference](../CATEGORY_PACKAGE_REFERENCE.md).
+and complete method signatures, use the [Category Package Reference](../../CATEGORY_PACKAGE_REFERENCE.md).

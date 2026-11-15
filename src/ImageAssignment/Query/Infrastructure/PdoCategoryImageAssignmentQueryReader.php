@@ -20,6 +20,7 @@ final readonly class PdoCategoryImageAssignmentQueryReader extends PdoReadQueryS
         private ClockInterface $clock,
     ) {}
 
+    /** {@inheritDoc} */
     public function findImageAssignmentById(int $assignmentId): ?CategoryImageAssignmentDTO
     {
         return $this->findAssignment($assignmentId, false);

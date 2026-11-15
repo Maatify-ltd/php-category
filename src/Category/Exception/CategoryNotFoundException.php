@@ -7,6 +7,7 @@ namespace Maatify\Category\Exception;
 use Maatify\Category\Exception\CategoryExceptionInterface;
 use Maatify\Exceptions\Exception\NotFound\ResourceNotFoundMaatifyException;
 
+/** No Category matches the operation’s identity and visibility or deletion requirements. */
 final class CategoryNotFoundException extends ResourceNotFoundMaatifyException implements CategoryExceptionInterface
 {
     public static function withId(int $categoryId): self

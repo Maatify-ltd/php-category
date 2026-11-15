@@ -1,0 +1,12 @@
+/.agents export-ignore
+/.gitattributes export-ignore
+/.github export-ignore
+/.gitignore export-ignore
+/.php-cs-fixer.dist.php export-ignore
+/AGENTS.md export-ignore
+/docs/php-engineering-standards export-ignore
+/env.testing.example export-ignore
+/phpstan.neon export-ignore
+/phpunit.xml.dist export-ignore
+/scripts export-ignore
+/tests export-ignore
