@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 
 ### Changed
 
+- Require PHP 8.4.27 or later in the 8.4 series, or PHP 8.5.12 or later in
+  the 8.5 series. Composer rejects earlier patches and other PHP series.
 - Use `maatify/php-persistence 1.0.0-rc.1` for shared Ordering, Pagination, and
   Transactions. Consumers using shared request/result types or explicit
   transaction wiring must update their imports.

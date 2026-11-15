@@ -32,7 +32,8 @@ For the published release contract, use the [RC.1 guide](https://github.com/Maat
 
 The examples below describe the current checkout. A consumer installing that
 checkout must explicitly allow `maatify/php-persistence:1.0.0-rc.1@RC` in its
-root Composer configuration. The runtime contract requires PHP `^8.4`, `ext-mbstring`, `ext-pdo`,
+root Composer configuration. The runtime contract requires PHP
+`>=8.4.27 <8.5 || >=8.5.12 <8.6`, `ext-mbstring`, `ext-pdo`,
 `ext-pdo_mysql`, MySQL `8.0.16+`, `maatify/exceptions:^1.0`,
 `maatify/php-persistence:1.0.0-rc.1`, and `maatify/shared-common:^1.0`. Install and run
 the package-owned MySQL schema using the Host's deployment process before

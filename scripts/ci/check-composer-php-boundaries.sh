@@ -2,12 +2,10 @@
 
 set -euo pipefail
 
-mode="${1:---phase-diagnostic}"
-if [[ "$#" -gt 1 || ( "$mode" != "--phase-diagnostic" && "$mode" != "--require-security-qualified" ) ]]; then
-    printf 'Usage: bash scripts/ci/check-composer-php-boundaries.sh [--phase-diagnostic|--require-security-qualified]\n' >&2
+if [[ "$#" -ne 0 ]]; then
+    printf 'Usage: bash scripts/ci/check-composer-php-boundaries.sh\n' >&2
     exit 2
 fi
-release_status=PASS
 
 project_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 probe_dir="$(mktemp -d)"
@@ -15,8 +13,7 @@ trap 'rm -rf -- "$probe_dir"' EXIT
 
 probe_php_version() {
     local version="$1"
-    local published_expected="$2"
-    local release_expected="$3"
+    local expected="$2"
     local output
     local result
 
@@ -47,25 +44,19 @@ probe_php_version() {
     fi
 
     printf 'PHP %s: %s by Composer\n' "$version" "$result"
-    if [[ "$mode" == "--phase-diagnostic" && "$result" != "$published_expected" ]]; then
-        printf 'Expected %s under the existing published PHP constraint.\n' "$published_expected" >&2
+    if [[ "$result" != "$expected" ]]; then
+        printf 'Expected PHP %s to be %s by Composer.\n' "$version" "$expected" >&2
         return 1
-    fi
-    if [[ "$result" != "$release_expected" ]]; then
-        release_status="NOT PASS"
-        printf 'Release boundary expects PHP %s to be %s.\n' "$version" "$release_expected"
     fi
 }
 
-printf 'Checking Composer PHP boundaries (%s).\n' "$mode"
-probe_php_version 8.3.0 rejected rejected
-probe_php_version 8.4.26 accepted rejected
-probe_php_version 8.4.27 accepted accepted
-probe_php_version 8.5.11 accepted rejected
-probe_php_version 8.5.12 accepted accepted
-probe_php_version 8.6.0 accepted rejected
-probe_php_version 9.0.0 rejected rejected
-printf 'Release PHP constraint qualification: %s\n' "$release_status"
-if [[ "$mode" == "--require-security-qualified" ]]; then
-    [[ "$release_status" == "PASS" ]]
-fi
+probe_php_version 8.3.0 rejected
+probe_php_version 8.4.26 rejected
+probe_php_version 8.4.27 accepted
+probe_php_version 8.4.28 accepted
+probe_php_version 8.5.11 rejected
+probe_php_version 8.5.12 accepted
+probe_php_version 8.5.13 accepted
+probe_php_version 8.6.0 rejected
+probe_php_version 9.0.0 rejected
+printf 'Composer PHP boundary verification: PASS\n'

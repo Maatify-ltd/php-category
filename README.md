@@ -12,7 +12,7 @@
 
 [![Status](https://img.shields.io/badge/Status-Release%20Candidate-blue)](CHANGELOG.md)
 [![Version](https://img.shields.io/badge/Version-v1.0.0--rc.1-blue)](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.1)
-[![PHP](https://img.shields.io/badge/PHP-%5E8.4-8892BF)](composer.json)
+[![PHP](https://img.shields.io/badge/PHP-8.4.27%E2%80%938.4.x%20%2F%208.5.12%E2%80%938.5.x-8892BF)](composer.json)
 [![License](https://img.shields.io/badge/License-MIT-green)](LICENSE)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%20max-2F9E44.svg)](CONTRIBUTING.md#local-verification)
 
@@ -56,16 +56,18 @@ APIs for managing a Category tree and its related content.
 
 ## Requirements
 
-The current checkout declares PHP `^8.4`, `ext-mbstring`, `ext-pdo`, and
+The current checkout requires PHP 8.4.27 or later in the 8.4 series, or
+PHP 8.5.12 or later in the 8.5 series, plus `ext-mbstring`, `ext-pdo`, and
 `ext-pdo_mysql`. It uses MySQL 8.0.16+ with InnoDB and enforced `CHECK`
 constraints. Runtime dependencies are `maatify/exceptions`, `maatify/shared-common`,
 and the exact `maatify/php-persistence 1.0.0-rc.1` trial. See [composer.json](composer.json)
 for the declared constraints and [local verification](CONTRIBUTING.md#local-verification)
-for the PHP patch floors enforced in CI.
+for the Composer and runtime checks.
 
 ## Installation
 
-The published Category RC.1 retains its original Persistence dependency. Use
+The published Category RC.1 retains its original PHP constraint and Persistence
+dependency. Use
 the [published tag documentation](https://github.com/Maatify-ltd/php-category/tree/v1.0.0-rc.1)
 when installing that exact version.
 

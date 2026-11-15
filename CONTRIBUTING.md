@@ -27,7 +27,7 @@ these checks from the repository root:
 
 ```bash
 php scripts/ci/check-php-patch-floor.php 8.4 # use 8.5 when running that minor
-bash scripts/ci/check-composer-php-boundaries.sh --phase-diagnostic
+bash scripts/ci/check-composer-php-boundaries.sh
 composer validate --strict
 composer update --no-interaction --prefer-dist --no-progress --prefer-stable
 # For the lowest-dependency CI job, add --prefer-lowest to this update.
@@ -45,15 +45,10 @@ bash scripts/ci/with-category-mysql.sh composer test:integration
 bash scripts/ci/with-category-mysql.sh composer test
 ```
 
-The patch-floor check logs and verifies the actual interpreter. The Composer
-boundary probe uses Composer to report what the existing published
-`require.php` admits. Phase CI checks that behavior and reports release PHP
-constraint qualification separately. The existing contract yields `NOT PASS`
-for that release check. Run it in strict mode when qualifying a release:
-
-```bash
-bash scripts/ci/check-composer-php-boundaries.sh --require-security-qualified
-```
+The patch-floor check logs and verifies the actual interpreter. The boundary
+probe uses Composer to enforce what the checkout admits through `require.php`.
+It checks both approved patch floors and rejects older patches and unsupported
+PHP series.
 
 `composer check:style` checks package-owned PHP against PHP-FIG PER-CS 3.1
 using the PHP CS Fixer 3.0 rule set and a verifier for the 3.1 changes.

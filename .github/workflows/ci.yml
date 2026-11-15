@@ -41,8 +41,8 @@ jobs:
       - name: Verify actual PHP security patch floor
         run: php scripts/ci/check-php-patch-floor.php "${{ matrix.php }}"
 
-      - name: Log published Composer PHP boundary diagnostic
-        run: bash scripts/ci/check-composer-php-boundaries.sh --phase-diagnostic
+      - name: Verify Composer PHP compatibility boundaries
+        run: bash scripts/ci/check-composer-php-boundaries.sh
 
       - name: Validate composer.json
         run: composer validate --strict
