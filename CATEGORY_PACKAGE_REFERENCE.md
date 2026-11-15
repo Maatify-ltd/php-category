@@ -111,6 +111,16 @@ validation remain Host responsibilities. Display order is independent for each
 Category and exact scope, with deterministic `display_order, id` reads and
 explicit reorder commands.
 
+Image Assignment and Content Field language/platform scope equality is shared
+by reads, identity, ordering, and default selection. It follows MySQL
+`utf8mb4_unicode_ci`; original spelling is retained and SQL `NULL` is a
+separate scope. Management lists and their default pagination order group by
+Category, language, platform, and Role for Image Assignments. Non-null
+language and platform values precede NULL. The generic NULL Role precedes
+concrete Roles. Rows within one scope sort by display order and identity. Existing installations with the length-prefixed scope columns
+must follow the [schema upgrade](schema/README.md#upgrade-an-existing-image-assignment-or-content-field-schema)
+before using the updated application.
+
 ## Runtime API
 
 The production namespace is `Maatify\Category\`.

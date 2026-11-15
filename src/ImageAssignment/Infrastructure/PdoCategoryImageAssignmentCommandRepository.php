@@ -15,6 +15,7 @@ use Maatify\Category\ImageAssignment\Ordering\Command\UpdateCategoryImageAssignm
 use Maatify\Category\ImageAssignment\Contract\CategoryImageAssignmentCommandRepositoryInterface;
 use Maatify\Category\ImageAssignment\Assignment\Exception\CategoryImageAssignmentAlreadyExistsException;
 use Maatify\Category\Common\Exception\CategoryPersistenceException;
+use Maatify\Category\Common\Infrastructure\PdoCategoryOrderingScope;
 use Maatify\PhpPersistence\Ordering\Config\ScopedOrderingConfig;
 use Maatify\PhpPersistence\Ordering\Repository\ScopedOrderingManager;
 use PDO;
@@ -35,7 +36,8 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
     /** {@inheritDoc} */
     public function create(CreateCategoryImageAssignmentCommand $command, DateTimeImmutable $occurredAt): int
     {
-        $orderingScope = $this->orderingScope(
+        $orderingScope = PdoCategoryOrderingScope::forValues(
+            $this->pdo,
             $command->categoryId,
             $command->languageCode,
             $command->platform,
@@ -305,24 +307,6 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
             nullableScope: false,
             updatedAtColumn: 'updated_at',
         );
-    }
-
-    private function orderingScope(
-        int $categoryId,
-        ?string $languageCode,
-        ?string $platform,
-        ?int $roleId,
-    ): string {
-        $language = $languageCode === null
-            ? 'N:'
-            : 'L' . mb_strlen($languageCode) . ':' . $languageCode;
-        $platformValue = $platform === null
-            ? 'N:'
-            : 'L' . mb_strlen($platform) . ':' . $platform;
-
-        $role = $roleId === null ? 'N:' : 'R' . $roleId;
-
-        return 'C' . $categoryId . '|' . $language . '|' . $platformValue . '|' . $role;
     }
 
     private function formatTimestamp(DateTimeImmutable $occurredAt): string

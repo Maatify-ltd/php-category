@@ -22,6 +22,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
 - Keep same-value updates successful for existing Category, Content, and Content
   Field rows when MySQL reports zero changed rows. Missing or deleted rows still
   follow the existing error contract. [#62](https://github.com/Maatify-ltd/php-category/issues/62)
+- Read the current ordering scope for Category, Content Field, and Image
+  Assignment reorders inside a Host transaction. Image Assignment default
+  mutations support an optional lazy same-primary lookup for older Host
+  snapshots.
+- Use MySQL collation equality for Image Assignment and Content Field reads,
+  identity, and ordering, including Image Assignment defaults. Existing
+  installations must follow the [schema upgrade](schema/README.md#upgrade-an-existing-image-assignment-or-content-field-schema).
 
 ## [1.0.0-rc.1] - 2026-09-15
 
