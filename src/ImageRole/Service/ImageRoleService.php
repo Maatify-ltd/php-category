@@ -37,7 +37,7 @@ final readonly class ImageRoleService implements ImageRoleServiceInterface
     public function create(CreateCategoryImageRoleCommand $command): int
     {
         return $this->transaction->run(
-            fn (): int => $this->commandRepository->create($command, $this->clock->now()),
+            fn(): int => $this->commandRepository->create($command, $this->clock->now()),
         );
     }
 

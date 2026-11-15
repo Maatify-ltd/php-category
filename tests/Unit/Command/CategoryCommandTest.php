@@ -49,32 +49,32 @@ final class CategoryCommandTest extends TestCase
     public function testEveryCommandRejectsZeroNegativeAndNonCanonicalIdentities(int|string $value): void
     {
         $factories = [
-            'CreateCategory.parentId' => static fn (int|string $id): object => new CreateCategoryCommand('code', $id),
-            'CreateCategoryContent.categoryId' => static fn (int|string $id): object => new CreateCategoryContentCommand($id, 'en-US', 'Name', null),
-            'CreateCategoryImageAssignment.categoryId' => static fn (int|string $id): object => new CreateCategoryImageAssignmentCommand($id, 100),
-            'CreateCategoryImageAssignment.mediaAssetId' => static fn (int|string $id): object => new CreateCategoryImageAssignmentCommand(1, $id),
-            'ClearCategoryImageAssignmentDefault.assignmentId' => static fn (int|string $id): object => new ClearCategoryImageAssignmentDefaultCommand($id),
-            'MoveCategory.categoryId' => static fn (int|string $id): object => new MoveCategoryCommand($id, null),
-            'MoveCategory.parentId' => static fn (int|string $id): object => new MoveCategoryCommand(42, $id),
-            'RestoreCategory.categoryId' => static fn (int|string $id): object => new RestoreCategoryCommand($id),
-            'RestoreCategoryContent.contentId' => static fn (int|string $id): object => new RestoreCategoryContentCommand($id),
-            'RestoreCategoryImageAssignment.assignmentId' => static fn (int|string $id): object => new RestoreCategoryImageAssignmentCommand($id),
-            'SetCategoryImageAssignmentDefault.assignmentId' => static fn (int|string $id): object => new SetCategoryImageAssignmentDefaultCommand($id),
-            'SoftDeleteCategory.categoryId' => static fn (int|string $id): object => new SoftDeleteCategoryCommand($id),
-            'SoftDeleteCategoryContent.contentId' => static fn (int|string $id): object => new SoftDeleteCategoryContentCommand($id),
-            'SoftDeleteCategoryImageAssignment.assignmentId' => static fn (int|string $id): object => new SoftDeleteCategoryImageAssignmentCommand($id),
-            'UpdateCategoryDisplayOrder.categoryId' => static fn (int|string $id): object => new UpdateCategoryDisplayOrderCommand($id, 1),
-            'UpdateCategoryStatus.categoryId' => static fn (int|string $id): object => new UpdateCategoryStatusCommand($id, CategoryStatusEnum::ACTIVE),
-            'UpdateCategoryContent.contentId' => static fn (int|string $id): object => new UpdateCategoryContentCommand($id, 'Name', null),
-            'UpdateCategoryContentName.contentId' => static fn (int|string $id): object => new UpdateCategoryContentNameCommand($id, 'Name'),
-            'UpdateCategoryContentDescription.contentId' => static fn (int|string $id): object => new UpdateCategoryContentDescriptionCommand($id, null),
-            'UpdateCategoryContentFieldValue.fieldId' => static fn (int|string $id): object => new UpdateCategoryContentFieldValueCommand($id, 'value'),
-            'UpdateCategoryImageAssignment.assignmentId' => static fn (int|string $id): object => new UpdateCategoryImageAssignmentDisplayOrderCommand($id, 1),
+            'CreateCategory.parentId' => static fn(int|string $id): object => new CreateCategoryCommand('code', $id),
+            'CreateCategoryContent.categoryId' => static fn(int|string $id): object => new CreateCategoryContentCommand($id, 'en-US', 'Name', null),
+            'CreateCategoryImageAssignment.categoryId' => static fn(int|string $id): object => new CreateCategoryImageAssignmentCommand($id, 100),
+            'CreateCategoryImageAssignment.mediaAssetId' => static fn(int|string $id): object => new CreateCategoryImageAssignmentCommand(1, $id),
+            'ClearCategoryImageAssignmentDefault.assignmentId' => static fn(int|string $id): object => new ClearCategoryImageAssignmentDefaultCommand($id),
+            'MoveCategory.categoryId' => static fn(int|string $id): object => new MoveCategoryCommand($id, null),
+            'MoveCategory.parentId' => static fn(int|string $id): object => new MoveCategoryCommand(42, $id),
+            'RestoreCategory.categoryId' => static fn(int|string $id): object => new RestoreCategoryCommand($id),
+            'RestoreCategoryContent.contentId' => static fn(int|string $id): object => new RestoreCategoryContentCommand($id),
+            'RestoreCategoryImageAssignment.assignmentId' => static fn(int|string $id): object => new RestoreCategoryImageAssignmentCommand($id),
+            'SetCategoryImageAssignmentDefault.assignmentId' => static fn(int|string $id): object => new SetCategoryImageAssignmentDefaultCommand($id),
+            'SoftDeleteCategory.categoryId' => static fn(int|string $id): object => new SoftDeleteCategoryCommand($id),
+            'SoftDeleteCategoryContent.contentId' => static fn(int|string $id): object => new SoftDeleteCategoryContentCommand($id),
+            'SoftDeleteCategoryImageAssignment.assignmentId' => static fn(int|string $id): object => new SoftDeleteCategoryImageAssignmentCommand($id),
+            'UpdateCategoryDisplayOrder.categoryId' => static fn(int|string $id): object => new UpdateCategoryDisplayOrderCommand($id, 1),
+            'UpdateCategoryStatus.categoryId' => static fn(int|string $id): object => new UpdateCategoryStatusCommand($id, CategoryStatusEnum::ACTIVE),
+            'UpdateCategoryContent.contentId' => static fn(int|string $id): object => new UpdateCategoryContentCommand($id, 'Name', null),
+            'UpdateCategoryContentName.contentId' => static fn(int|string $id): object => new UpdateCategoryContentNameCommand($id, 'Name'),
+            'UpdateCategoryContentDescription.contentId' => static fn(int|string $id): object => new UpdateCategoryContentDescriptionCommand($id, null),
+            'UpdateCategoryContentFieldValue.fieldId' => static fn(int|string $id): object => new UpdateCategoryContentFieldValueCommand($id, 'value'),
+            'UpdateCategoryImageAssignment.assignmentId' => static fn(int|string $id): object => new UpdateCategoryImageAssignmentDisplayOrderCommand($id, 1),
         ];
 
         foreach ($factories as $name => $factory) {
             $this->assertInvalidArgument(
-                static fn (): object => $factory($value),
+                static fn(): object => $factory($value),
                 sprintf('%s must reject identity %s.', $name, var_export($value, true)),
             );
         }
@@ -135,15 +135,15 @@ final class CategoryCommandTest extends TestCase
     {
         foreach (['empty' => '', 'spaces' => '   ', 'tabs' => "\t\n"] as $label => $value) {
             $this->assertInvalidArgument(
-                static fn (): object => new CreateCategoryCommand($value),
+                static fn(): object => new CreateCategoryCommand($value),
                 sprintf('CreateCategory.code must reject %s input.', $label),
             );
             $this->assertInvalidArgument(
-                static fn (): object => new CreateCategoryContentCommand(1, $value, 'Name', null),
+                static fn(): object => new CreateCategoryContentCommand(1, $value, 'Name', null),
                 sprintf('CreateCategoryContent.languageCode must reject %s input.', $label),
             );
             $this->assertInvalidArgument(
-                static fn (): object => new CreateCategoryImageAssignmentCommand(
+                static fn(): object => new CreateCategoryImageAssignmentCommand(
                     1,
                     100,
                     new CategoryImageAssignmentScopeDTO($value),
@@ -151,7 +151,7 @@ final class CategoryCommandTest extends TestCase
                 sprintf('CreateCategoryImageAssignment.languageCode must reject %s input.', $label),
             );
             $this->assertInvalidArgument(
-                static fn (): object => new CreateCategoryImageAssignmentCommand(
+                static fn(): object => new CreateCategoryImageAssignmentCommand(
                     1,
                     100,
                     new CategoryImageAssignmentScopeDTO(null, $value),
@@ -159,15 +159,15 @@ final class CategoryCommandTest extends TestCase
                 sprintf('CreateCategoryImageAssignment.platform must reject %s input.', $label),
             );
             $this->assertInvalidArgument(
-                static fn (): object => new CreateCategoryContentCommand(1, 'en-US', $value, null),
+                static fn(): object => new CreateCategoryContentCommand(1, 'en-US', $value, null),
                 sprintf('CreateCategoryContent.name must reject %s input.', $label),
             );
             $this->assertInvalidArgument(
-                static fn (): object => new UpdateCategoryContentCommand(1, $value, null),
+                static fn(): object => new UpdateCategoryContentCommand(1, $value, null),
                 sprintf('UpdateCategoryContent.name must reject %s input.', $label),
             );
             $this->assertInvalidArgument(
-                static fn (): object => new UpdateCategoryContentNameCommand(1, $value),
+                static fn(): object => new UpdateCategoryContentNameCommand(1, $value),
                 sprintf('UpdateCategoryContentName.name must reject %s input.', $label),
             );
         }
@@ -177,7 +177,7 @@ final class CategoryCommandTest extends TestCase
     {
         self::assertSame(100, mb_strlen((new CreateCategoryCommand(str_repeat('x', 100)))->code));
         $this->assertInvalidArgument(
-            static fn (): object => new CreateCategoryCommand(str_repeat('x', 101)),
+            static fn(): object => new CreateCategoryCommand(str_repeat('x', 101)),
             'Category code must reject more than 100 characters.',
         );
 
@@ -185,7 +185,7 @@ final class CategoryCommandTest extends TestCase
         self::assertNotNull($languageCode);
         self::assertSame(16, mb_strlen($languageCode));
         $this->assertInvalidArgument(
-            static fn (): object => new CreateCategoryContentCommand(1, str_repeat('x', 17), 'Name', null),
+            static fn(): object => new CreateCategoryContentCommand(1, str_repeat('x', 17), 'Name', null),
             'Language code must reject more than 16 characters.',
         );
 
@@ -194,7 +194,7 @@ final class CategoryCommandTest extends TestCase
             mb_strlen((new CreateCategoryContentCommand(1, 'en-US', str_repeat('x', 255), null))->name),
         );
         $this->assertInvalidArgument(
-            static fn (): object => new CreateCategoryContentCommand(1, 'en-US', str_repeat('x', 256), null),
+            static fn(): object => new CreateCategoryContentCommand(1, 'en-US', str_repeat('x', 256), null),
             'Created content name must reject more than 255 characters.',
         );
         self::assertSame(
@@ -202,7 +202,7 @@ final class CategoryCommandTest extends TestCase
             mb_strlen((new UpdateCategoryContentCommand(1, str_repeat('x', 255), null))->name),
         );
         $this->assertInvalidArgument(
-            static fn (): object => new UpdateCategoryContentCommand(1, str_repeat('x', 256), null),
+            static fn(): object => new UpdateCategoryContentCommand(1, str_repeat('x', 256), null),
             'Updated content name must reject more than 255 characters.',
         );
         self::assertSame(
@@ -210,7 +210,7 @@ final class CategoryCommandTest extends TestCase
             mb_strlen((new UpdateCategoryContentNameCommand(1, str_repeat('x', 255)))->name),
         );
         $this->assertInvalidArgument(
-            static fn (): object => new UpdateCategoryContentNameCommand(1, str_repeat('x', 256)),
+            static fn(): object => new UpdateCategoryContentNameCommand(1, str_repeat('x', 256)),
             'Inline updated content name must reject more than 255 characters.',
         );
     }
@@ -228,11 +228,11 @@ final class CategoryCommandTest extends TestCase
         self::assertSame(CategoryStatusEnum::ACTIVE, (new UpdateCategoryStatusCommand(1, CategoryStatusEnum::ACTIVE))->status);
 
         $this->assertTypeError(
-            static fn (): object => (new ReflectionClass(CreateCategoryCommand::class))->newInstanceArgs(['code', null, 'active']),
+            static fn(): object => (new ReflectionClass(CreateCategoryCommand::class))->newInstanceArgs(['code', null, 'active']),
             'CreateCategory.status must reject raw strings.',
         );
         $this->assertTypeError(
-            static fn (): object => (new ReflectionClass(UpdateCategoryStatusCommand::class))->newInstanceArgs([1, 'active']),
+            static fn(): object => (new ReflectionClass(UpdateCategoryStatusCommand::class))->newInstanceArgs([1, 'active']),
             'UpdateCategoryStatus.status must reject raw strings.',
         );
     }
@@ -240,11 +240,11 @@ final class CategoryCommandTest extends TestCase
     public function testMoveRejectsDirectSelfReferenceAfterIdentityNormalization(): void
     {
         $this->assertInvalidArgument(
-            static fn (): object => new MoveCategoryCommand('7', 7),
+            static fn(): object => new MoveCategoryCommand('7', 7),
             'MoveCategory must reject a canonical string/int self-parent reference.',
         );
         $this->assertInvalidArgument(
-            static fn (): object => new MoveCategoryCommand(7, '7'),
+            static fn(): object => new MoveCategoryCommand(7, '7'),
             'MoveCategory must reject an int/canonical string self-parent reference.',
         );
     }
@@ -255,7 +255,7 @@ final class CategoryCommandTest extends TestCase
 
         foreach ([0, -1] as $displayOrder) {
             $this->assertInvalidArgument(
-                static fn (): object => new UpdateCategoryDisplayOrderCommand(1, $displayOrder),
+                static fn(): object => new UpdateCategoryDisplayOrderCommand(1, $displayOrder),
                 sprintf('Display order %d must be rejected.', $displayOrder),
             );
         }
@@ -283,14 +283,14 @@ final class CategoryCommandTest extends TestCase
         self::assertSame(
             ['assignmentId', 'displayOrder'],
             array_map(
-                static fn (\ReflectionParameter $parameter): string => $parameter->getName(),
+                static fn(\ReflectionParameter $parameter): string => $parameter->getName(),
                 (new ReflectionMethod(UpdateCategoryImageAssignmentDisplayOrderCommand::class, '__construct'))->getParameters(),
             ),
         );
         self::assertSame(
             ['categoryId', 'mediaAssetId', 'scope'],
             array_map(
-                static fn (\ReflectionParameter $parameter): string => $parameter->getName(),
+                static fn(\ReflectionParameter $parameter): string => $parameter->getName(),
                 (new ReflectionMethod(CreateCategoryImageAssignmentCommand::class, '__construct'))->getParameters(),
             ),
         );
@@ -312,14 +312,14 @@ final class CategoryCommandTest extends TestCase
         self::assertSame(
             ['assignmentId'],
             array_map(
-                static fn (\ReflectionParameter $parameter): string => $parameter->getName(),
+                static fn(\ReflectionParameter $parameter): string => $parameter->getName(),
                 (new ReflectionMethod(SetCategoryImageAssignmentDefaultCommand::class, '__construct'))->getParameters(),
             ),
         );
         self::assertSame(
             ['assignmentId'],
             array_map(
-                static fn (\ReflectionParameter $parameter): string => $parameter->getName(),
+                static fn(\ReflectionParameter $parameter): string => $parameter->getName(),
                 (new ReflectionMethod(ClearCategoryImageAssignmentDefaultCommand::class, '__construct'))->getParameters(),
             ),
         );
@@ -331,7 +331,7 @@ final class CategoryCommandTest extends TestCase
 
         self::assertSame(
             ['code', 'parentId', 'status'],
-            array_map(static fn (\ReflectionParameter $parameter): string => $parameter->getName(), $parameters),
+            array_map(static fn(\ReflectionParameter $parameter): string => $parameter->getName(), $parameters),
         );
         self::assertFalse(property_exists(CreateCategoryCommand::class, 'displayOrder'));
     }
@@ -364,13 +364,13 @@ final class CategoryCommandTest extends TestCase
     {
         $parameters = (new ReflectionMethod(UpdateCategoryContentCommand::class, '__construct'))->getParameters();
         $propertyNames = array_map(
-            static fn (ReflectionProperty $property): string => $property->getName(),
+            static fn(ReflectionProperty $property): string => $property->getName(),
             (new ReflectionClass(UpdateCategoryContentCommand::class))->getProperties(),
         );
 
         self::assertSame(
             ['contentId', 'name', 'description'],
-            array_map(static fn (\ReflectionParameter $parameter): string => $parameter->getName(), $parameters),
+            array_map(static fn(\ReflectionParameter $parameter): string => $parameter->getName(), $parameters),
         );
         self::assertNotContains('categoryId', $propertyNames);
         self::assertNotContains('languageCode', $propertyNames);
@@ -381,21 +381,21 @@ final class CategoryCommandTest extends TestCase
         self::assertSame(
             ['contentId', 'name'],
             array_map(
-                static fn (\ReflectionParameter $parameter): string => $parameter->getName(),
+                static fn(\ReflectionParameter $parameter): string => $parameter->getName(),
                 (new ReflectionMethod(UpdateCategoryContentNameCommand::class, '__construct'))->getParameters(),
             ),
         );
         self::assertSame(
             ['contentId', 'description'],
             array_map(
-                static fn (\ReflectionParameter $parameter): string => $parameter->getName(),
+                static fn(\ReflectionParameter $parameter): string => $parameter->getName(),
                 (new ReflectionMethod(UpdateCategoryContentDescriptionCommand::class, '__construct'))->getParameters(),
             ),
         );
         self::assertSame(
             ['fieldId', 'value'],
             array_map(
-                static fn (\ReflectionParameter $parameter): string => $parameter->getName(),
+                static fn(\ReflectionParameter $parameter): string => $parameter->getName(),
                 (new ReflectionMethod(UpdateCategoryContentFieldValueCommand::class, '__construct'))->getParameters(),
             ),
         );

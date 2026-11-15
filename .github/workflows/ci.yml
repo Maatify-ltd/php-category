@@ -84,6 +84,9 @@ jobs:
       - name: Composer audit
         run: composer audit --no-interaction --abandoned=fail
 
+      - name: Check PHP-FIG PER-CS 3.1 style
+        run: composer check:style
+
       - name: PHPStan level max
         run: composer analyse
 
@@ -153,6 +156,9 @@ jobs:
 
       - name: Composer audit
         run: composer audit --no-interaction --abandoned=fail
+
+      - name: Check PHP-FIG PER-CS 3.1 style
+        run: composer check:style
 
       - name: PHPStan level max
         run: composer analyse

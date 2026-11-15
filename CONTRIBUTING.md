@@ -29,10 +29,16 @@ composer validate --strict
 composer dump-autoload --optimize --strict-psr
 composer check-platform-reqs
 composer audit --no-interaction --abandoned=fail
+composer check:style
 composer analyse
 composer test:unit
 composer test
 ```
+
+`composer check:style` checks package-owned PHP against PHP-FIG PER-CS 3.1
+using the PHP CS Fixer 3.0 rule set and a verifier for the 3.1 changes.
+`composer format` applies the fixer rules. Address any remaining 3.1 findings
+reported by the check, then rerun it.
 
 The CI standalone-consumer check creates a clean temporary Composer project,
 installs this package from its VCS source, verifies optimized PSR-4 loading and

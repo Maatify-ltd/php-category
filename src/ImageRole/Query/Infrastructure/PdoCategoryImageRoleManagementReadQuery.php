@@ -141,7 +141,7 @@ final readonly class PdoCategoryImageRoleManagementReadQuery extends PdoReadQuer
                 minPerPage: 1,
                 maxPerPage: 100,
             ),
-            fn (array $row): CategoryImageRoleDTO => $this->hydrateRole($row),
+            fn(array $row): CategoryImageRoleDTO => $this->hydrateRole($row),
         );
     }
 

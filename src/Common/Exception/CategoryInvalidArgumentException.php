@@ -8,8 +8,7 @@ use Maatify\Category\Exception\CategoryExceptionInterface;
 use Maatify\Exceptions\Exception\Validation\InvalidArgumentMaatifyException;
 use Throwable;
 
-final class CategoryInvalidArgumentException extends InvalidArgumentMaatifyException
-    implements CategoryExceptionInterface
+final class CategoryInvalidArgumentException extends InvalidArgumentMaatifyException implements CategoryExceptionInterface
 {
     public static function emptyField(string $field): self
     {

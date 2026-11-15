@@ -166,7 +166,7 @@ function standalone_consumer_public_types(string $packageSourceRoot): array
     }
 
     standalone_consumer_require($types !== [], 'Installed package source contains no public types.');
-    usort($types, static fn (array $left, array $right): int => strcmp($left['name'], $right['name']));
+    usort($types, static fn(array $left, array $right): int => strcmp($left['name'], $right['name']));
 
     return $types;
 }
@@ -211,14 +211,11 @@ function standalone_consumer_install_schema(\PDO $pdo, string $schemaPath): void
         standalone_consumer_fail('Unable to read the installed Category schema.');
     }
 
-    $schema = preg_replace(
-        [
-            '/^[ \t]*--[^\r\n]*(?:\r\n|\n|$)/m',
-            '/^[ \t]*DELIMITER[ \t]+\S+[ \t]*$/mi',
-        ],
-        '',
-        $schema,
-    );
+    $patterns = [
+        '/^[ \t]*--[^\r\n]*(?:\r\n|\n|$)/m',
+        '/^[ \t]*DELIMITER[ \t]+\S+[ \t]*$/mi',
+    ];
+    $schema = preg_replace($patterns, '', $schema);
     if (!is_string($schema)) {
         standalone_consumer_fail('Unable to normalize the installed Category schema.');
     }

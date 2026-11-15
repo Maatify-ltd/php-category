@@ -184,35 +184,31 @@ final class CategoryContractJsonSerializationTest extends TestCase
             'updatedAt' => '2026-01-01T00:00:00+02:00',
             'deletedAt' => null,
         ], $category->jsonSerialize());
-        self::assertSame([
-            [
-                'id' => 7,
-                'parentId' => 3,
-                'code' => 'shirts',
-                'status' => 'inactive',
-                'displayOrder' => 4,
-                'createdAt' => '2026-01-01T00:00:00+02:00',
-                'updatedAt' => '2026-01-01T00:00:00+02:00',
-                'deletedAt' => null,
-            ],
-        ], json_decode(
+        self::assertSame([[
+            'id' => 7,
+            'parentId' => 3,
+            'code' => 'shirts',
+            'status' => 'inactive',
+            'displayOrder' => 4,
+            'createdAt' => '2026-01-01T00:00:00+02:00',
+            'updatedAt' => '2026-01-01T00:00:00+02:00',
+            'deletedAt' => null,
+        ]], json_decode(
             json_encode(new CategoryCollectionDTO([$category]), JSON_THROW_ON_ERROR),
             true,
             512,
             JSON_THROW_ON_ERROR,
         ));
-        self::assertSame([
-            [
-                'id' => 11,
-                'categoryId' => 7,
-                'languageCode' => null,
-                'name' => 'قمصان',
-                'description' => 'وصف',
-                'createdAt' => '2026-01-01T00:00:00+02:00',
-                'updatedAt' => '2026-01-01T00:00:00+02:00',
-                'deletedAt' => null,
-            ],
-        ], json_decode(
+        self::assertSame([[
+            'id' => 11,
+            'categoryId' => 7,
+            'languageCode' => null,
+            'name' => 'قمصان',
+            'description' => 'وصف',
+            'createdAt' => '2026-01-01T00:00:00+02:00',
+            'updatedAt' => '2026-01-01T00:00:00+02:00',
+            'deletedAt' => null,
+        ]], json_decode(
             json_encode(new CategoryContentCollectionDTO([$content]), JSON_THROW_ON_ERROR),
             true,
             512,

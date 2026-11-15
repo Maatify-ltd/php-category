@@ -401,19 +401,17 @@ final class DomainMutationServiceTest extends TestCase
 
     public function testContentLifecycleUsesTypedOperationsAndPreservesIdentity(): void
     {
-        $queryReader = new InMemoryCategoryQueryReader(
-            [$this->category(5, null)],
-            [new CategoryContentDTO(
-                id: 77,
-                categoryId: 5,
-                languageCode: 'en-US',
-                name: 'Shirts',
-                description: null,
-                createdAt: $this->createdAt(),
-                updatedAt: $this->createdAt(),
-                deletedAt: null,
-            )],
+        $existingContent = new CategoryContentDTO(
+            id: 77,
+            categoryId: 5,
+            languageCode: 'en-US',
+            name: 'Shirts',
+            description: null,
+            createdAt: $this->createdAt(),
+            updatedAt: $this->createdAt(),
+            deletedAt: null,
         );
+        $queryReader = new InMemoryCategoryQueryReader([$this->category(5, null)], [$existingContent]);
         $contentRepository = new InMemoryCategoryContentCommandRepository();
         $transaction = new InMemoryCategoryTransaction();
         $service = new ContentService(

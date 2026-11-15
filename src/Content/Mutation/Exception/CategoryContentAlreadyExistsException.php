@@ -8,15 +8,13 @@ use Maatify\Category\Exception\CategoryExceptionInterface;
 use Maatify\Exceptions\Exception\Conflict\GenericConflictMaatifyException;
 use Throwable;
 
-final class CategoryContentAlreadyExistsException extends GenericConflictMaatifyException
-    implements CategoryExceptionInterface
+final class CategoryContentAlreadyExistsException extends GenericConflictMaatifyException implements CategoryExceptionInterface
 {
     public static function withIdentity(
         int $categoryId,
         ?string $languageCode,
         ?Throwable $previous = null,
-    ): self
-    {
+    ): self {
         $identity = $languageCode === null
             ? 'the unlocalized language identity'
             : sprintf('language "%s"', $languageCode);
