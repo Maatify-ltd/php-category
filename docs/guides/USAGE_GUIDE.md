@@ -22,8 +22,8 @@ application layer.
 
 ## Installation and prerequisites
 
-This guide describes the `v1.0.0-rc.2` artifact. After that exact version
-is published on Packagist, run the installation command in the
+This guide describes `v1.0.0-rc.2`, the current release candidate published on
+Packagist. Install it using the exact command in the
 [README](../../README.md#installation). It keeps the root stability policy
 at `stable` and explicitly allows the required Persistence RC. For the
 previously published RC.1, see its

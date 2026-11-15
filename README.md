@@ -11,14 +11,18 @@
 **Package Status**
 
 [![Status](https://img.shields.io/badge/Status-Release%20Candidate-blue)](CHANGELOG.md)
-[![Version](https://img.shields.io/badge/Version-v1.0.0--rc.2-blue)](CHANGELOG.md#100-rc2)
+[![Version](https://img.shields.io/badge/Version-v1.0.0--rc.2-blue)](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.2)
 [![PHP](https://img.shields.io/badge/PHP-%3E%3D8.4.27%20%3C8.5%20%7C%7C%20%3E%3D8.5.12%20%3C9.0-8892BF)](composer.json)
 [![License](https://img.shields.io/badge/License-Proprietary-green)](LICENSE)
 [![PHPStan](https://img.shields.io/badge/PHPStan-level%20max-2F9E44.svg)](CONTRIBUTING.md#local-verification)
 
 **Ecosystem / Adoption**
 
+[![Packagist](https://img.shields.io/badge/Registry-Packagist-orange)](https://packagist.org/packages/maatify/php-category)
+[![Monthly Downloads](https://img.shields.io/packagist/dm/maatify/php-category?label=Monthly%20Downloads)](https://packagist.org/packages/maatify/php-category/stats)
+[![Total Downloads](https://img.shields.io/packagist/dt/maatify/php-category?label=Total%20Downloads)](https://packagist.org/packages/maatify/php-category/stats)
 [![Maatify Ecosystem](https://img.shields.io/badge/Maatify-Ecosystem-blueviolet)](https://github.com/Maatify-ltd)
+[![Install](https://img.shields.io/badge/Install-1.0.0--rc.2-blue)](#installation)
 
 **Documentation**
 
@@ -32,10 +36,7 @@
 Framework-neutral PHP contracts and MySQL storage for hierarchical categories,
 content, extensible fields, image roles, and assignments to Host-owned media.
 
-**Release artifact target** · `v1.0.0-rc.2`
-
-**Publication state at preparation** · RC.2 was unpublished. The previously
-published candidate was [RC.1](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.1).
+**Current published release candidate** · [v1.0.0-rc.2 on Packagist](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.2)
 
 </div>
 
@@ -70,9 +71,9 @@ for the Composer and runtime checks.
 
 ## Installation
 
-After RC.2 is published on Packagist, run this command from your Composer
-project. Keep `minimum-stability: stable` and explicitly allow the exact
-Persistence release candidate required by Category.
+Install the published RC.2 from Packagist in your Composer project. Keep
+`minimum-stability: stable` and explicitly allow the exact Persistence release
+candidate required by Category.
 
 ```bash
 composer require maatify/php-category:1.0.0-rc.2 maatify/php-persistence:1.0.0-rc.1@RC

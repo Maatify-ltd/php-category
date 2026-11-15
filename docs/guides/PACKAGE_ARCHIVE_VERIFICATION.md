@@ -20,30 +20,24 @@ release qualification evidence.
 
 ## Prepared RC.2 verification
 
-From the checkout, run the structural comparison, release presentation checks,
-and clean Composer installation probe for the exact candidate:
+Run the structural comparison, pre-publication presentation checks, and clean
+Composer installation probe against the immutable RC.2 release commit. The
+tag preserves the qualified candidate content and its undated CHANGELOG entry.
 
 ```bash
-candidate=$(git rev-parse HEAD)
+candidate=077e5693aec227a1b2551f18f0cef0b2a4db4987
 bash scripts/ci/check-package-archives.sh "$candidate" --release-candidate 1.0.0-rc.2
 ```
 
-CI runs the same check with `--verify-prepared`. This mode reads the undated
-candidate version from the specified commit's CHANGELOG and runs the structural
-comparison alone when no target is present.
+CI invokes `--verify-prepared`. It reads the undated candidate version from
+the specified commit's CHANGELOG and runs only the structural comparison when
+there is no undated candidate.
 
-The probe exposes the candidate's local Category TAR through synthetic Composer
-metadata under the exact target version. It resolves the pinned Persistence RC
-from its actual published distribution and verifies the installed identities.
-Record the candidate SHA and this result with the PR evidence. After merge,
-record the checks separately on the exact resulting `main` SHA for release
-qualification.
-
-For release qualification, also review README identity and installation,
-CHANGELOG allocation and its Unreleased boundary, SECURITY lifecycle and
-support statements, and Composer requirements against the intended exact
-version. Perform that review on the same SHA and record the outcome
-separately.
+The qualification probe inspects the local Category TAR through synthetic
+Composer metadata and resolves the pinned Persistence RC from its published
+distribution. The exact RC.2 `main` SHA passed Full Applicable CI, both archive
+checks, and review of the release presentation and Composer requirements.
+[RC.2 qualification evidence in PR #71](https://github.com/Maatify-ltd/php-category/pull/71#issuecomment-6901230691).
 
 The current CI matrix verifies Stable PHP 8.4 and 8.5. Before qualifying a
 release that admits a later PHP 8 minor that has reached Stable, verify the
@@ -54,17 +48,16 @@ the eligibility range. A PHP prerelease can provide exploratory results.
 
 ## Published artifact verification
 
-After `v1.0.0-rc.2` is published, run this verification in Bash with
-Composer, curl, and jq available. Set `CATEGORY_RC2_RELEASE_SHA` to the
-full immutable commit SHA from the approved release evidence before running
-the command. The temporary Composer root keeps `minimum-stability: stable`
-and explicitly allows the required exact Persistence release candidate.
+Verify the published `v1.0.0-rc.2` in Bash with Composer, curl, and jq
+available. The command checks the exact SHA recorded in the release evidence.
+The temporary Composer root keeps `minimum-stability: stable` and explicitly
+allows the required exact Persistence release candidate.
 
 ```bash
 (
     set -eu
     version=v1.0.0-rc.2
-    reference=${CATEGORY_RC2_RELEASE_SHA:?Set the exact qualified RC.2 SHA}
+    reference=077e5693aec227a1b2551f18f0cef0b2a4db4987
     workspace=$(mktemp -d) || exit 1
     mkdir -p "$workspace"/{project,home,composer,cache,tmp}
     printf 'Verification workspace: %s\n' "$workspace"
@@ -134,6 +127,22 @@ result separately from the strict Composer audit. Run the appropriate
 published Consumer Verification Harness and record its result separately.
 The standalone CI harness verifies the checkout installed from a temporary VCS
 repository. Remove the temporary workspace once all evidence has been recorded.
+
+### Published v1.0.0-rc.2
+
+**Published Artifact Verification passed.** Two isolated Composer projects
+using PHP 8.4.27 and Composer 2.11.2 installed Category `v1.0.0-rc.2` from
+Packagist via ZIP `dist` at `077e5693aec227a1b2551f18f0cef0b2a4db4987`.
+Both resolved `maatify/php-persistence` `v1.0.0-rc.1` via ZIP `dist` at
+`34c3b874525d36ae064c162cdd553bc75d18772b`. The installed Category files
+matched the exact release Git archive. Platform requirements, production
+autoload, and `composer audit --abandoned=fail` passed.
+
+**Published Consumer Verification Harness passed twice.** The unmodified
+harness from the release SHA ran against the installed packages on MySQL
+Community 8.4.9 in two isolated databases. Each run verified 132 public types,
+Host transaction control, and concurrent creation, and left no package tables
+or triggers. [Published RC.2 verification in PR #71](https://github.com/Maatify-ltd/php-category/pull/71#issuecomment-6901321368).
 
 ### Published v1.0.0-rc.1
 

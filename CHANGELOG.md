@@ -5,7 +5,7 @@ All notable changes to this package will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/).
 
-## [1.0.0-rc.2]
+## [1.0.0-rc.2] - 2026-11-15
 
 ### Changed
 
@@ -113,4 +113,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/).
   `PdoTransactionRunner` with the same PDO used by Category persistence;
   caller-owned outer transactions remain Host-owned.
 
+[1.0.0-rc.2]: https://github.com/Maatify-ltd/php-category/releases/tag/v1.0.0-rc.2
 [1.0.0-rc.1]: https://github.com/Maatify-ltd/php-category/releases/tag/v1.0.0-rc.1
