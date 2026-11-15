@@ -876,7 +876,7 @@ final class PerCs31DeltaVerifier
             return true;
         }
 
-        return in_array($tokens[$previous]['id'], [T_RETURN, T_YIELD, T_PRINT, T_ECHO], true);
+        return in_array($tokens[$previous]['id'], [T_RETURN, T_YIELD, T_YIELD_FROM, T_PRINT, T_ECHO], true);
     }
 
     /**
