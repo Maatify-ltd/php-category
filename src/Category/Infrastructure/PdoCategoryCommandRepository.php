@@ -179,7 +179,7 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
     {
         $statement = $this->pdo->prepare(
             'SELECT `parent_id` FROM `' . self::CATEGORY_TABLE . '` '
-            . 'WHERE `id` = :id AND `deleted_at` IS NULL LIMIT 1',
+            . 'WHERE `id` = :id AND `deleted_at` IS NULL LIMIT 1' . ($this->pdo->inTransaction() ? ' FOR UPDATE' : ''),
         );
         $statement->execute(['id' => $categoryId]);
         $value = $statement->fetchColumn();

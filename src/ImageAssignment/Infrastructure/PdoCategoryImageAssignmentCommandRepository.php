@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Maatify\Category\ImageAssignment\Infrastructure;
 
+use Closure;
 use DateTimeImmutable;
 use Maatify\Category\ImageAssignment\Default\Command\ClearCategoryImageAssignmentDefaultCommand;
 use Maatify\Category\ImageAssignment\Assignment\Command\CreateCategoryImageAssignmentCommand;
@@ -24,9 +25,11 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
 {
     private const ASSIGNMENT_TABLE = 'maa_category_category_image_assignments';
 
+    /** @param (Closure(): PDO)|null $scopeLookup */
     public function __construct(
         private PDO $pdo,
         private ScopedOrderingManager $orderingManager,
+        private ?Closure $scopeLookup = null,
     ) {}
 
     /** {@inheritDoc} */
@@ -94,7 +97,7 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         UpdateCategoryImageAssignmentDisplayOrderCommand $command,
         DateTimeImmutable $occurredAt,
     ): bool {
-        $orderingScope = $this->activeOrderingScope($command->assignmentId);
+        $orderingScope = $this->readActiveOrderingScope($this->pdo, $command->assignmentId, $this->pdo->inTransaction());
         if ($orderingScope === false) {
             return false;
         }
@@ -114,7 +117,7 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         SetCategoryImageAssignmentDefaultCommand $command,
         DateTimeImmutable $occurredAt,
     ): bool {
-        $orderingScope = $this->activeOrderingScope($command->assignmentId);
+        $orderingScope = $this->defaultOrderingScope($command->assignmentId);
         if ($orderingScope === false) {
             return false;
         }
@@ -156,7 +159,7 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         ClearCategoryImageAssignmentDefaultCommand $command,
         DateTimeImmutable $occurredAt,
     ): bool {
-        $orderingScope = $this->activeOrderingScope($command->assignmentId);
+        $orderingScope = $this->defaultOrderingScope($command->assignmentId);
         if ($orderingScope === false) {
             return false;
         }
@@ -220,12 +223,25 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         return $statement->rowCount() > 0;
     }
 
-    /** Returns the stored scope, or false if the assignment has no non-deleted row. */
-    private function activeOrderingScope(int $assignmentId): string|false
+    /** Reads the immutable scope before taking any default-mutation lock. */
+    private function defaultOrderingScope(int $assignmentId): string|false
     {
-        $statement = $this->pdo->prepare(
+        $scope = $this->readActiveOrderingScope($this->pdo, $assignmentId);
+        if ($scope !== false || $this->scopeLookup === null) {
+            return $scope;
+        }
+
+        // The Host read sees its own writes. A separate autocommit read can see
+        // rows committed after the Host snapshot without acquiring a target lock.
+        return $this->readActiveOrderingScope(($this->scopeLookup)(), $assignmentId);
+    }
+
+    /** Returns the stored scope, or false if the assignment has no non-deleted row. */
+    private function readActiveOrderingScope(PDO $pdo, int $assignmentId, bool $forUpdate = false): string|false
+    {
+        $statement = $pdo->prepare(
             'SELECT `ordering_scope` FROM `' . self::ASSIGNMENT_TABLE . '` '
-            . 'WHERE `id` = :id AND `deleted_at` IS NULL LIMIT 1',
+            . 'WHERE `id` = :id AND `deleted_at` IS NULL LIMIT 1' . ($forUpdate ? ' FOR UPDATE' : ''),
         );
         $statement->execute(['id' => $assignmentId]);
         $value = $statement->fetchColumn();

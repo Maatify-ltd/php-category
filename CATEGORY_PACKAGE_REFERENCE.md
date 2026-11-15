@@ -220,6 +220,13 @@ atomic update. No generic or string-based field update exists.
   CategoryFacadeInterface` is the framework-neutral host-wiring entry point.
   It builds all PDO adapters, one shared transaction runner, and one shared
   ordering manager around the supplied primitives.
+- `CategoryFactory::forHost(PDO $pdo, ClockInterface $clock, callable $openScopeLookup)`
+  returns the same facade with optional lazy scope discovery for Image Assignment
+  defaults. Use it when a Host transaction may have an older MySQL
+  `REPEATABLE READ` snapshot. The callback provides a dedicated autocommit MySQL
+  PDO connected to the same primary and schema, with exception mode enabled.
+  Only scope discovery uses this connection. All locks and writes stay on the
+  supplied Host PDO.
 - `CategoryServiceInterface`/`CategoryService` own Category mutation
   orchestration and Category consumer/management reads only.
 - `ContentServiceInterface`/`ContentService` own Category Content mutation
@@ -592,6 +599,7 @@ include-deleted, and deleted-only semantics as management get-by-ID.
 
 ```text
 CategoryFactory::create(PDO $pdo, ClockInterface $clock): CategoryFacadeInterface
+CategoryFactory::forHost(PDO $pdo, ClockInterface $clock, callable $openScopeLookup): CategoryFacadeInterface
 CategoryService(CategoryCommandRepositoryInterface,
                 CategoryQueryReaderInterface,
                 CategoryReadQueryInterface,

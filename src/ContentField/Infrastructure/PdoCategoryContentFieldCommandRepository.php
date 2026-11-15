@@ -178,7 +178,7 @@ final readonly class PdoCategoryContentFieldCommandRepository implements Categor
     {
         $statement = $this->pdo->prepare(
             'SELECT `ordering_scope` FROM `' . self::FIELD_TABLE . '` '
-            . 'WHERE `id` = :id AND `deleted_at` IS NULL LIMIT 1',
+            . 'WHERE `id` = :id AND `deleted_at` IS NULL LIMIT 1' . ($this->pdo->inTransaction() ? ' FOR UPDATE' : ''),
         );
         $statement->execute(['id' => $fieldId]);
         $value = $statement->fetchColumn();

@@ -706,6 +706,21 @@ runner participates without committing or rolling back the outer transaction.
 The Host remains responsible for the outer `beginTransaction()`, commit, and
 rollback decisions.
 
+Category, Content Field, and Image Assignment reorders resolve the current
+scope on the Host PDO after the service takes its existing target lock.
+Image Assignment `setDefault()` and `clearDefault()` discover the scope first,
+then lock that scope and verify the assignment on the Host PDO. With
+`CategoryFactory::create()`, discovery uses the Host's snapshot. An older
+`REPEATABLE READ` snapshot can miss an assignment committed by another connection.
+
+When these default operations can run inside an older snapshot, compose the
+facade with `CategoryFactory::forHost($pdo, $clock, $openScopeLookup)`.
+`$openScopeLookup` is a zero-argument callback that opens a distinct MySQL PDO
+on the same primary and database, with autocommit and exception mode enabled.
+The factory opens and validates it only when an assignment is absent from the
+Host read and reuses a valid connection thereafter. The Host read comes first
+so its own uncommitted assignments remain visible.
+
 Every mutation receives its timestamp from the supplied
 `ClockInterface`. Category does not call a global clock, normalize values to
 UTC, or choose a timezone. Reads hydrate stored timestamps using the timezone
