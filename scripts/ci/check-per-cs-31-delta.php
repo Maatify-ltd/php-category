@@ -481,6 +481,7 @@ final class PerCs31DeltaVerifier
      */
     private static function caseTerminates(array $tokens, int $start, int $end): bool
     {
+        $terminators = [T_BREAK, T_CONTINUE, T_RETURN, T_THROW, T_GOTO, T_EXIT];
         $segmentStart = $start;
         $lastStatementStart = $start;
         $lastStatementEnd = $end;
@@ -501,6 +502,12 @@ final class PerCs31DeltaVerifier
                 $braces++;
             } elseif ($text === '}') {
                 $braces--;
+                if ($parentheses === 0 && $brackets === 0 && $braces === 0) {
+                    $next = self::nextMeaningful($tokens, $index + 1, $end);
+                    if ($next !== null && in_array($tokens[$next]['id'], $terminators, true)) {
+                        $segmentStart = $next;
+                    }
+                }
             } elseif ($text === ';' && $parentheses === 0 && $brackets === 0 && $braces === 0) {
                 $lastStatementStart = $segmentStart;
                 $lastStatementEnd = $index;
@@ -518,7 +525,7 @@ final class PerCs31DeltaVerifier
             return false;
         }
 
-        return in_array($tokens[$first]['id'], [T_BREAK, T_CONTINUE, T_RETURN, T_THROW, T_GOTO, T_EXIT], true);
+        return in_array($tokens[$first]['id'], $terminators, true);
     }
 
     /**
