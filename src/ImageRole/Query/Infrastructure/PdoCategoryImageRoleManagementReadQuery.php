@@ -36,6 +36,7 @@ final readonly class PdoCategoryImageRoleManagementReadQuery extends PdoReadQuer
         $this->paginator = new PdoPaginator();
     }
 
+    /** {@inheritDoc} */
     public function findImageRoleById(
         int $roleId,
         CategoryDeletedStateEnum $deletedState,
@@ -54,6 +55,7 @@ final readonly class PdoCategoryImageRoleManagementReadQuery extends PdoReadQuer
         return is_array($row) ? $this->hydrateRole($row) : null;
     }
 
+    /** {@inheritDoc} */
     public function findImageRoleByKey(
         string $roleKey,
         CategoryDeletedStateEnum $deletedState,
@@ -72,6 +74,7 @@ final readonly class PdoCategoryImageRoleManagementReadQuery extends PdoReadQuer
         return is_array($row) ? $this->hydrateRole($row) : null;
     }
 
+    /** {@inheritDoc} */
     public function listImageRoles(CategoryImageRoleListCriteriaDTO $criteria): CategoryImageRoleCollectionDTO
     {
         $where = [];

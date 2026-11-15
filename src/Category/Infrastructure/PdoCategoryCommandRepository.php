@@ -29,6 +29,7 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
         private ScopedOrderingManager $orderingManager,
     ) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryCommand $command, DateTimeImmutable $occurredAt): int
     {
         $this->lockCreationScope($command->parentId);
@@ -69,6 +70,7 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
         return (int) $id;
     }
 
+    /** {@inheritDoc} */
     public function move(MoveCategoryCommand $command, DateTimeImmutable $occurredAt): bool
     {
         $statement = $this->pdo->prepare(
@@ -85,6 +87,7 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
         return $statement->rowCount() > 0 || $this->hasNonDeletedCategory($command->categoryId);
     }
 
+    /** {@inheritDoc} */
     public function softDelete(SoftDeleteCategoryCommand $command, DateTimeImmutable $occurredAt): bool
     {
         $statement = $this->pdo->prepare(
@@ -102,6 +105,7 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
         return $statement->rowCount() > 0;
     }
 
+    /** {@inheritDoc} */
     public function restore(RestoreCategoryCommand $command, DateTimeImmutable $occurredAt): bool
     {
         $statement = $this->pdo->prepare(
@@ -117,6 +121,7 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
         return $statement->rowCount() > 0;
     }
 
+    /** {@inheritDoc} */
     public function updateStatus(UpdateCategoryStatusCommand $command, DateTimeImmutable $occurredAt): bool
     {
         $statement = $this->pdo->prepare(
@@ -133,6 +138,7 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
         return $statement->rowCount() > 0 || $this->hasNonDeletedCategory($command->categoryId);
     }
 
+    /** {@inheritDoc} */
     public function updateDisplayOrder(
         UpdateCategoryDisplayOrderCommand $command,
         DateTimeImmutable $occurredAt,
@@ -154,6 +160,7 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
         return $moved;
     }
 
+    /** Uses a current read to distinguish an unchanged update from an absent non-deleted row. */
     private function hasNonDeletedCategory(int $categoryId): bool
     {
         // MySQL reports changed rows. A locking read distinguishes a no-op
@@ -167,6 +174,7 @@ final readonly class PdoCategoryCommandRepository implements CategoryCommandRepo
         return $statement->fetchColumn() !== false;
     }
 
+    /** Returns the stored parent, null for a root Category, or false when the read finds no non-deleted row. */
     private function activeParentId(int $categoryId): int|false|null
     {
         $statement = $this->pdo->prepare(

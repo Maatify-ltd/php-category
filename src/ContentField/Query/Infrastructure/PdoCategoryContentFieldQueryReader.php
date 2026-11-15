@@ -22,6 +22,7 @@ final readonly class PdoCategoryContentFieldQueryReader extends PdoReadQuerySupp
         private ClockInterface $clock,
     ) {}
 
+    /** {@inheritDoc} */
     public function findContentFieldById(int $fieldId): ?CategoryContentFieldDTO
     {
         return $this->findField($fieldId, false);

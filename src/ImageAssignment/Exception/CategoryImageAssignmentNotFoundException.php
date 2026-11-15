@@ -7,6 +7,7 @@ namespace Maatify\Category\ImageAssignment\Exception;
 use Maatify\Category\Exception\CategoryExceptionInterface;
 use Maatify\Exceptions\Exception\NotFound\ResourceNotFoundMaatifyException;
 
+/** No assignment matches the operation’s identity and deletion requirements. */
 final class CategoryImageAssignmentNotFoundException extends ResourceNotFoundMaatifyException implements CategoryExceptionInterface
 {
     public static function withId(int $assignmentId): self

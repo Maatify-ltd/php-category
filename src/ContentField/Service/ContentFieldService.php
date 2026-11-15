@@ -43,6 +43,7 @@ final readonly class ContentFieldService implements ContentFieldServiceInterface
         private ClockInterface $clock,
     ) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryContentFieldCommand $command): int
     {
         return $this->transaction->run(function () use ($command): int {
@@ -52,6 +53,7 @@ final readonly class ContentFieldService implements ContentFieldServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function update(UpdateCategoryContentFieldCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -63,6 +65,7 @@ final readonly class ContentFieldService implements ContentFieldServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function updateValue(UpdateCategoryContentFieldValueCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -78,6 +81,7 @@ final readonly class ContentFieldService implements ContentFieldServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function updateDisplayOrder(UpdateCategoryContentFieldDisplayOrderCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -89,6 +93,7 @@ final readonly class ContentFieldService implements ContentFieldServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function softDelete(SoftDeleteCategoryContentFieldCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -100,6 +105,7 @@ final readonly class ContentFieldService implements ContentFieldServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function restore(RestoreCategoryContentFieldCommand $command): void
     {
         $this->transaction->run(function () use ($command): void {
@@ -111,6 +117,7 @@ final readonly class ContentFieldService implements ContentFieldServiceInterface
         });
     }
 
+    /** {@inheritDoc} */
     public function listVisibleForCategory(
         int $categoryId,
         CategoryContentFieldScopeDTO $scope,
@@ -121,6 +128,7 @@ final readonly class ContentFieldService implements ContentFieldServiceInterface
         return $this->visibleReader->listVisibleContentFields($id, $scope, $criteria);
     }
 
+    /** {@inheritDoc} */
     public function getByIdForManagement(
         int $fieldId,
         CategoryDeletedStateEnum $deletedState = CategoryDeletedStateEnum::NON_DELETED,
@@ -135,11 +143,13 @@ final readonly class ContentFieldService implements ContentFieldServiceInterface
         return $field;
     }
 
+    /** {@inheritDoc} */
     public function listForManagement(CategoryContentFieldListCriteriaDTO $criteria): CategoryContentFieldCollectionDTO
     {
         return $this->managementReader->listContentFields($criteria);
     }
 
+    /** {@inheritDoc} */
     public function paginateForManagement(
         CategoryContentFieldListCriteriaDTO $criteria,
         PageRequest $pageRequest,

@@ -36,6 +36,7 @@ final readonly class PdoCategoryContentFieldManagementReadQuery extends PdoReadQ
         $this->paginator = new PdoPaginator();
     }
 
+    /** {@inheritDoc} */
     public function findContentFieldById(
         int $fieldId,
         CategoryDeletedStateEnum $deletedState,
@@ -54,6 +55,7 @@ final readonly class PdoCategoryContentFieldManagementReadQuery extends PdoReadQ
         return is_array($row) ? $this->hydrateField($row) : null;
     }
 
+    /** {@inheritDoc} */
     public function listContentFields(
         CategoryContentFieldListCriteriaDTO $criteria,
     ): CategoryContentFieldCollectionDTO {

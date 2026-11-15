@@ -22,6 +22,7 @@ final readonly class PdoCategoryImageRoleQueryReader extends PdoReadQuerySupport
         private ClockInterface $clock,
     ) {}
 
+    /** {@inheritDoc} */
     public function findImageRoleByIdForUpdate(int $roleId): ?CategoryImageRoleDTO
     {
         $statement = $this->pdo->prepare(

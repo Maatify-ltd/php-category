@@ -22,6 +22,7 @@ final readonly class PdoCategoryContentCommandRepository implements CategoryCont
 
     public function __construct(private PDO $pdo) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryContentCommand $command, DateTimeImmutable $occurredAt): int
     {
         try {
@@ -62,6 +63,7 @@ final readonly class PdoCategoryContentCommandRepository implements CategoryCont
         return (int) $id;
     }
 
+    /** {@inheritDoc} */
     public function update(UpdateCategoryContentCommand $command, DateTimeImmutable $occurredAt): bool
     {
         $statement = $this->pdo->prepare(
@@ -91,6 +93,7 @@ final readonly class PdoCategoryContentCommandRepository implements CategoryCont
         return $exists->fetchColumn() !== false;
     }
 
+    /** {@inheritDoc} */
     public function softDelete(
         SoftDeleteCategoryContentCommand $command,
         DateTimeImmutable $occurredAt,
@@ -110,6 +113,7 @@ final readonly class PdoCategoryContentCommandRepository implements CategoryCont
         return $statement->rowCount() > 0;
     }
 
+    /** {@inheritDoc} */
     public function restore(
         RestoreCategoryContentCommand $command,
         DateTimeImmutable $occurredAt,

@@ -45,6 +45,13 @@ final class CategoryFactory
 {
     private function __construct() {}
 
+    /**
+     * Composes all Domain APIs with the same Host PDO and Clock.
+     *
+     * The Host supplies an installed schema and retains ownership of its connection
+     * and any already-open transaction. Composition does not open a connection or
+     * mutate storage.
+     */
     public static function create(PDO $pdo, ClockInterface $clock): CategoryFacadeInterface
     {
         $transaction = new PdoTransactionRunner($pdo);

@@ -8,6 +8,7 @@ use Maatify\Category\Exception\CategoryExceptionInterface;
 use Maatify\Exceptions\Exception\Conflict\GenericConflictMaatifyException;
 use Throwable;
 
+/** The media asset already occupies this Category and exact assignment scope. */
 final class CategoryImageAssignmentAlreadyExistsException extends GenericConflictMaatifyException implements CategoryExceptionInterface
 {
     public static function withIdentity(

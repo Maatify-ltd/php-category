@@ -20,6 +20,7 @@ final readonly class PdoCategoryContentQueryReader extends PdoReadQuerySupport i
         private ClockInterface $clock,
     ) {}
 
+    /** {@inheritDoc} */
     public function findContentById(int $contentId): ?CategoryContentDTO
     {
         return $this->findContent($contentId, false);

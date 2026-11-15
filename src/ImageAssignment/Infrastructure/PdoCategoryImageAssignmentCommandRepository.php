@@ -29,6 +29,7 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         private ScopedOrderingManager $orderingManager,
     ) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryImageAssignmentCommand $command, DateTimeImmutable $occurredAt): int
     {
         $orderingScope = $this->orderingScope(
@@ -88,6 +89,7 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         return (int) $id;
     }
 
+    /** {@inheritDoc} */
     public function updateDisplayOrder(
         UpdateCategoryImageAssignmentDisplayOrderCommand $command,
         DateTimeImmutable $occurredAt,
@@ -107,6 +109,7 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         );
     }
 
+    /** {@inheritDoc} */
     public function setDefault(
         SetCategoryImageAssignmentDefaultCommand $command,
         DateTimeImmutable $occurredAt,
@@ -148,6 +151,7 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         return true;
     }
 
+    /** {@inheritDoc} */
     public function clearDefault(
         ClearCategoryImageAssignmentDefaultCommand $command,
         DateTimeImmutable $occurredAt,
@@ -176,6 +180,7 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         return true;
     }
 
+    /** {@inheritDoc} */
     public function softDelete(
         SoftDeleteCategoryImageAssignmentCommand $command,
         DateTimeImmutable $occurredAt,
@@ -196,6 +201,7 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         return $statement->rowCount() > 0;
     }
 
+    /** {@inheritDoc} */
     public function restore(
         RestoreCategoryImageAssignmentCommand $command,
         DateTimeImmutable $occurredAt,
@@ -214,6 +220,7 @@ final readonly class PdoCategoryImageAssignmentCommandRepository implements Cate
         return $statement->rowCount() > 0;
     }
 
+    /** Returns the stored scope, or false if the assignment has no non-deleted row. */
     private function activeOrderingScope(int $assignmentId): string|false
     {
         $statement = $this->pdo->prepare(

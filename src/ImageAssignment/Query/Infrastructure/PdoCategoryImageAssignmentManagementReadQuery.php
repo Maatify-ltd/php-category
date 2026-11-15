@@ -36,6 +36,7 @@ final readonly class PdoCategoryImageAssignmentManagementReadQuery extends PdoRe
         $this->paginator = new PdoPaginator();
     }
 
+    /** {@inheritDoc} */
     public function findImageAssignmentById(
         int $assignmentId,
         CategoryDeletedStateEnum $deletedState,
@@ -54,6 +55,7 @@ final readonly class PdoCategoryImageAssignmentManagementReadQuery extends PdoRe
         return is_array($row) ? $this->hydrateAssignment($row) : null;
     }
 
+    /** {@inheritDoc} */
     public function listImageAssignments(
         CategoryImageAssignmentListCriteriaDTO $criteria,
     ): CategoryImageAssignmentCollectionDTO {

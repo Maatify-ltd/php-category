@@ -22,6 +22,7 @@ final readonly class PdoCategoryImageRoleCommandRepository implements CategoryIm
 
     public function __construct(private PDO $pdo) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryImageRoleCommand $command, DateTimeImmutable $occurredAt): int
     {
         $statement = $this->pdo->prepare(
@@ -54,6 +55,7 @@ final readonly class PdoCategoryImageRoleCommandRepository implements CategoryIm
         return (int) $id;
     }
 
+    /** {@inheritDoc} */
     public function updateStatus(
         UpdateCategoryImageRoleStatusCommand $command,
         DateTimeImmutable $occurredAt,
@@ -85,6 +87,7 @@ final readonly class PdoCategoryImageRoleCommandRepository implements CategoryIm
         return $exists->fetchColumn() !== false;
     }
 
+    /** {@inheritDoc} */
     public function softDelete(
         SoftDeleteCategoryImageRoleCommand $command,
         DateTimeImmutable $occurredAt,
@@ -104,6 +107,7 @@ final readonly class PdoCategoryImageRoleCommandRepository implements CategoryIm
         return $statement->rowCount() > 0;
     }
 
+    /** {@inheritDoc} */
     public function restore(
         RestoreCategoryImageRoleCommand $command,
         DateTimeImmutable $occurredAt,

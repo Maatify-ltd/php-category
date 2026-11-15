@@ -25,6 +25,10 @@ interface CategoryContentManagementReadQueryInterface
         CategoryContentListCriteriaDTO $criteria,
     ): CategoryContentCollectionDTO;
 
-    /** @return PageResultDTO<CategoryContentDTO> */
+    /**
+     * Returns the management page, base total, and filtered count for the requested scope.
+     *
+     * @return PageResultDTO<CategoryContentDTO>
+     */
     public function paginateContents(CategoryContentListCriteriaDTO $criteria, PageRequest $pageRequest): PageResultDTO;
 }

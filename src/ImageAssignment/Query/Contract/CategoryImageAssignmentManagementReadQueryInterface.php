@@ -14,16 +14,22 @@ use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 /** Dedicated management read port for Image Assignments. */
 interface CategoryImageAssignmentManagementReadQueryInterface
 {
+    /** Returns the matching row in the requested deletion state, or null when no row matches. */
     public function findImageAssignmentById(
         int $assignmentId,
         CategoryDeletedStateEnum $deletedState,
     ): ?CategoryImageAssignmentDTO;
 
+    /** Returns bounded records under the explicit management criteria in deterministic order. */
     public function listImageAssignments(
         CategoryImageAssignmentListCriteriaDTO $criteria,
     ): CategoryImageAssignmentCollectionDTO;
 
-    /** @return PageResultDTO<CategoryImageAssignmentDTO> */
+    /**
+     * Returns the management page, base total, and filtered count for the requested scope.
+     *
+     * @return PageResultDTO<CategoryImageAssignmentDTO>
+     */
     public function paginateImageAssignments(
         CategoryImageAssignmentListCriteriaDTO $criteria,
         PageRequest $pageRequest,

@@ -28,6 +28,7 @@ final readonly class PdoCategoryContentFieldCommandRepository implements Categor
         private ScopedOrderingManager $orderingManager,
     ) {}
 
+    /** {@inheritDoc} */
     public function create(CreateCategoryContentFieldCommand $command, DateTimeImmutable $occurredAt): int
     {
         $orderingScope = $this->orderingScope(
@@ -84,6 +85,7 @@ final readonly class PdoCategoryContentFieldCommandRepository implements Categor
         return (int) $id;
     }
 
+    /** {@inheritDoc} */
     public function update(UpdateCategoryContentFieldCommand $command, DateTimeImmutable $occurredAt): bool
     {
         $statement = $this->pdo->prepare(
@@ -113,6 +115,7 @@ final readonly class PdoCategoryContentFieldCommandRepository implements Categor
         return $exists->fetchColumn() !== false;
     }
 
+    /** {@inheritDoc} */
     public function updateDisplayOrder(
         UpdateCategoryContentFieldDisplayOrderCommand $command,
         DateTimeImmutable $occurredAt,
@@ -132,6 +135,7 @@ final readonly class PdoCategoryContentFieldCommandRepository implements Categor
         );
     }
 
+    /** {@inheritDoc} */
     public function softDelete(
         SoftDeleteCategoryContentFieldCommand $command,
         DateTimeImmutable $occurredAt,
@@ -151,6 +155,7 @@ final readonly class PdoCategoryContentFieldCommandRepository implements Categor
         return $statement->rowCount() > 0;
     }
 
+    /** {@inheritDoc} */
     public function restore(
         RestoreCategoryContentFieldCommand $command,
         DateTimeImmutable $occurredAt,
@@ -168,6 +173,7 @@ final readonly class PdoCategoryContentFieldCommandRepository implements Categor
         return $statement->rowCount() > 0;
     }
 
+    /** Returns the stored scope, or false if the field has no non-deleted row. */
     private function activeOrderingScope(int $fieldId): string|false
     {
         $statement = $this->pdo->prepare(

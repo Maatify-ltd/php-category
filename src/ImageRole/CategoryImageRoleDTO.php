@@ -13,6 +13,7 @@ final readonly class CategoryImageRoleDTO implements \JsonSerializable
 {
     public const MAX_ROLE_KEY_LENGTH = 100;
 
+    /** Requires a positive identity and a bounded nonblank key. Status and deletion remain independent. */
     public function __construct(
         public int $id,
         public string $roleKey,

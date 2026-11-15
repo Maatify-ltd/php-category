@@ -15,6 +15,7 @@ final readonly class CategoryContentFieldDTO implements \JsonSerializable
     public ?string $languageCode;
     public ?string $platform;
 
+    /** Requires positive identities and order, a bounded field key and scope, and a value valid for the declared format. */
     public function __construct(
         public int $id,
         public int $categoryId,

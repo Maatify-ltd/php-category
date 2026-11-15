@@ -7,6 +7,7 @@ namespace Maatify\Category\ImageRole\Lifecycle\Exception;
 use Maatify\Category\Exception\CategoryExceptionInterface;
 use Maatify\Exceptions\Exception\Conflict\GenericConflictMaatifyException;
 
+/** An assignment requires a Role that is active and non-deleted. */
 final class CategoryImageRoleUnavailableException extends GenericConflictMaatifyException implements CategoryExceptionInterface
 {
     public static function withId(int $roleId): self

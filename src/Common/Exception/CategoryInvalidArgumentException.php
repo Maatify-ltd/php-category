@@ -8,6 +8,7 @@ use Maatify\Category\Exception\CategoryExceptionInterface;
 use Maatify\Exceptions\Exception\Validation\InvalidArgumentMaatifyException;
 use Throwable;
 
+/** Input fails a package-level argument invariant before persistence. */
 final class CategoryInvalidArgumentException extends InvalidArgumentMaatifyException implements CategoryExceptionInterface
 {
     public static function emptyField(string $field): self
