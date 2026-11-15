@@ -2,13 +2,21 @@
 
 set -euo pipefail
 
+mode="${1:---phase-diagnostic}"
+if [[ "$#" -gt 1 || ( "$mode" != "--phase-diagnostic" && "$mode" != "--require-security-qualified" ) ]]; then
+    printf 'Usage: bash scripts/ci/check-composer-php-boundaries.sh [--phase-diagnostic|--require-security-qualified]\n' >&2
+    exit 2
+fi
+release_status=PASS
+
 project_root="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")/../.." && pwd)"
 probe_dir="$(mktemp -d)"
 trap 'rm -rf -- "$probe_dir"' EXIT
 
 probe_php_version() {
     local version="$1"
-    local expected="$2"
+    local published_expected="$2"
+    local release_expected="$3"
     local output
     local result
 
@@ -39,18 +47,25 @@ probe_php_version() {
     fi
 
     printf 'PHP %s: %s by Composer\n' "$version" "$result"
-    if [[ "$result" != "$expected" ]]; then
-        printf 'Expected %s under the existing published PHP constraint.\n' "$expected" >&2
+    if [[ "$mode" == "--phase-diagnostic" && "$result" != "$published_expected" ]]; then
+        printf 'Expected %s under the existing published PHP constraint.\n' "$published_expected" >&2
         return 1
+    fi
+    if [[ "$result" != "$release_expected" ]]; then
+        release_status="NOT PASS"
+        printf 'Release boundary expects PHP %s to be %s.\n' "$version" "$release_expected"
     fi
 }
 
-printf '%s\n' 'Checking the existing published Composer PHP compatibility contract.'
-probe_php_version 8.3.0 rejected
-probe_php_version 8.4.26 accepted
-probe_php_version 8.4.27 accepted
-probe_php_version 8.5.11 accepted
-probe_php_version 8.5.12 accepted
-probe_php_version 8.6.0 accepted
-probe_php_version 9.0.0 rejected
-printf '%s\n' 'The published constraint admits below-floor patches and PHP 8.6.0; these are not CI-qualified interpreters.'
+printf 'Checking Composer PHP boundaries (%s).\n' "$mode"
+probe_php_version 8.3.0 rejected rejected
+probe_php_version 8.4.26 accepted rejected
+probe_php_version 8.4.27 accepted accepted
+probe_php_version 8.5.11 accepted rejected
+probe_php_version 8.5.12 accepted accepted
+probe_php_version 8.6.0 accepted rejected
+probe_php_version 9.0.0 rejected rejected
+printf 'Release PHP constraint qualification: %s\n' "$release_status"
+if [[ "$mode" == "--require-security-qualified" ]]; then
+    [[ "$release_status" == "PASS" ]]
+fi
