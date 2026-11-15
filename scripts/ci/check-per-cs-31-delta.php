@@ -470,11 +470,34 @@ final class PerCs31DeltaVerifier
      */
     private static function hasFallthroughComment(array $tokens, int $start, int $end): bool
     {
+        $depth = 0;
         for ($index = $start; $index < $end; $index++) {
-            if (!in_array($tokens[$index]['id'], [T_COMMENT, T_DOC_COMMENT], true)) {
+            $token = $tokens[$index];
+            if (in_array($token['id'], [T_ATTRIBUTE, T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES], true)
+                || ($token['id'] === null && in_array($token['text'], ['(', '[', '{'], true))
+            ) {
+                $depth++;
+            } elseif ($token['id'] === null && in_array($token['text'], [')', ']', '}'], true)) {
+                $depth--;
+            }
+
+            if ($depth !== 0 || !in_array($token['id'], [T_COMMENT, T_DOC_COMMENT], true)) {
                 continue;
             }
-            if (preg_match('/\b(?:no\s+break|fall[- ]?through|deliberate(?:ly)?\s+fall)/i', $tokens[$index]['text']) === 1) {
+
+            $body = trim($token['text'], "/*# \t\r\n");
+            $normalized = preg_replace('/\R[ \t]*\*?[ \t]*/', ' ', $body);
+            if ($normalized === null) {
+                continue;
+            }
+
+            if (preg_match(
+                '/\A(?:no\s+break|(?:deliberate|intentional)\s+fall[- ]?through|'
+                . '(?:(?:deliberately|intentionally)\s+)?falls?[- ]?through'
+                . '(?:\s+(?:intentionally|deliberately))?(?:\s+(?:into|to)\s+(?:the\s+)?next\s+case)?)'
+                . '(?:[.!]|\s*[:;—-]\s+.+)?\z/iu',
+                $normalized,
+            ) === 1) {
                 return true;
             }
         }
