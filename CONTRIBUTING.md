@@ -22,7 +22,8 @@ reference.
 
 ## Local verification
 
-Use PHP, Composer, Git, Bash, jq, and Docker with Compose v2 available. Run
+Work from a repository checkout with PHP, Composer, Git, Bash, jq, and Docker
+with Compose v2 available. Run
 these checks from the repository root:
 
 ```bash
@@ -61,7 +62,7 @@ label through its colon, and `comment` for the exact comment text without its
 delimiters. Normalize a multiline comment to a single line. An entry applies only
 at that location and cannot replace termination of the final case.
 
-The MySQL wrapper uses [the shared Compose definition](tests/compose.integration.yaml).
+The MySQL wrapper uses the checkout’s `tests/compose.integration.yaml`.
 It waits for a real MySQL query to succeed, discovers the disposable loopback
 port, and disposes of the database and its volumes after each run. The pinned
 default is MySQL 8.0.16. Use `CATEGORY_MYSQL_VERSION` and

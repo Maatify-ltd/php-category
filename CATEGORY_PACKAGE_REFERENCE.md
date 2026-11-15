@@ -40,12 +40,6 @@ The package is host-agnostic:
 - Public read contracts use typed DTOs and collections, while mutation
   contracts use typed Commands; neither uses associative arrays.
 
-## Current standards provenance
-
-[`STANDARDS_MANIFEST.md`](docs/php-engineering-standards/STANDARDS_MANIFEST.md)
-is the authoritative local resolver and provenance record for the selective
-pinned standards adoption.
-
 ## Domain Content model
 
 Category is the structural entity. Its identity, stable `code`, hierarchy,
@@ -932,10 +926,11 @@ concurrent default changes.
 
 Each domain service wraps its orchestrated mutations with the shared
 `TransactionRunnerInterface`. `CategoryFactory` provides
-`PdoTransactionRunner` using the same PDO instance supplied to every Category
-repository and Ordering operation. When the Host already owns a transaction on
-that PDO, the shared runner participates without committing or rolling it back;
-outer transaction ownership remains with the Host. Category does not provide a
+`PdoTransactionRunner` using the Host's PDO for Category writes, locking reads,
+and Ordering operations. The optional lookup in `forHost()` is a non-locking
+read for Image Assignment defaults. When the Host already owns a transaction
+on the main PDO, the shared runner participates and the Host retains commit
+and rollback ownership. Category does not provide a
 local transaction implementation.
 
 Repository adapters classify selected database failures. Known duplicate-key
@@ -951,10 +946,10 @@ The package is `maatify/php-category`, type `library`, under the
 `>=8.4.27 <8.5 || >=8.5.12 <8.6`, `ext-mbstring`, `ext-pdo`, `ext-pdo_mysql`,
 `maatify/exceptions:^1.0`, `maatify/php-persistence:1.0.0-rc.1`, and
 `maatify/shared-common:^1.0`. These requirements describe the checkout.
-Published Category RC.1 retains the PHP constraint and Persistence
-dependency recorded at its tag. Development
-tools are declared separately in `require-dev`; the reusable library does not
-commit `composer.lock`.
+The [published Category RC.1](https://packagist.org/packages/maatify/php-category#v1.0.0-rc.1)
+retains the PHP constraint and Persistence dependency recorded at its tag.
+Development tools are declared separately in `require-dev`. The reusable
+library does not commit `composer.lock`.
 
 The package's storage contract is MySQL `8.0.16+` with InnoDB, `utf8mb4`, and
 enforced `CHECK` constraints.
@@ -973,6 +968,11 @@ for distinct failure semantics:
 - `CategoryCodeAlreadyExistsException`
 - `CategoryCycleException`
 - `CategoryHasNonDeletedChildrenException`
+- `CategoryImageRoleNotFoundException`
+- `CategoryImageRoleAlreadyExistsException`
+- `CategoryImageRoleUnavailableException`
+- `CategoryImageAssignmentNotFoundException`
+- `CategoryImageAssignmentAlreadyExistsException`
 - `CategoryPersistenceException`
 
 They use the stable hierarchy from `maatify/exceptions`.
@@ -982,7 +982,7 @@ Named factories exposed by the package are:
 - `CategoryInvalidArgumentException::emptyField()`, `fieldTooLong()`,
   `invalidId()`, `nonPositiveId()`, `invalidDisplayOrder()`, `selfParent()`,
   `invalidListLimit()`, and `invalidJsonValue()`.
-- `CategoryNotFoundException::withId()` and
+- `CategoryNotFoundException::withId()` and `withCode()`, and
   `CategoryContentNotFoundException::withId()`.
 - `CategoryCodeAlreadyExistsException::withCode()` and
   `CategoryContentAlreadyExistsException::withIdentity()`.
@@ -990,9 +990,18 @@ Named factories exposed by the package are:
   `CategoryContentFieldAlreadyExistsException::withIdentity()`.
 - `CategoryCycleException::forMove()` and
   `CategoryHasNonDeletedChildrenException::withId()`.
+- `CategoryImageRoleNotFoundException::withId()` and `withKey()`,
+  `CategoryImageRoleAlreadyExistsException::withKey()`, and
+  `CategoryImageRoleUnavailableException::withId()`.
+- `CategoryImageAssignmentNotFoundException::withId()` and
+  `CategoryImageAssignmentAlreadyExistsException::withIdentity()`.
 - `CategoryPersistenceException::queryFailed()`,
   `invalidAutoIncrementIdentity()`, `invalidContentAutoIncrementIdentity()`,
-  `invalidStorageValue()`, and `unexpectedColumnType()`.
+  `invalidContentFieldAutoIncrementIdentity()`,
+  `invalidImageAssignmentAutoIncrementIdentity()`,
+  `invalidImageRoleAutoIncrementIdentity()`,
+  `imageRoleRepositoryNotConfigured()`, `invalidStorageValue()`, and
+  `unexpectedColumnType()`.
 
 ## Verification contract
 
