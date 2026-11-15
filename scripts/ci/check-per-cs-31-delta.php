@@ -324,7 +324,7 @@ final class PerCs31DeltaVerifier
         $cases = [];
         $depth = 0;
         for ($index = $open + 1; $index < $close; $index++) {
-            $text = $tokens[$index]['text'];
+            $text = self::structuralPunctuation($tokens[$index]);
             if ($text === '{') {
                 $depth++;
                 continue;
@@ -352,7 +352,7 @@ final class PerCs31DeltaVerifier
         $braces = 0;
         $ternaries = 0;
         for ($index = $caseIndex + 1; $index < $close; $index++) {
-            $text = $tokens[$index]['text'];
+            $text = self::structuralPunctuation($tokens[$index]);
             if ($text === '(') {
                 $parentheses++;
             } elseif ($text === ')') {
@@ -365,7 +365,7 @@ final class PerCs31DeltaVerifier
                 $braces++;
             } elseif ($text === '}') {
                 $braces--;
-            } elseif ($parentheses === 0 && $brackets === 0 && $braces === 0 && $tokens[$index]['id'] === null) {
+            } elseif ($parentheses === 0 && $brackets === 0 && $braces === 0) {
                 if ($text === '?') {
                     $ternaries++;
                 } elseif ($text === ':') {
@@ -454,11 +454,10 @@ final class PerCs31DeltaVerifier
         $depth = 0;
         for ($index = $start; $index < $end; $index++) {
             $token = $tokens[$index];
-            if (in_array($token['id'], [T_ATTRIBUTE, T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES], true)
-                || ($token['id'] === null && in_array($token['text'], ['(', '[', '{'], true))
-            ) {
+            $punctuation = self::structuralPunctuation($token);
+            if (in_array($punctuation, ['(', '[', '{'], true)) {
                 $depth++;
-            } elseif ($token['id'] === null && in_array($token['text'], [')', ']', '}'], true)) {
+            } elseif (in_array($punctuation, [')', ']', '}'], true)) {
                 $depth--;
             }
 
@@ -503,7 +502,7 @@ final class PerCs31DeltaVerifier
         $brackets = 0;
         $braces = 0;
         for ($index = $start; $index < $end; $index++) {
-            $text = $tokens[$index]['text'];
+            $text = self::structuralPunctuation($tokens[$index]);
             if ($text === '(') {
                 $parentheses++;
             } elseif ($text === ')') {
@@ -871,7 +870,12 @@ final class PerCs31DeltaVerifier
                 continue;
             }
 
-            if (trim(self::linePrefix($source, $token['offset'])) === '') {
+            $after = self::nextMeaningful($tokens, $close + 1);
+            if ($after !== null && self::structuralPunctuation($tokens[$after]) === '=') {
+                continue;
+            }
+
+            if (trim(self::linePrefix($source, $token['offset'])) === '' && !self::isUnkeyedArrayItem($tokens, $index)) {
                 self::addViolation(
                     $violations,
                     $file,
@@ -893,11 +897,40 @@ final class PerCs31DeltaVerifier
             return true;
         }
 
-        if (in_array($tokens[$previous]['text'], ['=', '=>', '(', '[', ',', ':', '?'], true)) {
+        $token = $tokens[$previous];
+        if ($token['id'] === null && in_array($token['text'], ['=', '(', '[', '{', ',', ':', '?', ';'], true)) {
             return true;
         }
 
-        return in_array($tokens[$previous]['id'], [T_RETURN, T_YIELD, T_YIELD_FROM, T_PRINT, T_ECHO], true);
+        return in_array($token['id'], [T_DOUBLE_ARROW, T_ELLIPSIS, T_RETURN, T_YIELD, T_YIELD_FROM, T_PRINT, T_ECHO], true);
+    }
+
+    /**
+     * @param list<array{id: int|null, text: string, line: int, offset: int, end: int}> $tokens
+     */
+    private static function isUnkeyedArrayItem(array $tokens, int $index): bool
+    {
+        $previous = self::previousMeaningful($tokens, $index - 1);
+        if ($previous === null || $tokens[$previous]['id'] !== null || !in_array($tokens[$previous]['text'], ['[', ','], true)) {
+            return false;
+        }
+
+        $depth = 0;
+        for ($cursor = $previous; $cursor >= 0; $cursor--) {
+            $token = $tokens[$cursor];
+            $punctuation = self::structuralPunctuation($token);
+            if (in_array($punctuation, [')', ']', '}'], true)) {
+                $depth++;
+            } elseif (in_array($punctuation, ['(', '[', '{'], true)) {
+                if ($depth === 0) {
+                    return $punctuation === '[' && $token['id'] === null && self::looksLikeArrayLiteral($tokens, $cursor);
+                }
+
+                $depth--;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -962,12 +995,10 @@ final class PerCs31DeltaVerifier
     {
         $depth = 0;
         for ($index = $open, $count = count($tokens); $index < $count; $index++) {
-            if ($tokens[$index]['id'] !== null) {
-                continue;
-            }
-            if ($tokens[$index]['text'] === $opening) {
+            $punctuation = self::structuralPunctuation($tokens[$index]);
+            if ($punctuation === $opening) {
                 $depth++;
-            } elseif ($tokens[$index]['text'] === $closing) {
+            } elseif ($punctuation === $closing) {
                 $depth--;
                 if ($depth === 0) {
                     return $index;
@@ -976,6 +1007,17 @@ final class PerCs31DeltaVerifier
         }
 
         return null;
+    }
+
+    /** @param array{id: int|null, text: string, line: int, offset: int, end: int} $token */
+    private static function structuralPunctuation(array $token): ?string
+    {
+        return match ($token['id']) {
+            null => $token['text'],
+            T_CURLY_OPEN, T_DOLLAR_OPEN_CURLY_BRACES => '{',
+            T_ATTRIBUTE => '[',
+            default => null,
+        };
     }
 
     private static function normalizePath(string $path): string

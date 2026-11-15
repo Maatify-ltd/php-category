@@ -32,7 +32,7 @@ final class PerCs31DeltaVerifierTest extends TestCase
         }
     }
 
-    public function testCompositeStyleCommandAcceptsClearFallthroughComments(): void
+    public function testCompositeStyleCommandChecksSwitchCases(): void
     {
         $root = dirname(__DIR__, 3);
         $scratch = tempnam(sys_get_temp_dir(), 'category-style-composite-');
@@ -67,7 +67,11 @@ final class PerCs31DeltaVerifierTest extends TestCase
                     case 3:
                         record($value);
                         // Intentionally continue into the next case.
+                    case 4:
+                        echo "First: {$name}";
+                        break;
                     default:
+                        echo "Following: {$name}";
                         break;
                 }
                 FIXTURE;
@@ -158,6 +162,33 @@ final class PerCs31DeltaVerifierTest extends TestCase
             endswitch;
             FIXTURE, 'switch-body'];
 
+        yield 'interpolation cannot hide a nonterminating following case' => [<<<'FIXTURE'
+            switch ($value) {
+                case 1:
+                    echo "First: {$name}";
+                    break;
+                default:
+                    echo 'Missing termination';
+            }
+            FIXTURE, 'switch-case-termination'];
+
+        yield 'dollar-brace interpolation still needs termination' => [<<<'FIXTURE'
+            switch ($value) {
+                default:
+                    echo "Last: ${name}";
+            }
+            FIXTURE, 'switch-case-termination'];
+
+        yield 'literal delimiter in interpolated case condition' => [<<<'FIXTURE'
+            switch ($value) {
+                case "({$name}":
+                    echo "{{$name}";
+                    break;
+                default:
+                    break;
+            }
+            FIXTURE, null];
+
         yield 'a final case still needs termination' => [<<<'FIXTURE'
             switch ($value) {
                 default:
@@ -196,6 +227,79 @@ final class PerCs31DeltaVerifierTest extends TestCase
             str_replace(['CONDITION', 'BODY'], ['$flag ? 1 : 2', 'record($value);'], $switch),
             'switch-case-termination',
         ];
+
+        yield 'unkeyed multiline elements follow the PER-CS nested-array example' => [<<<'FIXTURE'
+            $values = [
+                [
+                    1,
+                    2,
+                ],
+                [
+                    3,
+                    4,
+                ],
+            ];
+            FIXTURE, null];
+
+        yield 'keyed nested arrays still start after the arrow' => [<<<'FIXTURE'
+            $values = [
+                'key' =>
+                    [
+                        1,
+                        2,
+                    ],
+            ];
+            FIXTURE, 'multiline-array-opening'];
+
+        yield 'a function argument after a comma is not an unkeyed array item' => [<<<'FIXTURE'
+            send(
+                1,
+                [
+                    2,
+                    3,
+                ],
+            );
+            FIXTURE, 'multiline-array-opening'];
+
+        yield 'array literal starts a function statement' => [<<<'FIXTURE'
+            function values(): array
+            {
+                [
+                    1,
+                    2,
+                ];
+
+                return [];
+            }
+            FIXTURE, 'multiline-array-opening'];
+
+        yield 'array literal after a semicolon' => [<<<'FIXTURE'
+            record(1);
+            [
+                1,
+                2,
+            ];
+            FIXTURE, 'multiline-array-opening'];
+
+        yield 'unpacked array literal starts on a separate line' => [<<<'FIXTURE'
+            return array_merge(...
+                [
+                    [1],
+                    [2],
+                ]);
+            FIXTURE, 'multiline-array-opening'];
+
+        yield 'array offsets and assignment destructuring are not literals' => [<<<'FIXTURE'
+            record(1);
+            [
+                $one,
+                $two,
+            ] = $values;
+            return $object->{$property}
+            [
+                $one + $two
+            ];
+            FIXTURE, null];
 
         $generator = <<<'FIXTURE'
             function values(): Generator
