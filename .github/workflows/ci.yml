@@ -8,6 +8,11 @@ on:
       - "main"
       - "codex/phase-*-draft"
   workflow_dispatch:
+    inputs:
+      base_sha:
+        description: Full SHA of the intended integration base (a strict ancestor of the branch HEAD)
+        type: string
+        required: true
 
 permissions:
   contents: read
@@ -34,7 +39,7 @@ jobs:
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: ${{ matrix.php }}
-          extensions: mbstring, pdo, pdo_mysql
+          extensions: ctype, mbstring, pdo, pdo_mysql
           tools: composer:2.11.2@sha256:dd158c0afd41d15fac89e1b4e47b5d42911fe316c3687cd5edac98319b25d028
           coverage: none
 
@@ -106,7 +111,7 @@ jobs:
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: "8.4"
-          extensions: mbstring, pdo, pdo_mysql
+          extensions: ctype, mbstring, pdo, pdo_mysql
           tools: composer:2.11.2@sha256:dd158c0afd41d15fac89e1b4e47b5d42911fe316c3687cd5edac98319b25d028
           coverage: none
 
@@ -159,7 +164,7 @@ jobs:
         uses: shivammathur/setup-php@eb7c497e18156a6bbabfef1d3a82760b9eda3962 # 2.40.0
         with:
           php-version: "8.4"
-          extensions: mbstring, pdo, pdo_mysql
+          extensions: ctype, mbstring, pdo, pdo_mysql
           tools: composer:2.11.2@sha256:dd158c0afd41d15fac89e1b4e47b5d42911fe316c3687cd5edac98319b25d028
           coverage: none
 
@@ -196,16 +201,14 @@ jobs:
         with:
           fetch-depth: 0
 
+      - name: Test the whitespace check against Git history fixtures
+        run: bash scripts/ci/test-package-whitespace.sh
+
       - name: Check package-owned committed whitespace
         env:
-          BASE_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
+          BASE_SHA: ${{ github.event_name == 'workflow_dispatch' && inputs.base_sha || github.event_name == 'pull_request' && github.event.pull_request.base.sha || github.event.before }}
           HEAD_SHA: ${{ github.event_name == 'pull_request' && github.event.pull_request.head.sha || github.sha }}
-        run: |
-          set -euo pipefail
-          if [[ "$BASE_SHA" =~ ^0+$ ]]; then
-            BASE_SHA="$(git rev-list --max-parents=0 "$HEAD_SHA")"
-          fi
-          git diff --check "$BASE_SHA...$HEAD_SHA" -- . ':(exclude)docs/php-engineering-standards/**'
+        run: bash scripts/ci/check-package-whitespace.sh "$GITHUB_EVENT_NAME" "$BASE_SHA" "$HEAD_SHA"
 
   category-quality-gate:
     name: Category Quality Gate

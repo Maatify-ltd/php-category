@@ -60,10 +60,11 @@ matrix covers Stable PHP 8.4 and 8.5 at or above their approved patch floors.
 Later PHP 8 minors have forward Composer eligibility and require separate Stable
 qualification before support is claimed.
 
-The package requires `ext-mbstring`, `ext-pdo`, and `ext-pdo_mysql`. It uses
-MySQL 8.0.16+ with InnoDB and enforced `CHECK` constraints. Runtime dependencies
-are `maatify/exceptions`, `maatify/shared-common`, and the exact
-`maatify/php-persistence 1.0.0-rc.1` trial. See [composer.json](composer.json)
+The package requires `ext-ctype`, `ext-mbstring`, `ext-pdo`, and
+`ext-pdo_mysql`. It uses MySQL 8.0.16+ with InnoDB and enforced `CHECK`
+constraints. Runtime dependencies are `maatify/exceptions`,
+`maatify/shared-common`, and the exact `maatify/php-persistence 1.0.0-rc.1`
+trial. See [composer.json](composer.json)
 for the declared constraints and [local verification](CONTRIBUTING.md#local-verification)
 for the Composer and runtime checks.
 

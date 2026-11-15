@@ -29,9 +29,10 @@ at `stable` and explicitly allows the required Persistence RC. For the
 previously published RC.1, see its
 [tagged guide](https://github.com/Maatify-ltd/php-category/blob/v1.0.0-rc.1/docs/USAGE_GUIDE.md).
 
-RC.2 requires PHP `>=8.4.27 <8.5 || >=8.5.12 <9.0`, `ext-mbstring`, `ext-pdo`,
-`ext-pdo_mysql`, MySQL `8.0.16+`, `maatify/exceptions:^1.0`,
-`maatify/php-persistence:1.0.0-rc.1`, and `maatify/shared-common:^1.0`.
+RC.2 requires PHP `>=8.4.27 <8.5 || >=8.5.12 <9.0`, `ext-ctype`,
+`ext-mbstring`, `ext-pdo`, `ext-pdo_mysql`, MySQL `8.0.16+`,
+`maatify/exceptions:^1.0`, `maatify/php-persistence:1.0.0-rc.1`, and
+`maatify/shared-common:^1.0`.
 The compatibility matrix covers Stable PHP 8.4 and 8.5. Later PHP 8 minors
 are eligible in Composer, with Stable support subject to separate
 qualification. Install the [package-owned MySQL schema](../../schema/README.md) through
