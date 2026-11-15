@@ -369,6 +369,7 @@ final class PerCs31DeltaVerifier
         $parentheses = 0;
         $brackets = 0;
         $braces = 0;
+        $ternaries = 0;
         for ($index = $caseIndex + 1; $index < $close; $index++) {
             $text = $tokens[$index]['text'];
             if ($text === '(') {
@@ -383,8 +384,16 @@ final class PerCs31DeltaVerifier
                 $braces++;
             } elseif ($text === '}') {
                 $braces--;
-            } elseif ($text === ':' && $parentheses === 0 && $brackets === 0 && $braces === 0) {
-                return $index;
+            } elseif ($parentheses === 0 && $brackets === 0 && $braces === 0 && $tokens[$index]['id'] === null) {
+                if ($text === '?') {
+                    $ternaries++;
+                } elseif ($text === ':') {
+                    if ($ternaries === 0) {
+                        return $index;
+                    }
+
+                    $ternaries--;
+                }
             }
         }
 
