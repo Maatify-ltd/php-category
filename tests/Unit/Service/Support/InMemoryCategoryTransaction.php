@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Maatify\Category\Tests\Unit\Service\Support;
 
-use Maatify\Persistence\Pdo\Transaction\TransactionRunnerInterface;
+use Maatify\PhpPersistence\Transaction\Repository\TransactionRunnerInterface;
 use Throwable;
 
 /** @internal Test-only transaction port. */

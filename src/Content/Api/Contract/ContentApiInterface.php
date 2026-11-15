@@ -15,8 +15,8 @@ use Maatify\Category\Content\Query\DTO\CategoryContentCollectionDTO;
 use Maatify\Category\Content\Query\DTO\CategoryContentDTO;
 use Maatify\Category\Content\Query\DTO\CategoryContentListCriteriaDTO;
 use Maatify\Category\Query\DTO\CategoryVisibleListCriteriaDTO;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 
 /** Public application contract for Content business mutations and visible/management reads and lists. */
 interface ContentApiInterface
@@ -46,6 +46,6 @@ interface ContentApiInterface
 
     public function listForManagement(CategoryContentListCriteriaDTO $criteria): CategoryContentCollectionDTO;
 
-    /** @return PageResult<CategoryContentDTO> */
-    public function paginateForManagement(CategoryContentListCriteriaDTO $criteria, PageRequest $pageRequest): PageResult;
+    /** @return PageResultDTO<CategoryContentDTO> */
+    public function paginateForManagement(CategoryContentListCriteriaDTO $criteria, PageRequest $pageRequest): PageResultDTO;
 }

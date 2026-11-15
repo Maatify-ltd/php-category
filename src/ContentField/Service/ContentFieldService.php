@@ -25,9 +25,9 @@ use Maatify\Category\ContentField\Query\Contract\CategoryContentFieldReadQueryIn
 use Maatify\Category\Exception\CategoryNotFoundException;
 use Maatify\Category\Query\Contract\CategoryQueryReaderInterface;
 use Maatify\Category\Query\DTO\CategoryVisibleListCriteriaDTO;
-use Maatify\Persistence\Pdo\Transaction\TransactionRunnerInterface;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Transaction\Repository\TransactionRunnerInterface;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 use Maatify\SharedCommon\Contracts\ClockInterface;
 
 /** Owns Category Content Field lifecycle and exact-scope ordering only. */
@@ -143,7 +143,7 @@ final readonly class ContentFieldService implements ContentFieldServiceInterface
     public function paginateForManagement(
         CategoryContentFieldListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         return $this->managementReader->paginateContentFields($criteria, $pageRequest);
     }
 

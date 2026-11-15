@@ -6,8 +6,9 @@
   "require": {
     "ext-pdo": "*",
     "ext-pdo_mysql": "*",
+    "maatify/php-persistence": ">=1.0.0-rc.1 <=1.0.0-rc.1@RC",
     "php": "^8.4"
   },
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "prefer-stable": true
 }

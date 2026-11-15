@@ -20,7 +20,7 @@ use Maatify\Category\Exception\CategoryNotFoundException;
 use Maatify\Category\Content\Exception\CategoryContentNotFoundException;
 use Maatify\Category\Tests\Integration\Support\CategoryMySqlIntegrationTestCase;
 use Maatify\Category\Tests\Integration\Support\FixedCategoryClock;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
 use PDO;
 
 final class CategoryManagementQueryIntegrationTest extends CategoryMySqlIntegrationTestCase
@@ -29,7 +29,6 @@ final class CategoryManagementQueryIntegrationTest extends CategoryMySqlIntegrat
     {
         $connection = $this->connection();
         $commandService = $this->commandService($connection);
-        $contentService = $this->contentService($connection);
         $activeId = $commandService->create(new CreateCategoryCommand('management-active'));
         $inactiveParentId = $commandService->create(new CreateCategoryCommand('management-inactive-parent'));
         $childId = $commandService->create(new CreateCategoryCommand('management-child', $inactiveParentId));

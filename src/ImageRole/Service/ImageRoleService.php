@@ -18,9 +18,9 @@ use Maatify\Category\ImageRole\Query\DTO\CategoryImageRoleCollectionDTO;
 use Maatify\Category\ImageRole\Query\DTO\CategoryImageRoleListCriteriaDTO;
 use Maatify\Category\ImageRole\Query\Contract\CategoryImageRoleManagementReadQueryInterface;
 use Maatify\Category\ImageRole\Query\Contract\CategoryImageRoleQueryReaderInterface;
-use Maatify\Persistence\Pdo\Transaction\TransactionRunnerInterface;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Transaction\Repository\TransactionRunnerInterface;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 use Maatify\SharedCommon\Contracts\ClockInterface;
 
 /** Owns Image Role lifecycle orchestration only. */
@@ -116,7 +116,7 @@ final readonly class ImageRoleService implements ImageRoleServiceInterface
     public function paginateForManagement(
         CategoryImageRoleListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         return $this->managementReader->paginateImageRoles($criteria, $pageRequest);
     }
 

@@ -24,10 +24,10 @@ use Maatify\Category\Content\Query\Contract\CategoryContentReadQueryInterface;
 use Maatify\Category\Exception\CategoryNotFoundException;
 use Maatify\Category\Query\Contract\CategoryQueryReaderInterface;
 use Maatify\Category\Query\DTO\CategoryVisibleListCriteriaDTO;
-use Maatify\Persistence\Pdo\Transaction\TransactionRunnerInterface;
+use Maatify\PhpPersistence\Transaction\Repository\TransactionRunnerInterface;
 use Maatify\SharedCommon\Contracts\ClockInterface;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 
 /** Owns Category Content lifecycle orchestration only. */
 final readonly class ContentService implements ContentServiceInterface
@@ -145,7 +145,7 @@ final readonly class ContentService implements ContentServiceInterface
     public function paginateForManagement(
         CategoryContentListCriteriaDTO $criteria,
         PageRequest $pageRequest,
-    ): PageResult {
+    ): PageResultDTO {
         return $this->managementReader->paginateContents($criteria, $pageRequest);
     }
 

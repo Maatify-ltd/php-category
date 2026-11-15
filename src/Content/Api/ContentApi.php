@@ -17,8 +17,8 @@ use Maatify\Category\Content\Query\DTO\CategoryContentCollectionDTO;
 use Maatify\Category\Content\Query\DTO\CategoryContentDTO;
 use Maatify\Category\Content\Query\DTO\CategoryContentListCriteriaDTO;
 use Maatify\Category\Query\DTO\CategoryVisibleListCriteriaDTO;
-use Maatify\Persistence\Pdo\Pagination\PageRequest;
-use Maatify\Persistence\Pdo\Pagination\PageResult;
+use Maatify\PhpPersistence\Pagination\Criteria\PageRequest;
+use Maatify\PhpPersistence\Pagination\DTO\PageResultDTO;
 
 /** Public Category Content domain API. */
 final readonly class ContentApi implements ContentApiInterface
@@ -74,7 +74,7 @@ final readonly class ContentApi implements ContentApiInterface
         return $this->service->listForManagement($criteria);
     }
 
-    public function paginateForManagement(CategoryContentListCriteriaDTO $criteria, PageRequest $pageRequest): PageResult
+    public function paginateForManagement(CategoryContentListCriteriaDTO $criteria, PageRequest $pageRequest): PageResultDTO
     {
         return $this->service->paginateForManagement($criteria, $pageRequest);
     }
